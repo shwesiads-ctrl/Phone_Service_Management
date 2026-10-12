@@ -8,7 +8,9 @@ The published package excludes saved Telegram credentials. Re-enter your bot tok
 
 Staff registration and Telegram Bot settings are available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
 
-## မြန်မာလမ်းညွှန် — Version 2.8.3
+## မြန်မာလမ်းညွှန် — Version 2.8.4
+
+Payment Profile ကို Settings → Payments မှ စိတ်ကြိုက်ရွေးပါ။ ဘာသာစကားပြောင်းလျှင် profile မပြောင်းပါ။ Admin သည် အပေါ်ဘားမှ currency ရွေးနိုင်သည်။ Account Management ကို card ပုံစံပြောင်းပြီး Cashier List တွင် search/status/pagination ပါဝင်သည်။ Settings မှ Technician Configuration နှင့် Demo User ခလုတ်များ ဖယ်ထားသည်။ About ကို မြန်မာ၊ English၊ Thai၊ Chinese အတိုင်း ပြထားသည်။
 
 FixFlow သည် ဖုန်းနှင့် စက်ပစ္စည်းပြုပြင်ရေးဆိုင်အတွက် Service Job၊ Customer၊ Device၊ Technician၊ Cashier၊ ငွေလက်ခံခြင်းနှင့် Report များကို စီမံနိုင်သည့် Local / LAN စနစ်ဖြစ်ပါသည်။
 
@@ -26,7 +28,9 @@ Technician စာရင်းကို compact table၊ search၊ status filter�
 
 **တပ်ဆင်ရန်:** Node.js 22.12 နှင့်အထက်ဖြင့် `npm ci` → `npm run build` → `npm run start:production` လုပ်ပါ။ Update မလုပ်မီ backup သိမ်းပြီး မူလ `data/` နှင့် ၎င်းအတွင်းရှိ `.security/` ကို ထိန်းထားပါ။ Recovery အောင်မြင်တိုင်း key အသစ်ပြောင်းသောကြောင့် key အသစ်ကို ထပ်သိမ်းရန်လိုသည်။
 
-## Version 2.8.3 — Accounts and developer services
+## Version 2.8.4 — Manual payments and account management
+
+Select the active payment profile in Settings → Payments; language changes never switch it. Administrators can choose currency in the top bar. Account Management uses role-filtered cards; cashier accounts use a searchable, status-filtered paginated table. Duplicate technician settings and demo-user controls have been removed. About follows Myanmar, English, Thai and Chinese. PHP startup reports success only after a health check, and the router forwards the configured Node port.
 
 A fresh installation offers **New User Register — Create Admin Account** on Login. Create the first administrator with your own name, username and confirmed password; no previous/default administrator credentials are needed. Registration closes on the server and hides from Login immediately after creation, including after restart. Existing configured administrator accounts are preserved. Login registration also stays closed after restoring older backups from a configured installation.
 
@@ -83,7 +87,7 @@ The supplied database already contains repeated technician usernames from earlie
 
 Default password information is removed from Login, Settings and registration hints. The compatibility endpoint returns an empty list; existing account passwords are preserved.
 
-In **Technician Management**, administrators can use **Add Demo User** to create `demo_tech`. Repeated adds reuse the same demo account. **Delete Demo Users** asks for confirmation and deletes only accounts created with the demo marker; regular users, customers and financial records are retained. Reassign any repair jobs belonging to demo accounts before deleting them. Existing sample technicians are treated as regular accounts to avoid accidental deletion.
+Demo-user creation/deletion buttons have been removed from Technician Management. Existing accounts and workshop records are preserved; manage staff through the regular technician and cashier lists.
 
 The desktop app asks before closing; Cancel is the default. Signed-in browser sessions request the browser's standard leave-page confirmation, which can also appear on refresh/navigation. Browsers control its wording and may suppress it before the user interacts with the page.
 
@@ -149,7 +153,7 @@ Existing cashier accounts automatically receive a persistent short display code 
 
 Login, Navbar and Appearance Settings offer Light, Dark and System modes. Dark styling follows the selected application theme.
 
-Login မှားယွင်းမှု ၅ ကြိမ်ဖြစ်ပါက ထိုအကောင့်/စက်အတွက် ၁၅ မိနစ် ကန့်သတ်ထားသည်။ Admin က **User Roles & Access** မှ role၊ account enable/disable နှင့် password reset စီမံနိုင်သည်။ ကိုယ်ပိုင် Admin လုပ်ပိုင်ခွင့်ပိတ်ခြင်းနှင့် နောက်ဆုံး Admin ဖယ်ရှားခြင်းကို ကာကွယ်ထားသည်။ Role ပြောင်းပြီးနောက် သက်ဆိုင်ရာ user ကို Login ပြန်ဝင်စေသည်။
+Login မှားယွင်းမှု ၅ ကြိမ်ဖြစ်ပါက ထိုအကောင့်/စက်အတွက် ၁၅ မိနစ် ကန့်သတ်ထားသည်။ Admin က **Account Management** မှ role၊ account enable/disable နှင့် password reset စီမံနိုင်သည်။ ကိုယ်ပိုင် Admin လုပ်ပိုင်ခွင့်ပိတ်ခြင်းနှင့် နောက်ဆုံး Admin ဖယ်ရှားခြင်းကို ကာကွယ်ထားသည်။ Role ပြောင်းပြီးနောက် သက်ဆိုင်ရာ user ကို Login ပြန်ဝင်စေသည်။
 
 Five failed logins for an account/IP trigger a 15-minute cooldown, with a broader IP limit against username spraying. Successful login clears that account’s failure count. User access changes revoke affected sessions. Admins cannot disable/demote themselves or the last active admin; technician roles require a linked technician profile. Sessions are checked on browser focus and every 30 seconds. Default-password session switching was removed; account switching requires signing in normally.
 

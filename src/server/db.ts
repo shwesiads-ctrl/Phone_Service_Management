@@ -818,6 +818,8 @@ class Database {
             },
           },
         };
+        mergedSettings.paymentSettings!.mode = 'manual';
+        if (!['thailand','myanmar','china','global'].includes(mergedSettings.paymentSettings!.active_profile || '')) mergedSettings.paymentSettings!.active_profile = 'global';
         mergedSettings.currency_mode = 'manual';
         if (!['my','en','th','zh'].includes(mergedSettings.language)) mergedSettings.language = 'en';
         if (!['MMK','USD','THB','CNY'].includes(mergedSettings.currency)) mergedSettings.currency = 'MMK';
@@ -1932,6 +1934,8 @@ class Database {
   // --- Settings ---
   public getSettings(): SettingsState {
     if (!this.data.settings.paymentSettings?.china) this.data.settings.paymentSettings = { ...defaultPaymentSettings, ...this.data.settings.paymentSettings, china: structuredClone(defaultPaymentSettings.china) };
+    this.data.settings.paymentSettings!.mode = 'manual';
+    if (!['thailand','myanmar','china','global'].includes(this.data.settings.paymentSettings!.active_profile || '')) this.data.settings.paymentSettings!.active_profile = 'global';
     this.data.settings.currency_mode = 'manual';
     if (!['my','en','th','zh'].includes(this.data.settings.language)) this.data.settings.language = 'en';
     return this.data.settings;
@@ -1947,6 +1951,8 @@ class Database {
         for (const method of supplied[profile]?.methods || []) methods.set(method.id, { ...methods.get(method.id), ...method });
         merged[profile] = { methods: [...methods.values()] };
       }
+      merged.mode = 'manual';
+      if (!['thailand','myanmar','china','global'].includes(merged.active_profile || '')) merged.active_profile = previous.active_profile || 'global';
       newSettings = { ...newSettings, paymentSettings: merged };
     }
     this.data.settings = { ...this.data.settings, ...newSettings, currency_mode: 'manual' };

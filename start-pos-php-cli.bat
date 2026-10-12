@@ -25,6 +25,14 @@ for /f "tokens=*" %%v in ('php -v') do (
 :php_detected
 
 echo.
+if not exist "dist\index.html" (
+    echo [ERROR] Build the frontend first: npm run build
+    pause
+    exit /b 1
+)
+if not defined PORT set PORT=3000
+echo [INFO] Keep Node running in another terminal: npm run start:production
+echo [INFO] PHP forwards API requests to Node port %PORT%.
 echo [2/3] Detecting Local Network IP Address (for other devices on same Wi-Fi)...
 echo ------------------------------------------------------------------------
 for /f "tokens=4" %%a in ('route print ^| findstr 0.0.0.0 ^| findstr /v "0.0.0.0.*0.0.0.0"') do (

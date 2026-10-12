@@ -10,7 +10,6 @@ import { ThaiBankPaymentScreen } from '../components/ThaiBankPaymentScreen';
 import {
   Sliders,
   Wrench,
-  UserCog,
   Users,
   CreditCard,
   DollarSign,
@@ -97,7 +96,6 @@ export const SettingsView: React.FC = () => {
     isInternetOnline,
     currentUser,
     getAuthHeaders,
-    deleteTechnician,
     navigate,
   } = useApp();
 
@@ -367,62 +365,6 @@ export const SettingsView: React.FC = () => {
     setPaperSize(settings.paperSize); setReceiptFooterNote(settings.receiptFooterNote);
   }, [settings.defaultWarrantyDays, settings.dateFormat, settings.paperSize, settings.receiptFooterNote]);
 
-  const [techModalOpen, setTechModalOpen] = useState(false);
-  const [newTechFullName, setNewTechFullName] = useState('');
-  const [newTechPhone, setNewTechPhone] = useState('');
-  const [newTechEmail, setNewTechEmail] = useState('');
-  const [newTechAddress, setNewTechAddress] = useState('');
-  const [newTechSpecialization, setNewTechSpecialization] = useState('Smartphone Repair, Soldering, Screen Replacement');
-  const [newTechPhoto, setNewTechPhoto] = useState('');
-
-  const handleTechPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Photo must be smaller than 2MB.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setNewTechPhoto(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleCreateTechnician = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTechFullName.trim()) return;
-    try {
-      const res = await fetch('/api/technicians', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          full_name: newTechFullName,
-          phone: newTechPhone,
-          email: newTechEmail,
-          address: newTechAddress,
-          specialization: newTechSpecialization.split(',').map((s) => s.trim()).filter(Boolean),
-          profile_photo: newTechPhoto,
-          status: 'active',
-        }),
-      });
-      if (res.ok) {
-        setTechModalOpen(false);
-        setNewTechFullName('');
-        setNewTechPhone('');
-        setNewTechEmail('');
-        setNewTechAddress('');
-        setNewTechPhoto('');
-        setSaveToast(true);
-        setTimeout(() => setSaveToast(false), 2000);
-        window.location.reload();
-      }
-    } catch (err) {
-      console.error('Failed to create technician', err);
-    }
-  };
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -442,7 +384,6 @@ export const SettingsView: React.FC = () => {
     { id: 'donate', label: 'Support Developer & Donate', icon: Heart },
     { id: 'general', label: t('settings_general'), icon: Sliders },
     { id: 'service', label: t('settings_service'), icon: Wrench },
-    { id: 'technicians', label: t('settings_technicians'), icon: UserCog },
     { id: 'customers', label: t('settings_customers'), icon: Users },
     { id: 'payments', label: t('settings_payments'), icon: CreditCard },
     { id: 'currency', label: t('settings_currency'), icon: DollarSign },
@@ -850,7 +791,7 @@ export const SettingsView: React.FC = () => {
                     Traditional XAMPP runs bulky Apache and MySQL background services that consume 200MB+ of RAM, often clash with Windows IIS/Skype ports, and require manual Control Panel clicking.
                   </p>
                   <p>
-                    With <b>FixFlow's PHP CLI router</b>, you run a single lightweight command: <code>php -S 0.0.0.0:8080 router.php</code>. It uses only ~15MB memory and immediately opens multi-device access across all phones, tablets, and POS terminals on the same local network.
+                    With <b>FixFlow's PHP CLI router</b>, you run a single lightweight command: <code>php -S 0.0.0.0:8080 router.php</code>. Keep the Node backend running first; PHP forwards API requests to Node and serves the built frontend to devices on the same local network.
                   </p>
                 </div>
 
@@ -917,7 +858,7 @@ export const SettingsView: React.FC = () => {
                     php -S 0.0.0.0:{customPhpPort || 8080} router.php
                   </div>
                   <p className="text-[11px] text-[var(--text-muted)]">
-                    Tip: You can also double-click <code>start-pos-php-cli.bat</code> in the project directory anytime to start with 1-click on Windows!
+                    Start Node first with <code>npm run start:production</code>. If its port is not 3000, set <code>PORT={networkInfo?.node_port || 3000}</code> in the PHP terminal before running the command. Tip: You can also double-click <code>start-pos-php-cli.bat</code> in the project directory anytime to start with 1-click on Windows!
                   </p>
                 </div>
               </div>
@@ -1463,217 +1404,6 @@ export const SettingsView: React.FC = () => {
             </form>
           )}
 
-          {/* 3. TECHNICIANS */}
-          {activeSection === 'technicians' && (
-            <div className="space-y-5">
-              <div className="border-b border-[var(--border)] pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <h2 className="text-base font-bold text-[var(--text)] flex items-center gap-2">
-                    <UserCog className="w-5 h-5 text-[var(--primary)]" />
-                    <span>{t('settings_technicians')} Configuration & ID Generator</span>
-                  </h2>
-                  <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                    Manage technician accounts, ID generation, profile photos, specializations, and assignment permissions
-                  </p>
-                </div>
-                {currentUser?.role === 'admin' && (
-                  <button
-                    type="button"
-                    onClick={() => setTechModalOpen(true)}
-                    className="px-3.5 py-2 rounded-lg bg-[var(--primary)] text-white text-xs font-bold hover:bg-[var(--primary-hover)] cursor-pointer shadow-sm flex items-center gap-1.5 self-start sm:self-auto"
-                  >
-                    <span>+ Add New Technician</span>
-                  </button>
-                )}
-              </div>
-
-              {/* Technicians List Table */}
-              <div className="space-y-3">
-                <div className="text-xs font-semibold text-[var(--text)] uppercase tracking-wider">
-                  Registered Technicians ({technicians.length})
-                </div>
-
-                <div className="grid grid-cols-1 gap-3">
-                  {technicians.map((tech) => (
-                    <div
-                      key={tech.id}
-                      className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs"
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <div className="w-12 h-12 rounded-full border border-[var(--border)] overflow-hidden bg-[var(--surface-2)] flex items-center justify-center shrink-0">
-                          {tech.profile_photo ? (
-                            <img src={tech.profile_photo} alt={tech.full_name} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-sm font-bold text-[var(--text)]">
-                              {tech.full_name.slice(0, 2).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-black font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                              {tech.id}
-                            </span>
-                            <span className="text-sm font-bold text-[var(--text)]">{tech.full_name}</span>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                              tech.status === 'active' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-slate-500/15 text-slate-500'
-                            }`}>
-                              {tech.status}
-                            </span>
-                          </div>
-                          <div className="text-xs text-[var(--text-muted)] flex items-center gap-3 flex-wrap font-mono">
-                            <span>Phone: {tech.phone || 'N/A'}</span>
-                            <span>· Email: {tech.email || 'N/A'}</span>
-                          </div>
-                          {tech.specialization && tech.specialization.length > 0 && (
-                            <div className="flex items-center gap-1 flex-wrap pt-0.5">
-                              {tech.specialization.map((spec, i) => (
-                                <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--text-muted)]">
-                                  {spec}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 self-end sm:self-center">
-                        <span className="text-xs font-bold font-mono text-[var(--text-muted)]">
-                          Active Jobs: {(tech as any).activeJobs || 0}
-                        </span>
-                        <button
-                          onClick={async () => {
-                            if (window.confirm(`Are you sure you want to delete technician "${tech.full_name}" (@${tech.username})?`)) {
-                              try {
-                                await deleteTechnician(tech.id);
-                              } catch (err: any) {
-                                alert(err.message || 'Failed to delete technician');
-                              }
-                            }
-                          }}
-                          className="p-1.5 rounded-lg hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-600 transition-colors cursor-pointer"
-                          title="Delete Technician"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Add Technician Modal */}
-              {techModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/60 backdrop-blur-xs">
-                  <div className="w-full max-w-md bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
-                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-                      <h3 className="text-sm font-bold text-[var(--text)]">Register New Technician (Auto ID Generator)</h3>
-                      <button
-                        onClick={() => setTechModalOpen(false)}
-                        className="text-[var(--text-muted)] hover:text-[var(--text)] cursor-pointer"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    <form onSubmit={handleCreateTechnician} className="space-y-3.5">
-                      <div>
-                        <label className="block text-xs font-semibold text-[var(--text)] mb-1">Generated Technician ID</label>
-                        <input
-                          type="text"
-                          disabled
-                          value={`TECH-${String(technicians.length + 1).padStart(3, '0')}`}
-                          className="w-full px-3 py-2 text-xs font-mono bg-[var(--surface-2)] border border-[var(--border)] rounded-lg text-[var(--text-muted)]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-[var(--text)] mb-1">Full Name *</label>
-                        <input
-                          type="text"
-                          required
-                          value={newTechFullName}
-                          onChange={(e) => setNewTechFullName(e.target.value)}
-                          placeholder="e.g. Mg Mg"
-                          className="w-full px-3 py-2 text-xs bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-[var(--text)] mb-1">Phone Number</label>
-                        <input
-                          type="tel"
-                          value={newTechPhone}
-                          onChange={(e) => setNewTechPhone(e.target.value)}
-                          placeholder="09970001122"
-                          className="w-full px-3 py-2 text-xs bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] font-mono"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-[var(--text)] mb-1">Email Address</label>
-                        <input
-                          type="email"
-                          value={newTechEmail}
-                          onChange={(e) => setNewTechEmail(e.target.value)}
-                          placeholder="tech@fixflow.xyz"
-                          className="w-full px-3 py-2 text-xs bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-[var(--text)] mb-1">Specialization (Comma separated)</label>
-                        <input
-                          type="text"
-                          value={newTechSpecialization}
-                          onChange={(e) => setNewTechSpecialization(e.target.value)}
-                          className="w-full px-3 py-2 text-xs bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-[var(--text)] mb-1">Profile Photo Upload</label>
-                        <div className="flex items-center gap-3">
-                          {newTechPhoto ? (
-                            <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--border)]">
-                              <img src={newTechPhoto} alt="Preview" className="w-full h-full object-cover" />
-                            </div>
-                          ) : (
-                            <div className="w-10 h-10 rounded-full border border-dashed border-[var(--border)] flex items-center justify-center text-[10px] text-[var(--text-muted)]">
-                              Photo
-                            </div>
-                          )}
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleTechPhotoUpload}
-                            className="block w-full text-xs text-[var(--text-muted)] file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-[var(--primary)] file:text-white cursor-pointer"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="pt-2 flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setTechModalOpen(false)}
-                          className="px-3.5 py-1.5 rounded-lg border border-[var(--border)] text-xs font-bold text-[var(--text)] hover:bg-[var(--surface-2)] cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="px-4 py-1.5 rounded-lg bg-[var(--primary)] text-white text-xs font-bold hover:bg-[var(--primary-hover)] cursor-pointer shadow-sm"
-                        >
-                          Save Technician
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* 4. CUSTOMERS */}
           {activeSection === 'customers' && (
             <div className="space-y-4">
@@ -1737,7 +1467,7 @@ export const SettingsView: React.FC = () => {
                     {t('paymentProfile')}
                   </span>
                   <span className="text-[11px] text-[var(--text-muted)]">
-                    Active Profile: <strong className="text-[var(--primary)] uppercase">{activePaymentProfile}</strong> ({settings.paymentSettings?.mode === 'manual' ? 'Manually selected' : 'Follows language'})
+                    Active Profile: <strong className="text-[var(--primary)] uppercase">{activePaymentProfile}</strong>
                   </span>
                 </div>
 
@@ -1784,6 +1514,12 @@ export const SettingsView: React.FC = () => {
                   </button>
                 </div>
               </div>
+
+              <label className="flex flex-wrap items-center gap-3 text-sm font-semibold">{language==='my'?'အသုံးပြုမည့် Payment Profile':'Choose active payment profile'}
+                <select aria-label="Active payment profile" value={activePaymentProfile} onChange={e=>setPaymentProfile(e.target.value as PaymentProfile).catch(error=>alert(error.message))} className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+                  <option value="global">Global</option><option value="myanmar">Myanmar</option><option value="thailand">Thailand</option><option value="china">China</option>
+                </select>
+              </label>
 
               {selectedProfileTab === 'china' && <section className="space-y-3" aria-labelledby="china-payment-title">
                 <h3 id="china-payment-title" className="font-bold">🇨🇳 China Payment Channels · CNY / ¥</h3>
@@ -2732,7 +2468,7 @@ export const SettingsView: React.FC = () => {
           {activeSection === 'security' && (
             <div className="space-y-4">
               <RecoveryKeySettings />
-              <button onClick={()=>navigate('/users')} className="px-4 py-2 rounded-lg bg-blue-600 text-white">User Roles & Access</button>
+              <button onClick={()=>navigate('/users')} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Account Management</button>
               <div className="border-b border-[var(--border)] pb-3 mb-4">
                 <h2 className="text-base font-bold text-[var(--text)]">
                   {t('settings_security')} & Role Governance

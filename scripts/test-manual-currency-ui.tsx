@@ -11,7 +11,7 @@ import { formatCurrency, getCurrencySymbol } from '../src/utils/formatters';
  let systemHandler:any;window.matchMedia=()=>({matches:true,addEventListener(_type:string,handler:any){systemHandler=handler;},removeEventListener(){}} as any);
  const user={id:'USR-001',username:'admin',role:'admin',full_name:'Administrator',created_at:''};
  localStorage.setItem('fixflow_auth_token','test-token');localStorage.setItem('fixflow_current_user',JSON.stringify(user));localStorage.setItem('fixflow_lang','fr');
- let settings:any={currency:'CNY',currency_mode:'manual',language:'en',dateFormat:'DD-MM-YYYY'};
+ let settings:any={currency:'CNY',currency_mode:'manual',language:'en',paymentSettings:{mode:'auto',active_profile:'china',china:{methods:[]}},dateFormat:'DD-MM-YYYY'};
  let writes:any[]=[];
  globalThis.fetch=async(path:any,options:any={})=>{
    let body:any=[];
@@ -35,11 +35,13 @@ import { formatCurrency, getCurrencySymbol } from '../src/utils/formatters';
  console.log('PASS: Real context Light/Dark/System selection, system changes, persistence, cross-tab sync and invalid-theme protection.');
  assert.deepEqual(Object.keys(translations).sort(),['en','my','th','zh']);
  assert.equal(app.language,'en');assert.equal(app.currency,'CNY');
- for(const lang of ['my','th','zh','en']){await act(async()=>app.setLanguage(lang));assert.equal(app.currency,'CNY');}
+ for(const lang of ['my','th','zh','en']){await act(async()=>app.setLanguage(lang));assert.equal(app.currency,'CNY');assert.equal(app.activePaymentProfile,'china');}
  assert.equal(writes.length,0);
  await act(async()=>app.setCurrency('THB'));assert.equal(app.currency,'THB');assert.equal(writes[0].currency_mode,'manual');
  await act(async()=>app.setLanguage('my'));assert.equal(app.currency,'THB');assert.equal(writes.length,1);
  await act(async()=>app.setCurrency('CNY'));assert.equal(app.currency,'CNY');
+ await act(async()=>app.setPaymentProfile('myanmar'));assert.equal(app.activePaymentProfile,'myanmar');assert.equal(writes.at(-1).paymentSettings.mode,'manual');
+ for(const language of ['en','th','my','zh']){await act(async()=>app.setLanguage(language));assert.equal(app.activePaymentProfile,'myanmar');}
  assert.equal(formatCurrency(50,'CNY'),'¥50.00');assert.equal(getCurrencySymbol('CNY'),'¥');
  await act(async()=>root.unmount());dom.window.close();
  console.log('PASS: Exactly four languages, removed-language fallback, language changes never write or change currency, user currency selection persists, Yuan formats correctly.');

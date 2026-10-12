@@ -49,6 +49,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     setTheme,
     language,
     setLanguage,
+    currency,
+    setCurrency,
     activeTab,
     searchQuery,
     setSearchQuery,
@@ -129,7 +131,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         return t('customers');
       case 'devices':
         return t('devices');
-      case 'users': return 'User Roles & Access';
+      case 'users': return 'Account Management';
       case 'cashiers': return 'Cashier Accounts';
       case 'technicians':
         return t('technicians');
@@ -347,6 +349,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             
           </button>
         )}
+
+        {role === 'admin' && <label className="flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-2 text-xs font-semibold" title="Accounting currency">
+          <select aria-label="Select currency" value={currency} onChange={e=>setCurrency(e.target.value as import('../types').Currency)} className="bg-transparent text-[var(--text)] outline-none cursor-pointer">
+            <option value="MMK">Ks</option><option value="USD">US $</option><option value="THB">B ฿</option><option value="CNY">Y ¥</option>
+          </select>
+        </label>}
 
         {/* Language Selector */}
         <div className="relative" ref={langRef}>

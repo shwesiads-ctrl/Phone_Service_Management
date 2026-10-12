@@ -45,7 +45,8 @@ import { NewUserRegisterModal } from '../src/modals/NewUserRegisterModal';
  await act(async()=>root.render(<AboutView/>));
  check('About shows developer name and customization service',document.body.textContent!.includes('MyominAung')&&document.body.textContent!.includes('စိတ်ကြိုက်'));
  check('Developer contacts use correct actionable links',document.querySelector('a[href="https://t.me/kominit"]')&&document.querySelector('a[href="mailto:shwetaythan@gmail.com"]')&&document.querySelector('a[href="https://wa.me/959256060722"]'));
- check('About includes current release and Myanmar update notes',document.body.textContent!.includes('2.8.3')&&document.body.textContent!.includes('ယခု Version')&&document.body.textContent!.includes('Admin အကောင့်အသစ်'));
+ check('About includes current release and Myanmar update notes',document.body.textContent!.includes('2.8.4')&&document.body.textContent!.includes('ယခု Version')&&document.body.textContent!.includes('Cashier Accounts List'));
+ for(const [language,heading,phrase] of [['en','What’s new','Payment profiles'],['th','มีอะไรใหม่','เลือกโปรไฟล์'],['zh','此版本更新','支付配置']] as const){app.language=language;await act(async()=>root.render(<AboutView/>));check('About follows '+language,document.body.textContent!.includes(heading)&&document.body.textContent!.includes(phrase));}
  await act(async () => root.unmount()); dom.window.close();
  console.log(`REGISTER UI SUMMARY: ${passed} PASSED`);
 })().catch(error=>{console.error(error);process.exitCode=1;});

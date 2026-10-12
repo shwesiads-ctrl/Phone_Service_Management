@@ -423,21 +423,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return getCurrencySymbolUtil(currency);
   };
 
-  /**
-   * Active Payment Profile:
-   * Auto Mode:
-   * Myanmar -> Myanmar Profile (KBZ Pay, Wave Pay, AYA Pay, CB Pay, Cash, Bank Transfer)
-   * English -> Global Profile (Cash, Bank Transfer, Card, PayPal, Other)
-   * Thai -> Thailand Profile (Cash, Bank Transfer, PromptPay, K PLUS, SCB EASY, TrueMoney, Rabbit LINE Pay, ShopeePay, Card, Other)
-   */
-  const activePaymentProfile: PaymentProfile =
-    settings.paymentSettings?.mode === 'manual' && settings.paymentSettings?.active_profile
-      ? settings.paymentSettings.active_profile
-      : language === 'th'
-      ? 'thailand'
-      : language === 'my'
-      ? 'myanmar'
-      : language === 'zh' ? 'china' : 'global';
+  // Payment profiles remain independent of the interface language.
+  const activePaymentProfile: PaymentProfile = settings.paymentSettings?.active_profile || 'global';
 
   const setPaymentProfile = async (profile: PaymentProfile) => {
     const current = settings.paymentSettings || defaultSettings.paymentSettings!;

@@ -1,7 +1,7 @@
 {
   "name": "react-example",
   "private": true,
-  "version": "2.8.3",
+  "version": "2.8.4",
   "type": "module",
   "scripts": {
     "dev": "node --import tsx server.ts",
@@ -16,7 +16,8 @@
     "desktop:build-server": "esbuild server.ts --bundle --platform=node --format=cjs --packages=external --outfile=server.cjs",
     "desktop": "npm run build && npm run desktop:build-server && electron .",
     "dist:win": "npm run build && npm run desktop:build-server && electron-builder --win nsis",
-    "test:cashier:browser": "node scripts/test-cashier-browser.cjs"
+    "test:cashier:browser": "node scripts/test-cashier-browser.cjs",
+    "test:lan": "npm run build && node --import tsx scripts/test-php-lan.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

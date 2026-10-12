@@ -14,7 +14,7 @@
 
 $backendPort = (int)(getenv('PORT') ?: 3000);
 $backendUrl = 'http://127.0.0.1:' . $backendPort;
-$distPath = __DIR__ . DIRECTORY_SEPARATOR . 'dist';
+$distPath = getenv('FIXFLOW_DIST_DIR') ?: (__DIR__ . DIRECTORY_SEPARATOR . 'dist');
 
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $parsedPath = parse_url($requestUri, PHP_URL_PATH);
@@ -42,15 +42,17 @@ if (strpos($parsedPath, '/api/') === 0 || $parsedPath === '/api') {
         if (strpos($key, 'HTTP_') === 0) {
             $headerName = str_replace('_', '-', substr($key, 5));
             // Skip Host header to let target resolve correctly
-            if (strcasecmp($headerName, 'host') !== 0) {
+            if (!in_array(strtolower($headerName), ['host', 'connection', 'keep-alive', 'proxy-connection', 'transfer-encoding', 'upgrade', 'expect', 'content-length', 'content-type'])) {
                 $headersToForward[] = "$headerName: $value";
             }
-        } elseif (in_array(strtolower($key), ['content_type', 'content_length']) && !empty($value)) {
+        } elseif (strtolower($key) === 'content_type' && !empty($value)) {
             $headerName = str_replace('_', '-', $key);
             $headersToForward[] = "$headerName: $value";
         }
     }
 
+    // HTTP streams must not inherit browser keep-alive; it can stall the single PHP worker.
+    $headersToForward[] = 'Connection: close';
     $rawBody = file_get_contents('php://input');
 
     // Use cURL if available, otherwise fallback to stream context
@@ -75,9 +77,9 @@ if (strpos($parsedPath, '/api/') === 0 || $parsedPath === '/api') {
             header('Content-Type: application/json; charset=UTF-8');
             echo json_encode([
                 'ok' => false,
-                'error' => "PHP CLI Router: Cannot connect to FixFlow backend on $backendUrl ($curlErr). Ensure Node server is running on port 3000.",
+                'error' => "PHP CLI Router: Cannot connect to FixFlow backend on $backendUrl ($curlErr). Ensure Node server is running on port $backendPort.",
                 'php_cli' => true,
-                'suggestion' => 'Run `npm start` or start FixFlow service from the Settings tab.'
+                'suggestion' => 'Run `npm run start:production` in the project folder.'
             ]);
             exit;
         }
@@ -93,7 +95,7 @@ if (strpos($parsedPath, '/api/') === 0 || $parsedPath === '/api') {
         $headerLines = explode("\r\n", $headerStr);
         foreach ($headerLines as $line) {
             if (empty($line) || stripos($line, 'HTTP/') === 0) continue;
-            if (stripos($line, 'Transfer-Encoding:') === 0) continue;
+            if (preg_match('/^(Transfer-Encoding|Connection|Keep-Alive):/i', $line)) continue;
             header($line, false);
         }
 
@@ -107,6 +109,7 @@ if (strpos($parsedPath, '/api/') === 0 || $parsedPath === '/api') {
                 'header' => implode("\r\n", $headersToForward),
                 'content' => $rawBody,
                 'ignore_errors' => true,
+                'follow_location' => 0,
                 'timeout' => 30,
             ]
         ];
@@ -129,7 +132,7 @@ if (strpos($parsedPath, '/api/') === 0 || $parsedPath === '/api') {
             foreach ($http_response_header as $hdr) {
                 if (preg_match('#^HTTP/\d\.\d\s+(\d+)#i', $hdr, $m)) {
                     http_response_code((int)$m[1]);
-                } elseif (stripos($hdr, 'Transfer-Encoding:') !== 0) {
+                } elseif (!preg_match('/^(Transfer-Encoding|Connection|Keep-Alive):/i', $hdr)) {
                     header($hdr, false);
                 }
             }

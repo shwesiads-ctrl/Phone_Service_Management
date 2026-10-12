@@ -27,8 +27,6 @@ import {
 export const TechniciansView: React.FC = () => {
   const {
     technicians,
-    getAuthHeaders,
-    refreshTechnicians,
     language,
     createTechnician,
     updateTechnician,
@@ -41,18 +39,6 @@ export const TechniciansView: React.FC = () => {
     t,
   } = useApp();
 
-  const [demoBusy, setDemoBusy] = useState(false);
-  const manageDemo = async (remove: boolean) => {
-    if (remove && !window.confirm(language === 'my' ? 'Demo user များကို ဖျက်မလား?' : 'Delete demo users? Regular accounts and shop records will be kept.')) return;
-    setDemoBusy(true);
-    try {
-      const response = await fetch('/api/demo-users', { method: remove ? 'DELETE' : 'POST', headers: getAuthHeaders() });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Demo user operation failed');
-      await refreshTechnicians();
-    } catch (error: any) { alert(error.message); }
-    finally { setDemoBusy(false); }
-  };
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
 
   const [deleteModalTech, setDeleteModalTech] = useState<Technician | null>(null);
@@ -259,11 +245,6 @@ export const TechniciansView: React.FC = () => {
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-3 items-center rounded-xl border border-[var(--border)] p-3">
-        <span className="text-sm">Demo users: {technicians.filter(t => t.is_demo).length}</span>
-        <button disabled={demoBusy} onClick={() => manageDemo(false)} className="px-3 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-50">{language === 'my' ? 'Demo User ထည့်ရန်' : 'Add Demo User'}</button>
-        <button disabled={demoBusy || !technicians.some(t => t.is_demo)} onClick={() => manageDemo(true)} className="px-3 py-2 rounded-lg bg-rose-600 text-white disabled:opacity-50">{language === 'my' ? 'Demo User ဖျက်ရန်' : 'Delete Demo Users'}</button>
-      </div>
       {/* Bulk Action Bar & Select All */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--surface)] p-3 rounded-xl border border-[var(--border)]">
         <div className="flex items-center gap-3">
@@ -313,7 +294,7 @@ export const TechniciansView: React.FC = () => {
           <tbody className="divide-y divide-[var(--border)]">{page.items.map((tech,rowIndex)=><tr key={tech.id} className={selectedTechIds.includes(tech.id)?'bg-[var(--primary)]/10':'hover:bg-[var(--surface-2)]/40'}>
             <td className="p-3 font-mono text-[var(--text-muted)]">{page.offset+rowIndex+1}</td>
             <td className="p-3"><input aria-label={`Select ${tech.full_name}`} type="checkbox" checked={selectedTechIds.includes(tech.id)} onChange={()=>toggleSelectTech(tech.id)}/></td>
-            <td className="p-3"><div className="flex gap-2 items-center">{tech.profile_photo?<img src={tech.profile_photo} alt={tech.full_name} className="w-9 h-9 shrink-0 rounded-full object-cover"/>:<span className="w-9 h-9 shrink-0 rounded-full bg-[var(--surface-2)] flex items-center justify-center font-bold">{tech.full_name.slice(0,2).toUpperCase()}</span>}<div><p className="font-bold text-sm">{tech.full_name}</p><p className="font-mono text-[10px] text-[var(--text-muted)]">{tech.id} · @{tech.username}{tech.is_demo?' · DEMO':''}</p></div></div></td>
+            <td className="p-3"><div className="flex gap-2 items-center">{tech.profile_photo?<img src={tech.profile_photo} alt={tech.full_name} className="w-9 h-9 shrink-0 rounded-full object-cover"/>:<span className="w-9 h-9 shrink-0 rounded-full bg-[var(--surface-2)] flex items-center justify-center font-bold">{tech.full_name.slice(0,2).toUpperCase()}</span>}<div><p className="font-bold text-sm">{tech.full_name}</p><p className="font-mono text-[10px] text-[var(--text-muted)]">{tech.id} · @{tech.username}</p></div></div></td>
             <td className="p-3 max-w-52"><p className="font-mono whitespace-nowrap">{tech.phone || '—'}</p><p title={tech.email} className="truncate text-[var(--text-muted)]">{tech.email}</p><p title={tech.address} className="truncate text-[10px] text-[var(--text-muted)]">{tech.address}</p></td>
             <td className="p-3 max-w-48"><p title={(tech.specialization || []).join(', ')} className="line-clamp-2 text-[var(--text-muted)]">{(tech.specialization || []).join(', ') || '—'}</p></td>
             <td className="p-3"><span className={`px-2 py-1 rounded text-[10px] font-bold ${tech.status==='active'?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500'}`}>{tech.status}</span></td>

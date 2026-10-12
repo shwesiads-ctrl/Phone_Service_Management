@@ -1,3 +1,4 @@
+import { createServer as createPortProbe } from 'node:net';
 import { LoginLimiter } from './src/server/loginLimiter.ts';
 import { imageValidationError } from './src/utils/imageUpload.ts';
 import { RecoveryKeyStore } from './src/server/recovery.ts';
@@ -2338,6 +2339,9 @@ app.get('/api/download-project', (_req: AuthRequest, res: Response) => {
 
 let phpCliProcess: ChildProcess | null = null;
 let phpCliActivePort = 8080;
+let phpCliStarting = false;
+process.once('exit',()=>phpCliProcess?.kill());
+for(const signal of ['SIGINT','SIGTERM'] as const)process.once(signal,()=>{phpCliProcess?.kill();process.exit(0);});
 
 function getSystemNetworkInterfaces() {
   const ifaces = os.networkInterfaces();
@@ -2404,66 +2408,47 @@ app.get('/api/system/network-info', (_req: Request, res: Response) => {
       command: `php -S 0.0.0.0:${phpCliActivePort} router.php`,
       batch_script: 'start-pos-php-cli.bat',
     },
-    firewall_command: `netsh advfirewall firewall add rule name="FixFlow POS Multi-Device" dir=in action=allow protocol=TCP localport=3000,${phpCliActivePort}`,
+    firewall_command: `netsh advfirewall firewall add rule name="FixFlow POS Multi-Device" dir=in action=allow protocol=TCP localport=${port},${phpCliActivePort}`,
   });
 });
 
-app.post('/api/system/php-cli/start', (req: AuthRequest, res: Response) => {
+app.post('/api/system/php-cli/start', async (req: AuthRequest, res: Response) => {
   if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Admin access required.' });
   const requestedPort = Number(req.body?.port ?? 8080);
-  if (!Number.isInteger(requestedPort) || requestedPort < 1 || requestedPort > 65535) return res.status(400).json({ error: 'Invalid port.' });
+  if (!Number.isInteger(requestedPort) || requestedPort < 1 || requestedPort > 65535 || requestedPort === port) return res.status(400).json({ error: 'Choose a valid PHP port different from the Node server port.' });
+  if (phpCliStarting) return res.status(409).json({success:false,error:'PHP startup is already in progress.'});
+  if (!fs.existsSync(path.resolve(process.env.FIXFLOW_DIST_DIR || 'dist','index.html'))) return res.status(409).json({success:false,error:'Build the frontend with npm run build before starting PHP CLI.'});
   const php = checkPhpCli();
-
-  if (!php.installed) {
-    return res.status(400).json({
-      success: false,
-      error: 'PHP CLI is not installed or not found in system PATH. Please ensure PHP is installed on Windows (no XAMPP required).',
-    });
-  }
-
-  if (phpCliProcess && !phpCliProcess.killed) {
-    const { primaryIp } = getSystemNetworkInterfaces();
-    return res.json({
-      success: true,
-      message: `PHP CLI server is already running on port ${phpCliActivePort}`,
-      port: phpCliActivePort,
-      lan_url: `http://${primaryIp}:${phpCliActivePort}`,
-      is_running: true,
-    });
-  }
-
-  phpCliActivePort = requestedPort;
+  if (!php.installed) return res.status(400).json({success:false,error:'PHP CLI is not installed or not in PATH. Install PHP CLI and restart FixFlow.'});
+  const { primaryIp } = getSystemNetworkInterfaces();
+  if (phpCliProcess && !phpCliProcess.killed) return res.json({success:true,message:`PHP CLI server is already running on port ${phpCliActivePort}`,port:phpCliActivePort,lan_url:`http://${primaryIp}:${phpCliActivePort}`,is_running:true});
+  phpCliStarting = true;
+  let child:ChildProcess|undefined;
   try {
-    phpCliProcess = spawn('php', ['-S', `0.0.0.0:${requestedPort}`, 'router.php'], {
-      cwd: process.cwd(),
-      stdio: 'ignore',
-      detached: false,
+    await new Promise<void>((resolve,reject)=>{const probe=createPortProbe();probe.once('error',reject);probe.listen(requestedPort,'0.0.0.0',()=>probe.close(error=>error?reject(error):resolve()));});
+    child = spawn('php', ['-S', `0.0.0.0:${requestedPort}`, path.resolve('router.php')], {
+      cwd: process.cwd(), stdio: ['ignore','ignore','pipe'], detached: false,
+      env:{...process.env,PORT:String(port),FIXFLOW_DIST_DIR:path.resolve(process.env.FIXFLOW_DIST_DIR || 'dist')},
     });
-
-    phpCliProcess.on('exit', () => {
-      phpCliProcess = null;
-    });
-
-    phpCliProcess.on('error', (err) => {
-      console.warn('PHP CLI process error:', err);
-      phpCliProcess = null;
-    });
-
-    const { primaryIp } = getSystemNetworkInterfaces();
-    return res.json({
-      success: true,
-      message: `PHP CLI multi-device server started on port ${requestedPort}`,
-      port: requestedPort,
-      lan_url: `http://${primaryIp}:${requestedPort}`,
-      is_running: true,
-    });
-  } catch (err: any) {
-    phpCliProcess = null;
-    return res.status(500).json({
-      success: false,
-      error: `Failed to start PHP CLI server: ${err.message}`,
-    });
-  }
+    const launched=child;
+    phpCliProcess=launched;
+    let startupError='';
+    launched.stderr?.on('data',data=>{startupError=(startupError+data.toString()).slice(-2000);});
+    launched.on('error',error=>{startupError=error.message;if(phpCliProcess===launched)phpCliProcess=null;});
+    launched.on('exit',()=>{if(phpCliProcess===launched)phpCliProcess=null;});
+    let ready=false;
+    for(let attempt=0;attempt<30;attempt++){
+      await new Promise(resolve=>setTimeout(resolve,100));
+      if(launched.exitCode!==null || !phpCliProcess)break;
+      try{const response=await fetch(`http://127.0.0.1:${requestedPort}/api/health`,{signal:AbortSignal.timeout(500)});const data=await response.json();if(response.ok&&data.server==='FixFlow-Node'){ready=true;break;}}catch{}
+    }
+    if(!ready)throw new Error(startupError.includes('Address already in use')?'Port is already in use.':'PHP did not become ready or could not reach the Node backend.');
+    phpCliActivePort=requestedPort;
+    return res.json({success:true,message:`PHP CLI multi-device server is ready on port ${requestedPort}`,port:requestedPort,lan_url:`http://${primaryIp}:${requestedPort}`,is_running:true});
+  } catch(error:any){
+    child?.kill();if(phpCliProcess===child)phpCliProcess=null;
+    return res.status(500).json({success:false,error:error.code==='EADDRINUSE'?'Port is already in use. Choose another port.':`Failed to start PHP CLI server: ${error.message}`,is_running:false});
+  } finally {phpCliStarting=false;}
 });
 
 app.post('/api/system/php-cli/stop', (_req: AuthRequest, res: Response) => {

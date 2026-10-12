@@ -30,7 +30,7 @@ Server စတင်ပြီးနောက် browser မှ **http://localhost
 
 Fresh installation တွင် Login → **New User Register — Create Admin Account** မှ အမည်၊ username၊ password နှင့် confirm password ဖြည့်ပါ။ ပထမဆုံး Admin ဖွင့်ပြီးနောက် Login မှ Register ကို ဖျောက်ထားမည်။ မူလ Admin password မလိုပါ။ Existing installation တွင် လက်ရှိ account ကို သုံးပါ။
 
-Admin ဝင်ပြီး **Settings** တွင် Shop Info၊ ဘာသာစကား၊ ငွေကြေး၊ payment channel နှင့် မိမိဆိုင်၏ payment QR ကို သတ်မှတ်ပါ။ **User Roles & Access** မှ staff account၊ role နှင့် account status ကို စီမံနိုင်သည်။ **Settings → Security** မှ recovery backup key ကို download လုပ်ပြီး သီးသန့်သိမ်းပါ။ Password recovery အောင်မြင်တိုင်း key အသစ်ကို ပြန်သိမ်းရန်လိုသည်။
+Admin ဝင်ပြီး **Settings** တွင် Shop Info၊ ဘာသာစကား၊ ငွေကြေး၊ payment channel နှင့် မိမိဆိုင်၏ payment QR ကို သတ်မှတ်ပါ။ **Account Management** မှ staff account၊ role နှင့် account status ကို စီမံနိုင်သည်။ **Settings → Security** မှ recovery backup key ကို download လုပ်ပြီး သီးသန့်သိမ်းပါ။ Password recovery အောင်မြင်တိုင်း key အသစ်ကို ပြန်သိမ်းရန်လိုသည်။
 
 ### 4. LAN မှ အသုံးပြုခြင်း
 
@@ -66,7 +66,7 @@ Open **http://localhost:3000**. Keep the server terminal open; press `Ctrl+C` to
 
 On a fresh installation, create your own administrator using **New User Register — Create Admin Account** on Login. Registration disappears after first setup. Existing installations retain their configured administrator accounts.
 
-Set shop details, language, accounting currency and your actual payment channels/QR images in **Settings**. Manage staff roles and account status in **User Roles & Access**. Download your installation's recovery backup key from **Settings → Security** and store it privately. Successful password recovery rotates the key; save the replacement backup.
+Set shop details, language, accounting currency and your actual payment channels/QR images in **Settings**. Manage staff roles and account status in **Account Management**. Download your installation's recovery backup key from **Settings → Security** and store it privately. Successful password recovery rotates the key; save the replacement backup.
 
 ### LAN and custom port
 
@@ -115,3 +115,11 @@ For missing packages such as `html2canvas`, run `npm ci` and rebuild from the pr
 ## License
 
 FixFlow is distributed under the [MIT License](LICENSE). Keep the copyright and license notice when redistributing the software.
+
+## Optional PHP CLI / LAN verification
+
+PHP CLI သည် ရွေးချယ်စရာဖြစ်ပြီး Node server ကို ပထမဆုံး ဖွင့်ထားရမည်။ Frontend ကို build ပြီး PHP ကို PATH တွင် ထည့်ထားပါ။ Settings → Local Network မှ PHP စတင်/ရပ်နိုင်သည်။ Backend custom port သုံးပါက PHP terminal တွင်လည်း `PORT` ကို ထိုတန်ဖိုးအတိုင်း သတ်မှတ်ပါ။
+
+Start Node first, build the frontend, and ensure PHP CLI is in PATH. Settings → Local Network can start and stop the PHP router. For a manually launched router, set `PORT` to the actual Node backend port in the PHP terminal before running `php -S 0.0.0.0:8080 router.php`. The router needs either PHP cURL or enabled HTTP stream support.
+
+With PHP CLI installed, run `npm run test:lan` to check actual routing, custom ports, bearer authentication, startup/stop, occupied-port handling and payment-profile persistence using temporary data. Physical device access still depends on your local Wi-Fi and firewall configuration.

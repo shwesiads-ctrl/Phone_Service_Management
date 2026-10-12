@@ -1,7 +1,7 @@
 import type { PaymentProfileSettings, PaymentMethodConfig, PaymentProfile } from '../types';
 export const defaultPaymentSettings: PaymentProfileSettings = {
-  mode: 'auto',
-  active_profile: 'thailand',
+  mode: 'manual',
+  active_profile: 'global',
   thailand: {
     methods: [
       {

@@ -1,25 +1,26 @@
-FixFlow 2.8.3 validation: TypeScript lint passed; frontend and server builds passed.
+FixFlow 2.8.4 verification: TypeScript lint passed; frontend and server builds passed.
+PHP CLI 8.4 tested with HTTP stream fallback and cURL. Physical LAN devices and Windows batch launcher require validation on the destination PC.
 
 
-> react-example@2.8.3 test
+> react-example@2.8.4 test
 > npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx && node --import tsx scripts/test-cashier-recovery.ts && node --import tsx scripts/test-recovery-store.ts && node scripts/run-notification-ui.cjs scripts/test-account-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-manual-currency-ui.tsx --real-context && node --import tsx scripts/test-china-profiles.ts && node scripts/run-notification-ui.cjs scripts/test-china-dashboard-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-pagination-ui.tsx && node --import tsx scripts/test-admin-register.ts && node scripts/run-notification-ui.cjs scripts/test-login-register-ui.tsx && node --import tsx scripts/test-first-admin.ts && node --import tsx scripts/test-security-roles.ts && node scripts/run-notification-ui.cjs scripts/test-user-access-ui.tsx
 
 
-> react-example@2.8.3 build
+> react-example@2.8.4 build
 > node scripts/check-release.cjs && vite build
 
-Release 2.8.3: About metadata, package versions and bilingual README checked.
+Release 2.8.4: About metadata, package versions and bilingual README checked.
 vite v8.3.4 building client environment for production...
 transforming...
 ✓ 1750 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/index.html                        2.34 kB │ gzip:   0.97 kB
-dist/assets/index-Bj2_wXlE.css        84.61 kB │ gzip:  13.11 kB
-dist/assets/html2canvas-Dgc5bzE3.js  199.45 kB │ gzip:  46.76 kB
-dist/assets/index-DMJsyX1k.js        909.80 kB │ gzip: 209.21 kB
+dist/assets/index-DHCg_Fy1.css        84.68 kB │ gzip:  13.11 kB
+dist/assets/html2canvas-CuAcIp45.js  199.45 kB │ gzip:  46.76 kB
+dist/assets/index-bF9nFTDe.js        913.33 kB │ gzip: 213.14 kB
 
-✓ built in 420ms
+✓ built in 354ms
 [plugin builtin:vite-reporter]
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
@@ -280,7 +281,10 @@ PASS: Technician never sees registration dialog
 PASS: About shows developer name and customization service
 PASS: Developer contacts use correct actionable links
 PASS: About includes current release and Myanmar update notes
-REGISTER UI SUMMARY: 13 PASSED
+PASS: About follows en
+PASS: About follows th
+PASS: About follows zh
+REGISTER UI SUMMARY: 16 PASSED
 PASS: Public API never exposes default passwords
 PASS: Unauthenticated demo creation blocked
 PASS: Technician demo creation blocked
@@ -602,6 +606,10 @@ npm notice To update run: npm install -g npm@12.2.0
 npm notice
 
 
+
+> react-example@2.8.4 test:cashier:browser
+> node scripts/test-cashier-browser.cjs
+
 PASS: Header search navigates and finds trimmed customer name
 PASS: Cashier Service Jobs render a page of 20
 PASS: Cashier second-page numbering continues at 21
@@ -622,4 +630,85 @@ PASS: First-admin form has four fields and no previous credentials
 PASS: Technicians use compact paginated rows
 PASS: Technician search finds matching name and resets pages
 PASS: Dashboard workload is a bounded table
-CASHIER BROWSER SUMMARY: 20 PASSED
+PASS: Cashier accounts use a compact paginated table
+PASS: Cashier account search finds the correct account
+PASS: Account management displays role-filtered cards
+PASS: Account editor opens as a side panel
+PASS: Top bar offers exactly four currencies
+PASS: Top-bar currency selection updates
+CASHIER BROWSER SUMMARY: 26 PASSED
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+
+PASS: PHP CLI is detected
+PASS: Network details use configured backend port
+PASS: PHP rejects Node port collision
+PASS: Occupied port returns failure rather than false success
+PASS: PHP reports ready only after actual backend health check
+PASS: PHP proxies custom-port backend
+PASS: PHP serves deep-link SPA
+PASS: PHP serves production JS asset
+PASS: PHP forwards POST body for login
+PASS: PHP forwards bearer Authorization
+PASS: PHP preserves backend rejection status
+PASS: Payment profile is persisted as manual through PHP
+PASS: PHP stop succeeds
+PASS: Network status becomes stopped
+PASS: PHP can restart
+PASS: Stopping Node also stops its PHP child
+PASS: Manual profile survives server restart
+PASS: Source database is unchanged
+PHP CLI & MANUAL PAYMENTS SUMMARY: 18 PASSED
+
+
+PASS: PHP CLI is detected
+PASS: Network details use configured backend port
+PASS: PHP rejects Node port collision
+PASS: Occupied port returns failure rather than false success
+PASS: PHP reports ready only after actual backend health check
+PASS: PHP proxies custom-port backend
+PASS: PHP serves deep-link SPA
+PASS: PHP serves production JS asset
+PASS: PHP forwards POST body for login
+PASS: PHP forwards bearer Authorization
+PASS: PHP preserves backend rejection status
+PASS: Payment profile is persisted as manual through PHP
+PASS: PHP stop succeeds
+PASS: Network status becomes stopped
+PASS: PHP can restart
+PASS: Stopping Node also stops its PHP child
+PASS: Manual profile survives server restart
+PASS: Source database is unchanged
+PHP CLI & MANUAL PAYMENTS SUMMARY: 18 PASSED
+
+
+
+> react-example@2.8.4 build
+> node scripts/check-release.cjs && vite build
+
+Release 2.8.4: About metadata, package versions and bilingual README checked.
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 1750 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                        2.34 kB │ gzip:   0.97 kB
+dist/assets/index-DHCg_Fy1.css        84.68 kB │ gzip:  13.11 kB
+dist/assets/html2canvas-unQdFb2g.js  199.45 kB │ gzip:  46.76 kB
+dist/assets/index-DEF-ys1Y.js        913.28 kB │ gzip: 213.12 kB
+
+✓ built in 349ms
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

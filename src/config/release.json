@@ -1,22 +1,30 @@
 {
-  "version": "2.8.3",
+  "version": "2.8.4",
   "date": "2026-10-12",
   "changes": {
     "my": [
-      "Dark / Light / System menu ပြင်ပြီး Login ကြိုးစားမှုကန့်သတ်ချက်၊ session ပြန်စစ်မှုနှင့် User Roles & Access စီမံခန့်ခွဲမှု ထည့်ထားသည်။",
-      "မူလ Admin login မပါဘဲ ပထမဆုံး မိမိ Admin အကောင့်ဖွင့်နိုင်သည်။ ဖွင့်ပြီးနောက် Login ပေါ်က Register ကို အလိုအလျောက် ဖျောက်ထားသည်။",
-      "Technician UI နှင့် Admin Dashboard workload ကို ကျစ်လျစ်သော table စာရင်းနှင့် responsive layout အဖြစ် ပြင်ထားသည်။",
-      "New User Register မှ Admin အကောင့်အသစ် ဖွင့်နိုင်ပြီး Technician / Cashier အမျိုးအစားများလည်း ရွေးချယ်နိုင်သည်။ အဟောင်း Quick Register entry ကို အစားထိုးထားသည်။",
-      "Developer ဆက်သွယ်ရန်၊ စိတ်ကြိုက်ပြင်ဆင်ပေးသည့် service နှင့် မြန်မာလမ်းညွှန် ထည့်ထားသည်။",
-      "Search၊ စာရင်း pagination၊ Receipt JPEG၊ Shop Settings၊ Cashier ID အတိုနှင့် Notifications ပြင်ဆင်မှုများ ပါဝင်သည်။"
+      "Payment Profile ကို ဘာသာစကားနှင့် မချိတ်ဘဲ စိတ်ကြိုက်ရွေးနိုင်ပြီး အပေါ်ဘားမှ ငွေကြေးရွေးနိုင်သည်။",
+      "Account Management ကို role filter ပါသော card ပုံစံပြောင်းပြီး Cashier Accounts List တွင် search၊ status filter နှင့် pagination ထည့်ထားသည်။",
+      "Settings ထဲမှ Technician Configuration နှင့် Technician စာမျက်နှာရှိ Demo User ခလုတ်များ ဖယ်ထားသည်။",
+      "PHP CLI စတင်မှုနှင့် LAN routing ကို ပြင်ဆင်စစ်ဆေးထားပြီး About ကို ဘာသာစကား လေးမျိုးဖြင့် ပြထားသည်။"
     ],
     "en": [
-      "Fixed Dark/Light/System menus, added failed-login limits, session checks and administrator User Roles & Access controls.",
-      "Create your own first administrator without a default admin login. Login registration closes and hides after setup.",
-      "Compact technician tables, search/status filters and responsive dashboard/workload layouts.",
-      "New User Register creates new administrator accounts, also supports technician/cashier roles, and replaces the old quick registration entry.",
-      "Updated developer contacts, customization services and Myanmar documentation.",
-      "Includes working search, list pagination, JPEG receipts, shop settings, short cashier codes and cashier notifications."
+      "Payment profiles are selected manually, independently of language; administrators can select currency in the top bar.",
+      "Redesigned Account Management with role-filtered cards and added a searchable, status-filtered, paginated Cashier Accounts List.",
+      "Removed duplicate technician configuration from Settings and demo-user controls from the technician page.",
+      "Verified and corrected PHP CLI startup and LAN routing; About supports all four interface languages."
+    ],
+    "th": [
+      "เลือกโปรไฟล์การชำระเงินเองโดยไม่ขึ้นกับภาษา ผู้ดูแลระบบเลือกสกุลเงินได้จากแถบด้านบน",
+      "ปรับการจัดการบัญชีเป็นการ์ดพร้อมตัวกรองบทบาท เพิ่มรายชื่อแคชเชียร์พร้อมค้นหา กรองสถานะ และแบ่งหน้า",
+      "นำการตั้งค่าช่างที่ซ้ำออกจากการตั้งค่า และนำปุ่มบัญชีสาธิตออกจากหน้าช่าง",
+      "ตรวจสอบและแก้ไขการเริ่ม PHP CLI และเส้นทาง LAN หน้าเกี่ยวกับรองรับทั้งสี่ภาษา"
+    ],
+    "zh": [
+      "支付配置由用户自行选择，不随语言变化；管理员可在顶部栏选择货币。",
+      "账户管理改为按角色筛选的卡片，并新增可搜索、按状态筛选和分页的收银员账户列表。",
+      "移除设置中重复的技师配置和技师页面的演示用户按钮。",
+      "检查并修复 PHP CLI 启动和局域网路由；关于页面支持全部四种界面语言。"
     ]
   }
 }
