@@ -1,13 +1,17 @@
 {
-  "version": "2.8.1",
+  "version": "2.8.2",
   "date": "2026-10-12",
   "changes": {
     "my": [
+      "မူလ Admin login မပါဘဲ ပထမဆုံး မိမိ Admin အကောင့်ဖွင့်နိုင်သည်။ ဖွင့်ပြီးနောက် Login ပေါ်က Register ကို အလိုအလျောက် ဖျောက်ထားသည်။",
+      "Technician UI နှင့် Admin Dashboard workload ကို ကျစ်လျစ်သော table စာရင်းနှင့် responsive layout အဖြစ် ပြင်ထားသည်။",
       "New User Register မှ Admin အကောင့်အသစ် ဖွင့်နိုင်ပြီး Technician / Cashier အမျိုးအစားများလည်း ရွေးချယ်နိုင်သည်။ အဟောင်း Quick Register entry ကို အစားထိုးထားသည်။",
       "Developer ဆက်သွယ်ရန်၊ စိတ်ကြိုက်ပြင်ဆင်ပေးသည့် service နှင့် မြန်မာလမ်းညွှန် ထည့်ထားသည်။",
       "Search၊ စာရင်း pagination၊ Receipt JPEG၊ Shop Settings၊ Cashier ID အတိုနှင့် Notifications ပြင်ဆင်မှုများ ပါဝင်သည်။"
     ],
     "en": [
+      "Create your own first administrator without a default admin login. Login registration closes and hides after setup.",
+      "Compact technician tables, search/status filters and responsive dashboard/workload layouts.",
       "New User Register creates new administrator accounts, also supports technician/cashier roles, and replaces the old quick registration entry.",
       "Updated developer contacts, customization services and Myanmar documentation.",
       "Includes working search, list pagination, JPEG receipts, shop settings, short cashier codes and cashier notifications."

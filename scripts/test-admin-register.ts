@@ -11,6 +11,7 @@ const root = process.cwd();
 const sourcePath = resolve('data/db.json');
 const original = readFileSync(sourcePath);
 const fixture = JSON.parse(original.toString());
+fixture.users.find((user:any)=>user.role==='admin').password='admin123';
 fixture.settings.telegramBot = { ...fixture.settings.telegramBot, enabled: false, bot_token: '' };
 const directory = mkdtempSync(join(tmpdir(), 'fixflow-test-'));
 const dbPath = join(directory, 'db.json');
@@ -83,6 +84,12 @@ try {
   await stop();await start();
   const resumed=(await api('/api/auth/login','POST',{username:registration.username,password:registration.password})).data;
   check('New admin persists after server restart',resumed.user.id===result.data.user.id&&resumed.user.role==='admin'&&Boolean(resumed.token));
+  const authorizing=(await api('/api/auth/login','POST',{username:'admin',password:'admin123'})).data.token;
+  const loginCreated=await api('/api/users/register','POST',{...registration,username:'login_created_admin'},authorizing);
+  check('Login-side authorization can create administrator',loginCreated.status===201&&loginCreated.data.user.role==='admin');
+  await api('/api/auth/logout','POST',{},authorizing);
+  check('Temporary authorizing session can be revoked',(await api('/api/auth/me','GET',undefined,authorizing)).status===401);
+  check('Created login-side administrator can sign in',(await api('/api/auth/login','POST',{username:'login_created_admin',password:registration.password})).status===200);
   check('Original source data stays unchanged',readFileSync(sourcePath).equals(original));
   console.log(`ADMIN REGISTRATION HTTP SUMMARY: ${passed} PASSED`);
 } finally {await stop();rmSync(directory,{recursive:true,force:true});}

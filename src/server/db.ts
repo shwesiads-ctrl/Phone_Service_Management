@@ -28,6 +28,7 @@ import {
 } from '../types';
 
 interface DatabaseSchema {
+  admin_setup_complete?: boolean;
   users: User[];
   technicians: Technician[];
   customers: Customer[];
@@ -73,13 +74,6 @@ const initialSeed: DatabaseSchema = {
     },
   ],
   users: [
-    {
-      id: 'USR-001',
-      username: 'admin',
-      full_name: 'Lead Workshop Administrator',
-      role: 'admin',
-      created_at: '2026-08-01T08:00:00Z',
-    },
     {
       id: 'USR-TECH-001',
       username: 'kyawzin',
@@ -776,6 +770,7 @@ class Database {
   constructor() {
     this.ensureDirectory();
     this.data = this.loadDatabase();
+    if (this.data.users.some(user => user.role === 'admin' && Boolean(user.password))) this.data.admin_setup_complete = true;
     if (this.ensureCashierCodes()) this.saveDatabase();
   }
 
@@ -1060,6 +1055,20 @@ class Database {
       seen.add(user.staff_code!);
     }
     return changed;
+  }
+
+  public isAdminSetupComplete(): boolean {
+    return this.data.admin_setup_complete === true || this.data.users.some(user => user.role === 'admin' && Boolean(user.password));
+  }
+  public setupFirstAdmin(input: {username:string;full_name:string;password:string}): User {
+    if(this.isAdminSetupComplete())throw new Error('Admin registration is already completed.');
+    const before=structuredClone(this.data);
+    try {
+      this.data.users=this.data.users.filter(user=>!(user.role==='admin'&&user.username==='admin'&&!user.password));
+      if(this.data.users.some(user=>user.username.toLowerCase()===input.username.toLowerCase()))throw new Error('Username is already in use.');
+      const user:User={...input,id:`USR-ADMIN-${randomUUID()}`,role:'admin',active:true,created_at:new Date().toISOString()};
+      this.data.users.push(user);this.data.admin_setup_complete=true;this.saveDatabase();return user;
+    }catch(error){this.data=before;throw error;}
   }
 
   public createAdmin(input: { username: string; full_name: string; password: string; phone?: string; email?: string }): User {
@@ -1735,6 +1744,7 @@ class Database {
 
     try {
       this.data = {
+        admin_setup_complete: safetyBackup.admin_setup_complete || this.isAdminSetupComplete() || backupData.admin_setup_complete,
         notifications: backupData.notifications || [],
         id_counters: Object.fromEntries(Object.keys({ ...safetyBackup.id_counters, ...backupData.id_counters }).map(key => [key, Math.max(safetyBackup.id_counters?.[key] || 0, backupData.id_counters?.[key] || 0)])),
         users: backupData.users || [],
@@ -1753,6 +1763,13 @@ class Database {
         settings: backupData.settings || initialSeed.settings,
       };
 
+      // Legacy snapshots without configured admin credentials retain the current owner.
+      if(this.data.admin_setup_complete && !this.data.users.some(user=>user.role==='admin'&&Boolean(user.password))) {
+        const owners:User[]=safetyBackup.users.filter((user:User)=>user.role==='admin'&&Boolean(user.password));
+        const others=this.data.users.filter(user=>user.role!=='admin');
+        if(owners.some(owner=>others.some(user=>user.id===owner.id || user.username.toLowerCase()===owner.username.toLowerCase())))throw new Error('Backup account conflicts with the configured administrator.');
+        this.data.users=[...others,...owners];
+      }
       this.ensureCashierCodes();
       this.saveDatabase();
       return { success: true };

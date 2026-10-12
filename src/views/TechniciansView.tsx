@@ -75,7 +75,13 @@ export const TechniciansView: React.FC = () => {
     }
   };
 
-  const page = usePagination(technicians);
+  const [techSearch,setTechSearch]=useState('');
+  const [techStatus,setTechStatus]=useState('all');
+  const filteredTechnicians=technicians.filter(tech=>
+    (techStatus==='all'||tech.status===techStatus)&&
+    [tech.full_name,tech.username,tech.phone,tech.email,tech.id,...(tech.specialization || [])].join(' ').toLowerCase().includes(techSearch.trim().toLowerCase())
+  );
+  const page = usePagination(filteredTechnicians,JSON.stringify([techSearch,techStatus]));
   const toggleSelectAll = () => {
     if (page.items.length > 0 && page.items.every(t => selectedTechIds.includes(t.id))) {
       setSelectedTechIds(previous => previous.filter(id => !page.items.some(t => t.id === id)));
@@ -298,174 +304,33 @@ export const TechniciansView: React.FC = () => {
         )}
       </div>
 
-      {/* Technician Cards Grid */}
-      <div className="flex flex-col gap-3" role="list">
-        {page.items.map((tech, rowIndex) => {
-          const isActive = tech.status === 'active';
-          const isSelected = selectedTechIds.includes(tech.id);
-          return (
-            <div
-              key={tech.id}
-              role="listitem"
-              className={`p-3 rounded-xl bg-[var(--surface)] border transition-all flex flex-col justify-between space-y-4 shadow-xs relative ${
-                isSelected
-                  ? 'border-[var(--primary)] ring-2 ring-[var(--primary)]/20 bg-[var(--primary)]/5'
-                  : isActive
-                  ? 'border-[var(--border)]'
-                  : 'border-dashed border-rose-500/40 opacity-80'
-              }`}
-            >
-              <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4">
-                {/* Header: Checkbox, ID, Avatar & Status */}
-                <div className="flex items-start justify-between gap-3"><span className="text-xs font-mono">#{page.offset + rowIndex + 1}</span>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleSelectTech(tech.id)}
-                      className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
-                    />
-                    <div className="w-12 h-12 rounded-full border border-[var(--border)] overflow-hidden bg-[var(--surface-2)] flex items-center justify-center shrink-0">
-                      {tech.profile_photo ? (
-                        <img src={tech.profile_photo} alt={tech.full_name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-sm font-bold text-[var(--text)]">
-                          {tech.full_name.slice(0, 2).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--primary)] border border-[var(--border)]">
-                          {tech.id}
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-base text-[var(--text)] mt-1">
-                        {tech.full_name}
-                      </h3>
-                      <div className="text-xs text-[var(--text-muted)] font-mono">
-                        @{tech.username} {tech.is_demo && <span className="ml-2 text-amber-600 font-bold">DEMO</span>}
-                      </div>
-                    </div>
-                  </div>
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                      isActive
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                    }`}
-                  >
-                    {isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-
-                {/* Details */}
-                <div className="space-y-2 text-xs text-[var(--text-muted)]">
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-3.5 h-3.5 shrink-0 text-slate-400" />
-                    <span className="font-mono text-[var(--text)]">{tech.phone || 'No phone'}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5 shrink-0 text-slate-400" />
-                    <span className="truncate">{tech.email || 'No email'}</span>
-                  </div>
-
-                  {tech.address && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400" />
-                      <span className="truncate">{tech.address}</span>
-                    </div>
-                  )}
-
-                  {/* Specializations */}
-                  {tech.specialization && tech.specialization.length > 0 && (
-                    <div className="pt-2 border-t border-[var(--border)]">
-                      <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">
-                        Specializations:
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {tech.specialization.map((spec, i) => (
-                          <span
-                            key={i}
-                            className="px-2 py-0.5 rounded text-[10px] bg-[var(--surface-2)] text-[var(--text)] border border-[var(--border)]"
-                          >
-                            {spec}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Actions Footer */}
-              <div className="pt-3 border-t border-[var(--border)] space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <button
-                    onClick={() => setPasswordModalTech(tech)}
-                    className="flex items-center gap-1 text-[var(--primary)] hover:underline font-semibold cursor-pointer"
-                  >
-                    <Key className="w-3.5 h-3.5" />
-                    <span>{t('resetPassword')}</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleToggleStatus(tech)}
-                    className={`flex items-center gap-1 text-xs font-semibold cursor-pointer ${
-                      isActive ? 'text-rose-600 hover:underline' : 'text-emerald-600 hover:underline'
-                    }`}
-                  >
-                    <Power className="w-3.5 h-3.5" />
-                    <span>{isActive ? t('disableTech') : t('enableTech')}</span>
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => loginAs(tech.username)}
-                      className="px-2.5 py-1 text-[11px] font-bold rounded bg-[var(--surface-2)] hover:bg-[var(--primary)] hover:text-white transition-colors cursor-pointer flex items-center gap-1"
-                      title="Switch session to this technician"
-                    >
-                      <UserCheck className="w-3 h-3" />
-                      <span>@{tech.username}</span>
-                    </button>
-
-                    <button
-                      onClick={() => setIdCardModalTech(tech)}
-                      className="px-2.5 py-1 text-[11px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white transition-colors cursor-pointer flex items-center gap-1 border border-blue-500/20"
-                      title="Generate Technician ID Card"
-                    >
-                      <CreditCard className="w-3 h-3" />
-                      <span>ID Card</span>
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => openEditModal(tech)}
-                      className="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
-                      title={t('edit')}
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTech(tech)}
-                      className="p-1.5 rounded hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-600 transition-colors cursor-pointer"
-                      title="Delete Technician"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+      <div className="flex flex-wrap gap-3 items-center">
+        <input aria-label="Search technicians" placeholder={language==='my'?'Technician အမည်၊ ဖုန်း၊ ID ရှာရန်…':'Search name, username, phone or ID…'} value={techSearch} onChange={e=>setTechSearch(e.target.value)} className="flex-1 min-w-48 px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface)]"/>
+        <select aria-label="Technician status" value={techStatus} onChange={e=>setTechStatus(e.target.value)} className="px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface)]"><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+        <span className="text-xs text-[var(--text-muted)]">{filteredTechnicians.length} / {technicians.length} technicians</span>
+      </div>
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
+        <div className="overflow-x-auto"><table aria-label="Technician accounts" className="w-full min-w-[850px] text-left text-xs">
+          <thead className="bg-[var(--surface-2)] text-[var(--text-muted)]"><tr><th className="p-3">#</th><th className="p-3">Select</th><th className="p-3">Technician / ID</th><th className="p-3">Contact</th><th className="p-3">Specializations</th><th className="p-3">Status</th><th className="p-3 text-right">Actions</th></tr></thead>
+          <tbody className="divide-y divide-[var(--border)]">{page.items.map((tech,rowIndex)=><tr key={tech.id} className={selectedTechIds.includes(tech.id)?'bg-[var(--primary)]/10':'hover:bg-[var(--surface-2)]/40'}>
+            <td className="p-3 font-mono text-[var(--text-muted)]">{page.offset+rowIndex+1}</td>
+            <td className="p-3"><input aria-label={`Select ${tech.full_name}`} type="checkbox" checked={selectedTechIds.includes(tech.id)} onChange={()=>toggleSelectTech(tech.id)}/></td>
+            <td className="p-3"><div className="flex gap-2 items-center">{tech.profile_photo?<img src={tech.profile_photo} alt={tech.full_name} className="w-9 h-9 shrink-0 rounded-full object-cover"/>:<span className="w-9 h-9 shrink-0 rounded-full bg-[var(--surface-2)] flex items-center justify-center font-bold">{tech.full_name.slice(0,2).toUpperCase()}</span>}<div><p className="font-bold text-sm">{tech.full_name}</p><p className="font-mono text-[10px] text-[var(--text-muted)]">{tech.id} · @{tech.username}{tech.is_demo?' · DEMO':''}</p></div></div></td>
+            <td className="p-3 max-w-52"><p className="font-mono whitespace-nowrap">{tech.phone || '—'}</p><p title={tech.email} className="truncate text-[var(--text-muted)]">{tech.email}</p><p title={tech.address} className="truncate text-[10px] text-[var(--text-muted)]">{tech.address}</p></td>
+            <td className="p-3 max-w-48"><p title={(tech.specialization || []).join(', ')} className="line-clamp-2 text-[var(--text-muted)]">{(tech.specialization || []).join(', ') || '—'}</p></td>
+            <td className="p-3"><span className={`px-2 py-1 rounded text-[10px] font-bold ${tech.status==='active'?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500'}`}>{tech.status}</span></td>
+            <td className="p-3"><div className="flex items-center gap-1 justify-end whitespace-nowrap">
+              <button title="Reset password" aria-label={`Reset password for ${tech.full_name}`} onClick={()=>setPasswordModalTech(tech)} className="p-2 rounded hover:bg-[var(--surface-2)] text-blue-500"><Key size={15}/></button>
+              <button title={tech.status==='active'?'Disable technician':'Enable technician'} aria-label={`Toggle status for ${tech.full_name}`} onClick={()=>handleToggleStatus(tech)} className="p-2 rounded hover:bg-[var(--surface-2)] text-amber-500"><Power size={15}/></button>
+              <button title="Generate Technician ID Card" aria-label={`ID card for ${tech.full_name}`} onClick={()=>setIdCardModalTech(tech)} className="p-2 rounded hover:bg-[var(--surface-2)] text-blue-500"><CreditCard size={15}/></button>
+              <button title="Switch session to this technician" aria-label={`Switch to ${tech.full_name}`} onClick={()=>loginAs(tech.username)} className="p-2 rounded hover:bg-[var(--surface-2)]"><UserCheck size={15}/></button>
+              <button title="Edit technician" aria-label={`Edit ${tech.full_name}`} onClick={()=>openEditModal(tech)} className="p-2 rounded hover:bg-[var(--surface-2)]"><Edit2 size={15}/></button>
+              <button title="Delete Technician" aria-label={`Delete ${tech.full_name}`} onClick={()=>handleDeleteTech(tech)} className="p-2 rounded hover:bg-rose-500/10 text-rose-500"><Trash2 size={15}/></button>
+            </div></td>
+          </tr>)}{page.total===0&&<tr><td colSpan={7} className="p-8 text-center text-[var(--text-muted)]">No technicians match these filters.</td></tr>}</tbody>
+        </table></div><Pagination {...page}/>
       </div>
 
-      <Pagination {...page} />
       {/* Register / Edit Technician Modal */}
       {registerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">

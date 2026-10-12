@@ -6,11 +6,15 @@ The published package excludes saved Telegram credentials. Re-enter your bot tok
 
 Staff registration and Telegram Bot settings are available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
 
-## မြန်မာလမ်းညွှန် — Version 2.8.1
+## မြန်မာလမ်းညွှန် — Version 2.8.2
 
 FixFlow သည် ဖုန်းနှင့် စက်ပစ္စည်းပြုပြင်ရေးဆိုင်အတွက် Service Job၊ Customer၊ Device၊ Technician၊ Cashier၊ ငွေလက်ခံခြင်းနှင့် Report များကို စီမံနိုင်သည့် Local / LAN စနစ်ဖြစ်ပါသည်။
 
-**New Admin Account ဖွင့်ရန်:** လက်ရှိ Admin ဖြင့် Login ဝင်ပြီး အပေါ်ညာဘက် အကောင့် menu → **New User Register** ကို ဖွင့်ပါ။ Account role ကို **Admin** ရွေးပြီး အမည်၊ username၊ password နှင့် confirm password ဖြည့်ပါ။ Technician / Cashier အကောင့်များအတွက်လည်း သက်ဆိုင်ရာ role ကို ရွေးနိုင်သည်။ အဟောင်း Quick Register entry ကို ဖျောက်ထားပြီး လက်ရှိအကောင့်များကို ဆက်လက်အသုံးပြုနိုင်သည်။
+**ပထမဆုံး Admin Account ဖွင့်ရန်:** မူလ Admin account ဖြင့် ဝင်စရာမလိုပါ။ Login စာမျက်နှာရှိ **New User Register — Admin အကောင့်အသစ်** ကို နှိပ်ပြီး မိမိအမည်၊ username၊ password နှင့် confirm password ဖြည့်ပါ။ ဖွင့်ပြီးတာနဲ့ Register နေရာကို ဖျောက်ထားမည်။ နောက်ထပ်ဖွင့်ခြင်းနှင့် server restart ပြီးနောက်တွင်လည်း Login မှ Register ထပ်မပေါ်တော့ပါ။ ယခင်သတ်မှတ်ထားပြီးသော Admin အကောင့်များကို ဆက်လက်အသုံးပြုနိုင်သည်။
+
+Technician စာရင်းကို compact table၊ search၊ status filter၊ pagination နှင့် action ခလုတ်များဖြင့် ပြန်စီထားသည်။ Admin Dashboard summary card နှင့် workload table ကို screen အရွယ်အစားနှင့် ကိုက်ညီအောင် ပြင်ထားသည်။
+
+**Login ဝင်ပြီး Admin menu မှဖွင့်ရန်:** လက်ရှိ Admin ဖြင့် Login ဝင်ပြီး အပေါ်ညာဘက် အကောင့် menu → **New User Register** ကို ဖွင့်ပါ။ Account role ကို **Admin** ရွေးပြီး အမည်၊ username၊ password နှင့် confirm password ဖြည့်ပါ။ Technician / Cashier အကောင့်များအတွက်လည်း သက်ဆိုင်ရာ role ကို ရွေးနိုင်သည်။ အဟောင်း Quick Register entry ကို ဖျောက်ထားပြီး လက်ရှိအကောင့်များကို ဆက်လက်အသုံးပြုနိုင်သည်။
 
 **Developer:** MyominAung · [Telegram @kominit](https://t.me/kominit) · [Email](mailto:shwetaythan@gmail.com) · [WhatsApp 09256060722](https://wa.me/959256060722)
 
@@ -20,9 +24,13 @@ FixFlow သည် ဖုန်းနှင့် စက်ပစ္စည်း�
 
 **တပ်ဆင်ရန်:** Node.js 22.12 နှင့်အထက်ဖြင့် `npm ci` → `npm run build` → `npm run start:production` လုပ်ပါ။ Update မလုပ်မီ backup သိမ်းပြီး မူလ `data/` နှင့် ၎င်းအတွင်းရှိ `.security/` ကို ထိန်းထားပါ။ Recovery အောင်မြင်တိုင်း key အသစ်ပြောင်းသောကြောင့် key အသစ်ကို ထပ်သိမ်းရန်လိုသည်။
 
-## Version 2.8.1 — Accounts and developer services
+## Version 2.8.2 — Accounts and developer services
 
-An existing administrator can create a **new Admin account** from the account menu → **New User Register**, using a unique username and confirmed password of at least eight characters. Technician and cashier roles are also available. The old Quick User Register entry is hidden; existing accounts remain available.
+A fresh installation offers **New User Register — Create Admin Account** on Login. Create the first administrator with your own name, username and confirmed password; no previous/default administrator credentials are needed. Registration closes on the server and hides from Login immediately after creation, including after restart. Existing configured administrator accounts are preserved. Login registration also stays closed after restoring older backups from a configured installation.
+
+Technician management now uses a compact paginated table with name/contact/ID search, status filters and inline actions. Dashboard cards adapt to screen width, and technician workloads use a compact paginated table with clickable filtering.
+
+An existing administrator can also create a **new Admin account** from the account menu → **New User Register**, using a unique username and confirmed password of at least eight characters. Technician and cashier roles are also available. The old Quick User Register entry is hidden; existing accounts remain available.
 
 Developer: **MyominAung** · [Telegram @kominit](https://t.me/kominit) · [shwetaythan@gmail.com](mailto:shwetaythan@gmail.com) · [WhatsApp 09256060722](https://wa.me/959256060722). Contact the developer for custom features, UI/receipt/card layouts, payment channels, reports, LAN setup and usage support.
 
@@ -42,7 +50,7 @@ Open http://localhost:3000. Other devices on the same LAN use the host computer'
 
 For development, use `npm run dev`. Use `PORT` to override port 3000. PHP forwarding inherits `PORT` when started by the Node server.
 
-Existing accounts and passwords are preserved. Default credential hints have been removed from the interface and public API. After installing this revision, sign in again: old user-ID-based sessions are no longer accepted. Sessions expire after 12 hours and on server restart.
+Existing configured accounts and passwords are preserved. The unconfigured default administrator is replaced when first setup completes. Default credential hints have been removed from the interface and public API. After installing this revision, sign in again: old user-ID-based sessions are no longer accepted. Sessions expire after 12 hours and on server restart.
 
 ## Verify
 

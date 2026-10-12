@@ -1,0 +1,28 @@
+import React,{act} from 'react';
+import assert from 'node:assert/strict';
+import {JSDOM} from 'jsdom';
+import {LoginView} from '../src/components/LoginView';
+(async()=>{
+ const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost'});
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,HTMLElement:dom.window.HTMLElement,IS_REACT_ACT_ENVIRONMENT:true});
+ const {createRoot}=require('react-dom/client');const root=createRoot(document.getElementById('root')!);
+ let login:any,requests:any[]=[],available=true,failed=false;
+ (globalThis as any).__testApp={language:'en',t:(key:string)=>key,login:async(username:string,password:string)=>{login={username,password};return false;}};
+ globalThis.fetch=async(path:any,options:any)=>{requests.push({path,options});if(path==='/api/auth/setup-status')return new Response(JSON.stringify({registration_open:available}));if(!failed)available=false;return new Response(JSON.stringify(failed?{error:'Could not save account'}:{user:{username:'my_new_admin'}}),{status:failed?500:201});};
+ const click=async(label:string)=>act(async()=>Array.from(document.querySelectorAll('button')).find(button=>button.textContent===label)!.dispatchEvent(new dom.window.MouseEvent('click',{bubbles:true})));
+ const fill=async(input:HTMLInputElement,value:string)=>act(async()=>{Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype,'value')!.set!.call(input,value);input.dispatchEvent(new dom.window.Event('input',{bubbles:true}));});
+ const submit=()=>act(async()=>document.querySelector('form')!.dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true})));
+ const check=(name:string,value:any)=>{assert.ok(value,name);console.log('PASS: '+name);};
+ await act(async()=>root.render(<LoginView/>));check('Fresh Login exposes registration after setup status loads',Boolean(document.querySelector('[aria-label="New User Register"]')));
+ await click('New User Register — Create Admin Account');check('First admin creation asks only new account details',document.querySelectorAll('input').length===4&&!document.body.textContent!.includes('Existing administrator'));
+ const details=async()=>{for(const [i,value] of ['My Admin','my_new_admin','NewAdmin123!','NewAdmin123!'].entries())await fill(document.querySelectorAll('input')[i],value);};
+ requests=[];await details();await fill(document.querySelector('[aria-label="Confirm new password"]')!,'Mismatch123!');await submit();check('Confirmation mismatch blocks setup request',requests.length===0);
+ failed=true;await details();await submit();check('Failed save keeps registration form usable',document.querySelector('[role=alert]')!.textContent!.includes('Could not save')&&!document.querySelector('button')!.disabled);
+ failed=false;requests=[];await details();await submit();check('Creation sends first-admin request without existing credentials',requests[0].path==='/api/auth/setup-admin'&&!JSON.parse(requests[0].options.body).admin_password);
+ check('Successful creation hides registration and pre-fills new login username',!document.querySelector('[aria-label="New User Register"]')&&(document.querySelector('input[type=text]') as HTMLInputElement).value==='my_new_admin');
+ await fill(document.querySelector('input[type=password]')!,'NewAdmin123!');await submit();check('New administrator can submit login credentials',login.username==='my_new_admin');
+ await act(async()=>root.render(<LoginView key="reload"/>));check('Registration stays hidden after reloading configured installation',!document.querySelector('[aria-label="New User Register"]'));
+ available=true;await act(async()=>window.dispatchEvent(new dom.window.Event('focus')));check('Focus refresh can discover fresh installation status',Boolean(document.querySelector('[aria-label="New User Register"]')));
+ available=false;await act(async()=>window.dispatchEvent(new dom.window.Event('focus')));check('Other-client setup completion hides registration',!document.querySelector('[aria-label="New User Register"]'));
+ await act(async()=>root.unmount());dom.window.close();console.log('FIRST ADMIN UI SUMMARY: 10 PASSED');
+})().catch(error=>{console.error(error);process.exitCode=1;});

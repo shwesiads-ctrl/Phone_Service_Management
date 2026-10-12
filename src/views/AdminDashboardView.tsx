@@ -1,3 +1,5 @@
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/Pagination';
 import { getCurrencySymbol } from '../utils/formatters';
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
@@ -143,6 +145,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     });
   }, [technicians, jobs]);
 
+  const workloadPage=usePagination(technicianWorkloads);
+
   // 4. RECENT SERVICE JOBS
   const filteredRecentJobs = useMemo(() => {
     let list = [...jobs];
@@ -229,16 +233,14 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       {/* ============================================================ */}
       {/* HEADER SECTION */}
       {/* ============================================================ */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
               <Shield className="w-3.5 h-3.5" />
               <span>Admin Dashboard</span>
             </span>
-            <span className="text-xs text-[var(--text-muted)] font-mono">
-              Route: <code className="text-blue-500 font-bold">/admin/dashboard</code>
-            </span>
+
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-[var(--text)] tracking-tight mt-1.5">
@@ -288,7 +290,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <span>{t('quickActions')} (Admin Operations)</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8 gap-2.5">
           <button
             type="button"
             onClick={onNewJob}
@@ -382,9 +384,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <span className="text-[11px] font-normal lowercase font-mono">Live counts across all benches</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
           {/* 1. Total Service Jobs */}
-          <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-[var(--primary)] transition-all">
+          <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-[var(--primary)] transition-all">
             <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               {t('totalServiceJobs')}
             </div>
@@ -397,7 +399,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
 
           {/* 2. Today's Services */}
-          <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-blue-500 transition-all">
+          <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-blue-500 transition-all">
             <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               {t('todaysServices')}
             </div>
@@ -410,7 +412,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
 
           {/* 3. Pending Services */}
-          <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-amber-500 transition-all">
+          <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-amber-500 transition-all">
             <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               {t('pendingServices')}
             </div>
@@ -423,7 +425,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
 
           {/* 4. Repairing */}
-          <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-indigo-500 transition-all">
+          <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-indigo-500 transition-all">
             <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               {t('repairing')}
             </div>
@@ -436,7 +438,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
 
           {/* 5. Ready */}
-          <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-emerald-500 transition-all">
+          <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-emerald-500 transition-all">
             <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               {t('ready')}
             </div>
@@ -449,7 +451,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
 
           {/* 6. Completed */}
-          <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-teal-500 transition-all">
+          <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-teal-500 transition-all">
             <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               {t('completed')}
             </div>
@@ -462,7 +464,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
 
           {/* 7. Delivered */}
-          <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-purple-500 transition-all">
+          <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs relative overflow-hidden group hover:border-purple-500 transition-all">
             <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               {t('delivered')}
             </div>
@@ -481,7 +483,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       {/* Show each Technician: Technician Name, Assigned Jobs, Repairing, Ready, Completed */}
       {/* Allow Admin to click a Technician and view their jobs. */}
       {/* ============================================================ */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-4">
+      <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-[var(--text)] flex items-center gap-2">
@@ -504,86 +506,19 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {technicianWorkloads.map(({ technician, assigned, repairing, ready, completed }) => {
-            const isSelected = selectedTechFilter === technician.id;
-
-            return (
-              <div
-                key={technician.id}
-                onClick={() => {
-                  setSelectedTechFilter(isSelected ? null : technician.id);
-                }}
-                className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                  isSelected
-                    ? 'border-[var(--primary)] bg-[var(--primary)]/5 shadow-md ring-2 ring-[var(--primary)]/30'
-                    : 'border-[var(--border)] bg-[var(--surface-2)]/40 hover:bg-[var(--surface-2)] hover:border-slate-400/40'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm">
-                      {technician.full_name.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <div className="font-bold text-sm text-[var(--text)] flex items-center gap-1.5">
-                        <span>{technician.full_name}</span>
-                        {isSelected && (
-                          <span className="px-1.5 py-0.2 rounded text-[10px] font-black uppercase bg-[var(--primary)] text-white">
-                            Selected
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-[var(--text-muted)] font-mono">
-                        @{technician.username} · {technician.specialization || 'General Tech'}
-                      </div>
-                    </div>
-                  </div>
-
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded font-black uppercase ${
-                      technician.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        : 'bg-slate-500/10 text-slate-500'
-                    }`}
-                  >
-                    {technician.status}
-                  </span>
-                </div>
-
-                {/* Workload Metric Pills */}
-                <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-[var(--border)] text-center">
-                  <div className="p-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                    <div className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Assigned</div>
-                    <div className="text-base font-black font-mono text-[var(--text)] mt-0.5">{assigned}</div>
-                  </div>
-
-                  <div className="p-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                    <div className="text-[10px] uppercase font-bold text-indigo-500">Repairing</div>
-                    <div className="text-base font-black font-mono text-indigo-600 dark:text-indigo-400 mt-0.5">{repairing}</div>
-                  </div>
-
-                  <div className="p-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                    <div className="text-[10px] uppercase font-bold text-emerald-500">Ready</div>
-                    <div className="text-base font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">{ready}</div>
-                  </div>
-
-                  <div className="p-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                    <div className="text-[10px] uppercase font-bold text-blue-500">Done</div>
-                    <div className="text-base font-black font-mono text-blue-600 dark:text-blue-400 mt-0.5">{completed}</div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <div className="overflow-x-auto rounded-xl border border-[var(--border)]"><table aria-label="Dashboard technician workload" className="w-full min-w-[620px] text-xs text-left"><thead className="bg-[var(--surface-2)] text-[var(--text-muted)]"><tr><th className="p-3">Technician</th><th className="p-3">Status</th><th className="p-3 text-center">Assigned</th><th className="p-3 text-center">Repairing</th><th className="p-3 text-center">Ready</th><th className="p-3 text-center">Done</th></tr></thead><tbody className="divide-y divide-[var(--border)]">
+          {workloadPage.items.map(({technician,assigned,repairing,ready,completed})=><tr key={technician.id} className={selectedTechFilter===technician.id?'bg-[var(--primary)]/10':'hover:bg-[var(--surface-2)]/40'}>
+            <td className="p-3"><button aria-pressed={selectedTechFilter===technician.id} onClick={()=>setSelectedTechFilter(selectedTechFilter===technician.id?null:technician.id)} className="text-left"><b className="text-sm">{technician.full_name}</b><span className="block text-[10px] text-[var(--text-muted)]">@{technician.username} · {(technician.specialization || []).join(', ') || 'General Tech'}</span></button></td>
+            <td className="p-3"><span className={technician.status==='active'?'text-emerald-500':'text-[var(--text-muted)]'}>{technician.status}</span></td><td className="p-3 text-center font-mono font-bold">{assigned}</td><td className="p-3 text-center font-mono text-indigo-500">{repairing}</td><td className="p-3 text-center font-mono text-emerald-500">{ready}</td><td className="p-3 text-center font-mono text-blue-500">{completed}</td>
+          </tr>)}{!workloadPage.total&&<tr><td colSpan={6} className="p-6 text-center text-[var(--text-muted)]">No technicians registered yet.</td></tr>}
+        </tbody></table></div><Pagination {...workloadPage}/>
       </div>
 
       {/* ============================================================ */}
       {/* RECENT SERVICE JOBS SECTION */}
       {/* Show: Service Number, Customer, Phone, Technician, Status, Service Charge, Date */}
       {/* ============================================================ */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-4">
+      <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-[var(--text)] flex items-center gap-2">
@@ -702,7 +637,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       {/* Show: Today's Payments, Today's Outstanding Balance, Total Service Charges, Recent Payments */}
       {/* Use the selected currency. Do NOT perform currency conversion. */}
       {/* ============================================================ */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-5">
+      <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-5">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-[var(--text)] flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-emerald-500" />

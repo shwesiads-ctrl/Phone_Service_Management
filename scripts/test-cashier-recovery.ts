@@ -11,6 +11,7 @@ const root = process.cwd();
 const sourcePath = resolve('data/db.json');
 const original = readFileSync(sourcePath);
 const fixture = JSON.parse(original.toString());
+fixture.users.find((user:any)=>user.role==='admin').password='admin123';
 fixture.settings.telegramBot = { ...fixture.settings.telegramBot, enabled: false, bot_token: '' };
 const directory = mkdtempSync(join(tmpdir(), 'fixflow-test-'));
 const dbPath = join(directory, 'db.json');

@@ -87,7 +87,7 @@ app.use((req, res, next) => {
 
 app.use((req: AuthRequest, res: Response, next: NextFunction) => {
   authenticate(req, res, () => {
-    const publicPaths = ['/api/health', '/api/auth/login', '/api/auth/recover-password', '/api/auth/default-credentials', '/api/system/network-info'];
+    const publicPaths = ['/api/auth/setup-status', '/api/auth/setup-admin', '/api/health', '/api/auth/login', '/api/auth/recover-password', '/api/auth/default-credentials', '/api/system/network-info'];
     if (publicPaths.includes(req.path) || (req.method === 'GET' && req.path === '/api/license')) {
       return next();
     }
@@ -200,7 +200,18 @@ app.get('/api/auth/default-credentials', (_req, res) => {
   res.json({ credentials: [] });
 });
 
+app.get('/api/auth/setup-status', (_req,res)=>{res.setHeader('Cache-Control','no-store');res.json({registration_open:!db.isAdminSetupComplete()});});
+app.post('/api/auth/setup-admin', (req,res)=>{
+  if(db.isAdminSetupComplete())return res.status(409).json({error:'Admin registration is already completed.'});
+  const {full_name,username,password}=req.body;
+  if(typeof full_name!=='string'||!full_name.trim()||full_name.length>100||typeof username!=='string'||!/^[A-Za-z0-9_.-]{3,32}$/.test(username)||username.toLowerCase()==='tech1'||typeof password!=='string'||password.length<8||password.length>128)return res.status(400).json({error:'Enter a name, unique username and a password of at least 8 characters.'});
+  if(db.getUsers().some(user=>user.username.toLowerCase()===username.toLowerCase()&&!(user.role==='admin'&&user.username==='admin'&&!user.password)))return res.status(409).json({error:'Username is already in use.'});
+  try {const user=db.setupFirstAdmin({full_name:full_name.trim(),username,password:hashPassword(password)});return res.status(201).json({user});}
+  catch{return res.status(500).json({error:'Administrator account could not be saved. Try again.'});}
+});
+
 app.post('/api/auth/login', (req: AuthRequest, res: Response) => {
+  if(!db.isAdminSetupComplete())return res.status(409).json({error:'Create your administrator account first.'});
   const { username, password } = req.body;
   const ip = req.ip || '127.0.0.1';
 
@@ -217,6 +228,7 @@ app.post('/api/auth/login', (req: AuthRequest, res: Response) => {
     return res.status(401).json({ error: 'Invalid username or credentials' });
   }
 
+  if(user.role==='admin'&&!user.password)return res.status(401).json({error:'Administrator password is not configured. Use password recovery.'});
   if (user.active === false) return res.status(403).json({ error: 'Account is inactive.' });
   if (user.role === 'technician' && db.getTechnicianById(user.technician_id || '')?.status !== 'active') {
     return res.status(403).json({ error: 'Technician account is inactive.' });

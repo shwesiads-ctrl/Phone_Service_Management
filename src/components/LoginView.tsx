@@ -1,11 +1,17 @@
+import { RegisterAdminForm } from './RegisterAdminForm';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 import { accountLabels } from '../i18n/accountLabels';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Shield, Wrench, Lock, User as UserIcon, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const LoginView: React.FC = () => {
   const { login, t, language } = useApp();
+  const setupRequestVersion=useRef(0);
+  const [registrationAvailable,setRegistrationAvailable]=useState(false);
+  useEffect(()=>{let active=true;const refresh=async()=>{const version=++setupRequestVersion.current;try{const response=await fetch('/api/auth/setup-status',{cache:'no-store'});if(response.ok){const value=await response.json();if(active&&version===setupRequestVersion.current){setRegistrationAvailable(value.registration_open===true);if(!value.registration_open)setRegisterOpen(false);}}}catch{}};void refresh();window.addEventListener('focus',refresh);const timer=window.setInterval(refresh,15000);return()=>{active=false;clearInterval(timer);window.removeEventListener('focus',refresh);};},[]);
+  const [registerOpen,setRegisterOpen]=useState(false);
+  const [registered,setRegistered]=useState('');
   const [forgotOpen, setForgotOpen] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -51,7 +57,8 @@ export const LoginView: React.FC = () => {
           </p>
         </div>
 
-        {forgotOpen ? <ForgotPasswordForm language={language} onClose={() => setForgotOpen(false)} /> : <>
+        {registerOpen ? <RegisterAdminForm language={language} onClose={()=>setRegisterOpen(false)} onCreated={name=>{setupRequestVersion.current++;setRegistrationAvailable(false);setRegisterOpen(false);setRegistered(name);setUsername(name);setPassword('');}}/> : forgotOpen ? <ForgotPasswordForm language={language} onClose={() => setForgotOpen(false)} /> : <>
+        {registered && <p role="status" className="text-sm text-emerald-500">{language==='my'?'Admin အကောင့်ဖွင့်ပြီးပါပြီ။ Login ဝင်နိုင်ပါပြီ။':'Admin account created. Sign in with your new password.'} ({registered})</p>}
         {error && (
           <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2.5 animate-in fade-in">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -114,6 +121,7 @@ export const LoginView: React.FC = () => {
           </button>
         </form>
 
+        {registrationAvailable && <button type="button" aria-label="New User Register" onClick={()=>{setRegisterOpen(true);setError(null);setPassword('');setRegistered('');}} className="w-full py-2.5 rounded-lg border border-blue-500/40 text-blue-500 font-semibold">{language==='my'?'New User Register — Admin အကောင့်အသစ်':'New User Register — Create Admin Account'}</button>}
         <button type="button" onClick={() => {setForgotOpen(true);setError(null);setPassword('');}} className="w-full text-sm text-blue-500">{accountLabels(language).forgot}</button>
         </>}
       </div>
