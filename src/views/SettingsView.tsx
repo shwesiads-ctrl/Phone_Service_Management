@@ -1,3 +1,5 @@
+import release from '../config/release.json';
+import { DeveloperInfo } from '../components/DeveloperInfo';
 import { ShopSettings } from '../components/ShopSettings';
 import { RecoveryKeySettings } from '../components/RecoveryKeySettings';
 import React, { useState, useEffect } from 'react';
@@ -491,7 +493,7 @@ export const SettingsView: React.FC = () => {
   // Backup Export
   const handleExportBackup = () => {
     const fullBackup = {
-      version: '2.8.0',
+      version: release.version,
       timestamp: new Date().toISOString(),
       settings,
       jobs,
@@ -2679,36 +2681,7 @@ export const SettingsView: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Developer Info Card */}
-                <div className="p-5 rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-xl border border-blue-500/20">
-                      M
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-[var(--text)]">Myominaung</h4>
-                      <p className="text-xs text-[var(--text-muted)]">Lead Developer & Maintainer</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-2 border-t border-[var(--border)] text-xs">
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                      <span className="text-[var(--text-muted)]">Telegram:</span>
-                      <a href="https://t.me/kominit" target="_blank" rel="noopener noreferrer" className="font-mono font-bold text-[var(--primary)] hover:underline flex items-center gap-1">
-                        <span>@kominit</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                      <span className="text-[var(--text-muted)]">Email:</span>
-                      <a href="mailto:shwetaythan@gmail.com" className="font-mono font-bold text-[var(--primary)] hover:underline flex items-center gap-1">
-                        <span>shwetaythan@gmail.com</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
+                <DeveloperInfo />
 
                 {/* Donation Card (KPay) */}
                 <div className="p-5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-3">
@@ -2728,7 +2701,7 @@ export const SettingsView: React.FC = () => {
                       09256060722
                     </div>
                     <div className="text-xs font-semibold text-[var(--text)]">
-                      Name: Myominaung
+                      Name: MyominAung
                     </div>
                     <button
                       type="button"

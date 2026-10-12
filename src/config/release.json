@@ -1,0 +1,16 @@
+{
+  "version": "2.8.1",
+  "date": "2026-10-12",
+  "changes": {
+    "my": [
+      "New User Register မှ Admin အကောင့်အသစ် ဖွင့်နိုင်ပြီး Technician / Cashier အမျိုးအစားများလည်း ရွေးချယ်နိုင်သည်။ အဟောင်း Quick Register entry ကို အစားထိုးထားသည်။",
+      "Developer ဆက်သွယ်ရန်၊ စိတ်ကြိုက်ပြင်ဆင်ပေးသည့် service နှင့် မြန်မာလမ်းညွှန် ထည့်ထားသည်။",
+      "Search၊ စာရင်း pagination၊ Receipt JPEG၊ Shop Settings၊ Cashier ID အတိုနှင့် Notifications ပြင်ဆင်မှုများ ပါဝင်သည်။"
+    ],
+    "en": [
+      "New User Register creates new administrator accounts, also supports technician/cashier roles, and replaces the old quick registration entry.",
+      "Updated developer contacts, customization services and Myanmar documentation.",
+      "Includes working search, list pagination, JPEG receipts, shop settings, short cashier codes and cashier notifications."
+    ]
+  }
+}

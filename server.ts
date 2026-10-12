@@ -439,6 +439,23 @@ app.get('/api/technicians', (_req: AuthRequest, res: Response) => {
 });
 
 // Fast staff registration is deliberately administrator-only.
+app.post('/api/users/register', (req: AuthRequest, res: Response) => {
+  if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Only administrators can register accounts.' });
+  const {full_name,username,password,phone='',email='',role='admin'}=req.body;
+  if (typeof full_name!=='string' || !full_name.trim() || full_name.length>100 ||
+      typeof username!=='string' || !/^[A-Za-z0-9_.-]{3,32}$/.test(username) ||
+      typeof password!=='string' || password.length<8 || password.length>128 ||
+      typeof phone!=='string' || phone.length>50 || typeof email!=='string' || email.length>100 ||
+      !['admin','technician','cashier'].includes(role)) return res.status(400).json({ error:'Enter valid account details and an Admin, Technician or Cashier role.' });
+  if (username.toLowerCase()==='tech1' || db.getUsers().some(user=>user.username.toLowerCase()===username.toLowerCase())) return res.status(409).json({error:'Username is already in use.'});
+  const input={username,full_name:full_name.trim(),password:hashPassword(password),phone:phone.trim(),email:email.trim()};
+  const technician=role==='technician'?db.createTechnician({...input,address:'',status:'active',specialization:[]}):undefined;
+  const user=role==='admin'?db.createAdmin(input):role==='cashier'?db.createCashier(input):db.getUserByUsername(username)!;
+  db.recordAudit({user_id:req.user.id,username:req.user.username,action:'USER_REGISTERED',target_type:'auth',target_id:user.id,details:`Administrator registered ${role} account ${username}.`,ip_address:req.ip || ''});
+  return res.status(201).json({user,...(technician?{technician}:{})});
+});
+
+// Compatibility API for older clients; the old registration entry is hidden in the UI.
 app.post('/api/users/quick-register', (req: AuthRequest, res: Response) => {
   if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Only administrators can register users.' });
   const { full_name, username, password, phone = '' } = req.body;

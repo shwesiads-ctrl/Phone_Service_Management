@@ -1,3 +1,4 @@
+import release from '../config/release.json';
 import { accountLabels } from '../i18n/accountLabels';
 import React from 'react';
 import { useApp } from '../context/AppContext';
@@ -157,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
       {/* Footer System Info */}
       <div className="p-3 border-t border-[var(--border)] shrink-0 text-xs text-[var(--text-muted)] flex items-center justify-between">
         <span className="font-mono text-[11px]">Free Edition</span>
-        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">v2.8.0</span>
+        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">v{release.version}</span>
       </div>
     </div>
   );

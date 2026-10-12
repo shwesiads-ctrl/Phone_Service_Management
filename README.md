@@ -4,7 +4,29 @@
 
 The published package excludes saved Telegram credentials. Re-enter your bot token in Telegram Settings after installation.
 
-Quick technician registration and FREE Telegram Bot are now available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
+Staff registration and Telegram Bot settings are available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
+
+## မြန်မာလမ်းညွှန် — Version 2.8.1
+
+FixFlow သည် ဖုန်းနှင့် စက်ပစ္စည်းပြုပြင်ရေးဆိုင်အတွက် Service Job၊ Customer၊ Device၊ Technician၊ Cashier၊ ငွေလက်ခံခြင်းနှင့် Report များကို စီမံနိုင်သည့် Local / LAN စနစ်ဖြစ်ပါသည်။
+
+**New Admin Account ဖွင့်ရန်:** လက်ရှိ Admin ဖြင့် Login ဝင်ပြီး အပေါ်ညာဘက် အကောင့် menu → **New User Register** ကို ဖွင့်ပါ။ Account role ကို **Admin** ရွေးပြီး အမည်၊ username၊ password နှင့် confirm password ဖြည့်ပါ။ Technician / Cashier အကောင့်များအတွက်လည်း သက်ဆိုင်ရာ role ကို ရွေးနိုင်သည်။ အဟောင်း Quick Register entry ကို ဖျောက်ထားပြီး လက်ရှိအကောင့်များကို ဆက်လက်အသုံးပြုနိုင်သည်။
+
+**Developer:** MyominAung · [Telegram @kominit](https://t.me/kominit) · [Email](mailto:shwetaythan@gmail.com) · [WhatsApp 09256060722](https://wa.me/959256060722)
+
+ဆိုင်လုပ်ငန်းအလိုက် feature အသစ်ထည့်ခြင်း၊ UI / receipt / ID card ပုံစံပြင်ခြင်း၊ payment channel၊ report၊ LAN setup နှင့် အသုံးပြုနည်းအကူအညီအတွက် ဆက်သွယ်နိုင်ပါသည်။ လိုအပ်သည့်လုပ်ဆောင်ချက်နှင့် နမူနာပုံစံကို ပေးပို့ပြီး အသေးစိတ်ညှိနှိုင်းနိုင်သည်။
+
+လက်ရှိ version တွင် Search၊ နံပါတ်စဉ်ပါ pagination၊ Receipt JPEG Save၊ Shop Settings၊ Cashier ID အတိုနှင့် Notifications ပြင်ဆင်မှုများ ပါဝင်သည်။ ဘာသာစကားမှာ မြန်မာ / English / Thai / Chinese ဖြစ်ပြီး ငွေကြေးကို Ks / USD / THB / CNY မှ စိတ်ကြိုက်ရွေးနိုင်သည်။
+
+**တပ်ဆင်ရန်:** Node.js 22.12 နှင့်အထက်ဖြင့် `npm ci` → `npm run build` → `npm run start:production` လုပ်ပါ။ Update မလုပ်မီ backup သိမ်းပြီး မူလ `data/` နှင့် ၎င်းအတွင်းရှိ `.security/` ကို ထိန်းထားပါ။ Recovery အောင်မြင်တိုင်း key အသစ်ပြောင်းသောကြောင့် key အသစ်ကို ထပ်သိမ်းရန်လိုသည်။
+
+## Version 2.8.1 — Accounts and developer services
+
+An existing administrator can create a **new Admin account** from the account menu → **New User Register**, using a unique username and confirmed password of at least eight characters. Technician and cashier roles are also available. The old Quick User Register entry is hidden; existing accounts remain available.
+
+Developer: **MyominAung** · [Telegram @kominit](https://t.me/kominit) · [shwetaythan@gmail.com](mailto:shwetaythan@gmail.com) · [WhatsApp 09256060722](https://wa.me/959256060722). Contact the developer for custom features, UI/receipt/card layouts, payment channels, reports, LAN setup and usage support.
+
+About and the sidebar use shared release metadata. Every product upgrade must update that metadata, accurate About content and the Myanmar/English README notes; see [AGENTS.md](AGENTS.md).
 
 ## Start
 

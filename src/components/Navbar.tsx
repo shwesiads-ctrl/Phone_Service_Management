@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Language, Theme } from '../types';
 import { ProfileModal } from '../modals/ProfileModal';
-import { QuickUserRegisterModal } from '../modals/QuickUserRegisterModal';
+import { NewUserRegisterModal } from '../modals/NewUserRegisterModal';
 import { NotificationCenter } from './NotificationCenter';
 import type { ServiceJob } from '../types';
 import { ChangePasswordModal } from '../modals/ChangePasswordModal';
@@ -484,7 +484,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               </div>
 
-              {role === 'admin' && <button onClick={() => { setRegisterModalOpen(true); setUserDropdownOpen(false); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold hover:bg-[var(--surface-2)]"><UserCheck className="w-3.5 h-3.5" />{language === 'my' ? 'User အမြန် Register' : 'Quick user register'}</button>}
+              {role === 'admin' && <button onClick={() => { setRegisterModalOpen(true); setUserDropdownOpen(false); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold hover:bg-[var(--surface-2)]"><UserCheck className="w-3.5 h-3.5" />{language === 'my' ? 'User အသစ် Register' : 'New User Register'}</button>}
               <div className="border-t border-[var(--border)] mt-1 pt-1">
                 <button
                   onClick={() => {
@@ -502,7 +502,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {registerModalOpen && role === 'admin' && <QuickUserRegisterModal onClose={() => setRegisterModalOpen(false)} />}
+      {registerModalOpen && role === 'admin' && <NewUserRegisterModal onClose={() => setRegisterModalOpen(false)} />}
       {profileModalOpen && (
         <ProfileModal
           onClose={() => setProfileModalOpen(false)}

@@ -1062,8 +1062,13 @@ class Database {
     return changed;
   }
 
-  public createCashier(input: { username: string; full_name: string; password: string }): User {
-    const user: User = { staff_code: this.nextCashierCode(), id: `USR-CASH-${randomUUID()}`, username: input.username, full_name: input.full_name, password: input.password, role: 'cashier', active: true, created_at: new Date().toISOString() };
+  public createAdmin(input: { username: string; full_name: string; password: string; phone?: string; email?: string }): User {
+    const user: User = { ...input, id: `USR-ADMIN-${randomUUID()}`, role: 'admin', active: true, created_at: new Date().toISOString() };
+    this.data.users.push(user); this.saveDatabase(); return user;
+  }
+
+  public createCashier(input: { username: string; full_name: string; password: string; phone?: string; email?: string }): User {
+    const user: User = { ...input, staff_code: this.nextCashierCode(), id: `USR-CASH-${randomUUID()}`, username: input.username, full_name: input.full_name, password: input.password, role: 'cashier', active: true, created_at: new Date().toISOString() };
     this.data.users.push(user); this.saveDatabase(); return user;
   }
   public updateCashier(id: string, updates: Partial<User>): User | null {

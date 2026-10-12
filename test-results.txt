@@ -1,22 +1,23 @@
 
-> react-example@1.0.0 test
-> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx && node --import tsx scripts/test-cashier-recovery.ts && node --import tsx scripts/test-recovery-store.ts && node scripts/run-notification-ui.cjs scripts/test-account-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-manual-currency-ui.tsx --real-context && node --import tsx scripts/test-china-profiles.ts && node scripts/run-notification-ui.cjs scripts/test-china-dashboard-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-pagination-ui.tsx
+> react-example@2.8.1 test
+> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx && node --import tsx scripts/test-cashier-recovery.ts && node --import tsx scripts/test-recovery-store.ts && node scripts/run-notification-ui.cjs scripts/test-account-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-manual-currency-ui.tsx --real-context && node --import tsx scripts/test-china-profiles.ts && node scripts/run-notification-ui.cjs scripts/test-china-dashboard-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-pagination-ui.tsx && node --import tsx scripts/test-admin-register.ts
 
 
-> react-example@1.0.0 build
-> vite build
+> react-example@2.8.1 build
+> node scripts/check-release.cjs && vite build
 
+Release 2.8.1: About metadata, package versions and bilingual README checked.
 vite v8.3.4 building client environment for production...
 transforming...
-✓ 1745 modules transformed.
+✓ 1748 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/index.html                        2.25 kB │ gzip:   0.94 kB
-dist/assets/index-DT65xz44.css        84.19 kB │ gzip:  13.08 kB
-dist/assets/html2canvas-B8DdhEWb.js  199.45 kB │ gzip:  46.76 kB
-dist/assets/index-Bw-ig1fC.js        893.30 kB │ gzip: 204.36 kB
+dist/assets/index-Debr1Fya.css        84.22 kB │ gzip:  13.09 kB
+dist/assets/html2canvas-BKWRnbRS.js  199.45 kB │ gzip:  46.76 kB
+dist/assets/index-VYlHjGEC.js        897.84 kB │ gzip: 205.78 kB
 
-✓ built in 372ms
+✓ built in 386ms
 [plugin builtin:vite-reporter] 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
@@ -265,14 +266,16 @@ PASS: Webhook conflict explains manual Chat ID option
 PASS: Telegram error descriptions redact tokens
 TELEGRAM UNIT SUMMARY: 9 PASSED
 PASS: Register dialog opens with name focus
+PASS: New registration defaults to Admin role
 PASS: Password field requires eight characters and hides input
+PASS: Mismatched confirmation blocks account creation
 PASS: Register submits real form values with authentication
-PASS: Successful registration refreshes staff and clears password
+PASS: Admin registration clears passwords without creating technician record
 PASS: Registration failure is visible and permits retry
 PASS: Escape closes registration
-PASS: Quick register has Myanmar labels
+PASS: New register has Myanmar labels
 PASS: Technician never sees registration dialog
-REGISTER UI SUMMARY: 8 PASSED
+REGISTER UI SUMMARY: 10 PASSED
 PASS: Public API never exposes default passwords
 PASS: Unauthenticated demo creation blocked
 PASS: Technician demo creation blocked
@@ -505,6 +508,24 @@ PASS: Receipt uses payment and intake names rather than current viewer
 PASS: Receipt offers JPEG save and accurate balance
 PASS: Deleted payments are excluded from receipt
 Pagination UI checks passed.
+PASS: Public cannot register administrator
+PASS: Technician cannot register administrator
+PASS: Weak administrator password rejected
+PASS: Unsupported role rejected
+PASS: Administrator creates new admin account
+PASS: Admin registration does not create technician records
+PASS: Registration response excludes password
+PASS: Admin account stores hashed password
+PASS: Duplicate username rejected regardless of case
+PASS: New administrator can sign in
+PASS: New administrator has admin settings permissions
+PASS: New form can register cashier with short code
+PASS: Cashier cannot create admin accounts
+PASS: New form can register linked technician account
+PASS: New registration appears in administrator audit
+PASS: New admin persists after server restart
+PASS: Original source data stays unchanged
+ADMIN REGISTRATION HTTP SUMMARY: 17 PASSED
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.0
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
@@ -528,6 +549,7 @@ PASS: Cashier card contains short code and complete workshop contact fields
 PASS: Login omits default password information
 CASHIER BROWSER SUMMARY: 15 PASSED
 
-Additional validation: npm run lint and npm run desktop:build-server passed.
-JPEG downloads were decoded in real headless Chromium at A4 and 80mm widths.
-Physical printer and Windows installer execution were not exercised.
+Additional checks: npm run lint and npm run desktop:build-server passed.
+Targeted New Register/About interaction checks: 13 passed, including developer contacts and Myanmar release notes.
+Release 2.8.1 metadata/package/README consistency checked by the production build.
+Physical Windows installer and printer hardware were not exercised.
