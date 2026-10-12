@@ -13,7 +13,7 @@ import {readFileSync} from 'node:fs';
  Object.assign(globalThis,{window:dom.window,document:dom.window.document,HTMLElement:dom.window.HTMLElement,FileReader:dom.window.FileReader,IS_REACT_ACT_ENVIRONMENT:true});
  const {createRoot}=require('react-dom/client');const root=createRoot(document.getElementById('root')!);
  const photo='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAFElEQVR4nGM0qfrGAANMDEgANwcAUkoBrCJhFKAAAAAASUVORK5CYII=';
- const settings:any={...JSON.parse(readFileSync('data/db.json','utf8')).settings,paymentSettings:defaultPaymentSettings};
+ const settings:any={...JSON.parse(readFileSync('scripts/fixtures/legacy-demo-db.json','utf8')).settings,paymentSettings:defaultPaymentSettings};
  const user:any={staff_code:'CASH-0001',id:'CASH-1',username:'cashier_one',full_name:'Counter & <Staff>',role:'cashier',phone:'09',email:'test@example.test',profile_photo:photo,created_at:new Date().toISOString(),password:'DoNotPrintSecret123!'};
  let saved:any,closed=0,requests:any[]=[],cashiers:any[]=[user];
  const app:any={settings,language:'en',role:'admin',currentUser:user,t:(key:string)=>key,getAuthHeaders:()=>({Authorization:'Bearer admin'}),formatCurrency:(amount:number,code:string)=>`${code} ${amount}`};(globalThis as any).__testApp=app;

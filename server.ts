@@ -792,7 +792,7 @@ app.post('/api/jobs', (req: AuthRequest, res: Response) => {
     currency_code: req.body.currency_code || db.getSettings().currency || 'MMK',
     payment_status,
     payment_method: payment_method || 'cash',
-    warranty_days: warranty_days === undefined ? 30 : Number(warranty_days),
+    warranty_days: warranty_days === undefined ? db.getSettings().defaultWarrantyDays : Number(warranty_days),
     passlock_pin: passlock_pin || '',
     received_at: new Date().toISOString(),
   });
@@ -1882,6 +1882,19 @@ app.delete('/api/devices/:id', requireAdmin, (req, res) => {
 
 // ==========================================
 // 6. SETTINGS API
+const validateDeviceDeletion=(req:Request,res:Response,next:NextFunction)=>{
+  const ids=req.body.device_ids;
+  if(!Array.isArray(ids)||!ids.length||ids.length>5000||ids.some(id=>typeof id!=='string'||!id)||new Set(ids).size!==ids.length)return res.status(400).json({error:'Select 1–5000 distinct devices.'});
+  if(ids.some(id=>!db.getDevices().some(device=>device.id===id)))return res.status(404).json({error:'A selected device no longer exists. Refresh the list.'});
+  next();
+};
+app.post('/api/devices/delete-preview',requireAdmin,validateDeviceDeletion,(req,res)=>res.json(db.previewDeviceDeletion(req.body.device_ids)));
+app.post('/api/devices/delete-confirmed',requireAdmin,validateDeviceDeletion,(req:AuthRequest,res)=>{
+  if(typeof req.body.revision!=='string'||!/^[a-f0-9]{64}$/.test(req.body.revision))return res.status(400).json({error:'Review and confirm the deletion first.'});
+  try{return res.json({success:true,...db.deleteDevicesWithRecords(req.body.device_ids,req.body.revision,req.user!,req.ip || '')});}
+  catch(error:any){return res.status(/Records changed/.test(error.message)?409:500).json({error:/Records changed/.test(error.message)?error.message:'Deletion could not be saved. No records were deleted; check database and backup directory access.'});}
+});
+
 // ==========================================
 
 app.get('/api/settings', (req: AuthRequest, res) => {
@@ -1897,6 +1910,7 @@ app.put('/api/settings', (req: AuthRequest, res: Response) => {
   }
   if (req.body.taxPercentage !== undefined && (typeof req.body.taxPercentage !== 'number' || !Number.isFinite(req.body.taxPercentage) || req.body.taxPercentage < 0 || req.body.taxPercentage > 100)) return res.status(400).json({ error: 'Tax percentage must be between 0 and 100.' });
   if (req.body.taxEnabled !== undefined && typeof req.body.taxEnabled !== 'boolean') return res.status(400).json({ error: 'Invalid tax setting.' });
+  if(req.body.defaultWarrantyDays!==undefined&&(!Number.isInteger(req.body.defaultWarrantyDays)||req.body.defaultWarrantyDays<0||req.body.defaultWarrantyDays>3650))return res.status(400).json({error:'Warranty days must be a whole number from 0 to 3650.'});
   const invalidLogo = imageValidationError(req.body.shopLogo);
   if (invalidLogo) return res.status(400).json({ error: invalidLogo });
   if (req.body.paymentSettings) {

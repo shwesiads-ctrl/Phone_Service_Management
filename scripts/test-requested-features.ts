@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 /** Isolated HTTP regression tests. Never start these against the live shop database. */
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -9,8 +10,9 @@ import { once } from 'node:events';
 
 const root = process.cwd();
 const sourcePath = resolve('data/db.json');
-const original = readFileSync(sourcePath);
-const fixture = JSON.parse(original.toString());
+const sourceBytes=()=>existsSync(sourcePath)?readFileSync(sourcePath):Buffer.from('');
+const original=sourceBytes();
+const fixture = JSON.parse(readFileSync('scripts/fixtures/legacy-demo-db.json','utf8'));
 fixture.users.find((user:any)=>user.role==='admin').password='admin123';
 fixture.settings.telegramBot = { ...fixture.settings.telegramBot, enabled: false, bot_token: '' };
 const directory = mkdtempSync(join(tmpdir(), 'fixflow-test-'));
@@ -95,6 +97,6 @@ try {
   check('Hidden hints persist across restart', (await api('/api/auth/default-credentials')).data.credentials.length === 0);
   check('Changed admin password works after restart', (await api('/api/auth/login', 'POST', { username: 'admin', password: 'NewSecret123!' })).status === 200);
   check('Old default password no longer works', (await api('/api/auth/login', 'POST', { username: 'admin', password: 'admin123' })).status === 401);
-  check('Original uploaded database unchanged', readFileSync(sourcePath).equals(original));
+  check('Original uploaded database unchanged', sourceBytes().equals(original));
   console.log(`REQUESTED FEATURES HTTP SUMMARY: ${passed} PASSED`);
 } finally { await stop(); rmSync(directory, { recursive: true, force: true }); }

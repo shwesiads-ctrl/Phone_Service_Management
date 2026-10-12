@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 /** Isolated HTTP regression tests. Never start these against the live shop database. */
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -10,8 +11,9 @@ import { once } from 'node:events';
 const root = process.cwd();
 execFileSync('php',['-v'],{stdio:'ignore'}); // This optional suite requires a real PHP CLI in PATH.
 const sourcePath = resolve('data/db.json');
-const original = readFileSync(sourcePath);
-const fixture = JSON.parse(original.toString());
+const sourceBytes=()=>existsSync(sourcePath)?readFileSync(sourcePath):Buffer.from('');
+const original=sourceBytes();
+const fixture = JSON.parse(readFileSync('scripts/fixtures/legacy-demo-db.json','utf8'));
 fixture.users.find((user:any)=>user.role==='admin').password='admin123';
 fixture.settings.telegramBot = { ...fixture.settings.telegramBot, enabled: false, bot_token: '' };
 const directory = mkdtempSync(join(tmpdir(), 'fixflow-test-'));
@@ -84,6 +86,6 @@ try {
  await new Promise(resolve=>setTimeout(resolve,150));let stopped=false;try{await fetch(proxy+'/api/health',{signal:AbortSignal.timeout(500)});}catch{stopped=true;}check('Stopping Node also stops its PHP child',stopped);
  await start();const next=(await api('/api/auth/login','POST',{username:'admin',password:'admin123'})).data.token;
  check('Manual profile survives server restart',(await api('/api/settings','GET',undefined,next)).data.paymentSettings.active_profile==='china');
- check('Source database is unchanged',readFileSync(sourcePath).equals(original));
+ check('Source database is unchanged',sourceBytes().equals(original));
  console.log(`PHP CLI & MANUAL PAYMENTS SUMMARY: ${passed} PASSED`);
 } finally {if(child&&child.exitCode===null){try{const token=(await api('/api/auth/login','POST',{username:'admin',password:'admin123'})).data.token;await api('/api/system/php-cli/stop','POST',{},token);}catch{}}await stop();rmSync(directory,{recursive:true,force:true});}

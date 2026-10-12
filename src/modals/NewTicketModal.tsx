@@ -1,3 +1,6 @@
+import { usePaymentSelection } from '../hooks/usePaymentSelection';
+import { PaymentProfileSelector } from '../components/PaymentProfileSelector';
+import { paymentMethodLabel } from '../utils/paymentMethodLabel';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { TicketPriority } from '../types';
@@ -16,14 +19,14 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
     settings,
     currency,
     getCurrencySymbol,
-    availablePaymentMethods,
-    activePaymentProfile,
     createCustomer,
     createDevice,
     createJob,
     t,
+    language,
   } = useApp();
 
+  const {profile:activePaymentProfile,selectProfile,methods:availablePaymentMethods}=usePaymentSelection();
   // Mode: select existing customer or new customer
   const [selectedCustomerId, setSelectedCustomerId] = useState(customers[0]?.id || '');
   const [custName, setCustName] = useState('');
@@ -46,19 +49,9 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
   const [paymentMethod, setPaymentMethod] = useState<string>(() => {
     return availablePaymentMethods[0]?.id || 'cash';
   });
-  const [warrantyDays, setWarrantyDays] = useState(settings.defaultWarrantyDays || 30);
+  const [warrantyDays, setWarrantyDays] = useState(settings.defaultWarrantyDays ?? 90);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  const paymentMethodsList = [
-    'Cash',
-    'Bank Transfer',
-    'KBZ Pay',
-    'Wave Pay',
-    'AYA Pay',
-    'CB Pay',
-    'Other',
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +100,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
         amount_paid: parseFloat(amountPaid) || 0,
         currency_code: currency,
         payment_method: paymentMethod,
-        warranty_days: Number(warrantyDays) || 30,
+        warranty_days: Number(warrantyDays),
         passlock_pin: passlockPin,
       });
 
@@ -401,6 +394,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
                 </div>
               </div>
 
+              <PaymentProfileSelector value={activePaymentProfile} onChange={value=>{selectProfile(value);setPaymentMethod('cash');}}/>
               <div>
                 <label className="block text-[11px] font-bold text-[var(--text)] mb-1">
                   {t('paymentMethod')}
@@ -412,7 +406,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
                 >
                   {availablePaymentMethods.map((m) => (
                     <option key={m.id} value={m.id}>
-                      {m.thai_name || m.name}
+                      {paymentMethodLabel(m,language)}
                     </option>
                   ))}
                 </select>

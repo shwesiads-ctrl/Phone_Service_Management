@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 /** Isolated HTTP regression tests. Never start these against the live shop database. */
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -9,8 +10,9 @@ import { once } from 'node:events';
 
 const root = process.cwd();
 const sourcePath = resolve('data/db.json');
-const original = readFileSync(sourcePath);
-const fixture = JSON.parse(original.toString());
+const sourceBytes=()=>existsSync(sourcePath)?readFileSync(sourcePath):Buffer.from('');
+const original=sourceBytes();
+const fixture = JSON.parse(readFileSync('scripts/fixtures/legacy-demo-db.json','utf8'));
 fixture.users.find((user:any)=>user.role==='admin').password='admin123';
 fixture.settings.telegramBot = { ...fixture.settings.telegramBot, enabled: false, bot_token: '' };
 const directory = mkdtempSync(join(tmpdir(), 'fixflow-test-'));
@@ -158,6 +160,6 @@ try {
   check('Failed recovery never rotates key',(await api('/api/auth/recovery/backup','POST',{current_password:'RecoveredAdmin123!'},admin)).data.key===beforeKey);
   check('Admin can delete cashier account',(await api(`/api/cashiers/${created.data.id}`,'DELETE',undefined,admin)).status===200);
   check('Deleting cashier retains payment history',(await api('/api/payments','GET',undefined,admin)).data.some((p:any)=>p.id===payment.data.id));
-  check('Original source database remains unchanged',readFileSync(sourcePath).equals(original));
+  check('Original source database remains unchanged',sourceBytes().equals(original));
   console.log(`CASHIER & RECOVERY HTTP SUMMARY: ${passed} PASSED`);
 } finally {await stop();rmSync(directory,{recursive:true,force:true});}

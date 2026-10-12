@@ -85,3 +85,6 @@ release/
 
 # PC-specific password recovery keys: never publish
 **/.security/
+
+# Live workshop database is generated locally, never shipped as demo data.
+/data/db.json

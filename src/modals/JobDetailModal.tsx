@@ -1,3 +1,6 @@
+import { usePaymentSelection } from '../hooks/usePaymentSelection';
+import { PaymentProfileSelector } from '../components/PaymentProfileSelector';
+import { paymentMethodLabel } from '../utils/paymentMethodLabel';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { ServiceJob, ServiceJobPart, ServiceStatus, TicketPriority, PaymentMethodConfig } from '../types';
@@ -40,11 +43,12 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
     formatCurrency,
     formatDate,
     getCurrencySymbol,
-    availablePaymentMethods,
-    activePaymentProfile,
     t,
+    settings,
+    language,
   } = useApp();
 
+  const {profile:activePaymentProfile,selectProfile,methods:availablePaymentMethods}=usePaymentSelection();
   // Local states
   const [statusId, setStatusId] = useState<ServiceStatus>(job.status_id);
   const [priority, setPriority] = useState<TicketPriority>(job.priority);
@@ -54,7 +58,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
   const [completionNotes, setCompletionNotes] = useState<string>(job.completion_notes || '');
   const [serviceCharge, setServiceCharge] = useState<number>(job.service_charge);
   const [parts, setParts] = useState<ServiceJobPart[]>(job.parts_used || []);
-  const [warrantyDays, setWarrantyDays] = useState<number>(job.warranty_days || 30);
+  const [warrantyDays, setWarrantyDays] = useState<number>(job.warranty_days ?? settings.defaultWarrantyDays ?? 90);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -62,7 +66,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
   const [newPartName, setNewPartName] = useState('');
   const [newPartQty, setNewPartQty] = useState(1);
   const [newPartUnitCost, setNewPartUnitCost] = useState('');
-  const [newPartWarranty, setNewPartWarranty] = useState('30 Days');
+  const [newPartWarranty, setNewPartWarranty] = useState(`${settings.defaultWarrantyDays ?? 90} Days`);
 
   // New payment recording inputs
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -128,7 +132,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
       quantity: qty,
       unit_cost: unitCost,
       total_cost: unitCost * qty,
-      warranty: newPartWarranty.trim() || '30 Days',
+      warranty: newPartWarranty.trim() || `${settings.defaultWarrantyDays ?? 90} Days`,
     };
     setParts([...parts, newPart]);
     setNewPartName('');
@@ -542,6 +546,8 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
                     </span>
                   </div>
 
+                  <PaymentProfileSelector value={activePaymentProfile} onChange={value=>{selectProfile(value);setPaymentMethod('cash');}}/>
+
                   {/* Payment Amount Input */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div>
@@ -584,7 +590,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
                       >
                         {availablePaymentMethods.map((m) => (
                           <option key={m.id} value={m.id}>
-                            {m.thai_name || m.name}
+                            {paymentMethodLabel(m,language)}
                           </option>
                         ))}
                       </select>

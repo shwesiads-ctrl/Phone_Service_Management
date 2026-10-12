@@ -100,6 +100,8 @@ interface AppContextType {
   createDevice: (dev: Omit<Device, 'id' | 'created_at'>) => Promise<Device>;
   updateDevice: (id: string, updates: Partial<Device>) => Promise<Device>;
   deleteDevice: (id: string) => Promise<void>;
+  previewDeviceDeletion: (ids:string[])=>Promise<CustomerDeletionPreview>;
+  deleteDevicesWithRecords: (ids:string[],revision:string)=>Promise<void>;
   auditTrail: SecurityAudit[];
   refreshAuditTrail: () => Promise<void>;
 
@@ -211,10 +213,10 @@ const defaultAdminUser: User = {
 };
 
 const defaultSettings: SettingsState = {
-  shopName: 'Hacked Shop',
-  phone: '+95 9256060722',
-  email: 'shwetaythan@gmail.com',
-  address: 'Naypyitaw (Myanmar)',
+  shopName: 'FixFlow Workshop',
+  phone: '',
+  email: '',
+  address: '',
   receiptFooterNote: 'All phone repairs carry limited warranty on replaced parts and workmanship.',
   defaultWarrantyDays: 90,
   currency: 'MMK',
@@ -1088,6 +1090,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updated;
   };
 
+  const previewDeviceDeletion=async(ids:string[]):Promise<CustomerDeletionPreview>=>{
+    const response=await fetch('/api/devices/delete-preview',{method:'POST',headers:getAuthHeaders(),body:JSON.stringify({device_ids:ids})});const value=await response.json();if(!response.ok)throw new Error(value.error);return value;
+  };
+  const deleteDevicesWithRecords=async(ids:string[],revision:string):Promise<void>=>{
+    const response=await fetch('/api/devices/delete-confirmed',{method:'POST',headers:getAuthHeaders(),body:JSON.stringify({device_ids:ids,revision})});const value=await response.json();if(!response.ok)throw new Error(value.error);
+    await Promise.all([refreshMetadata(),refreshJobs(),refreshPayments(),refreshTechnicians(),refreshFinance(),refreshAuditTrail()]);
+  };
+
   const deleteDevice = async (id: string): Promise<void> => {
     const res = await fetch(`/api/devices/${id}`, {
       method: 'DELETE',
@@ -1307,6 +1317,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         createDevice,
         updateDevice,
         deleteDevice,
+        previewDeviceDeletion,
+        deleteDevicesWithRecords,
         auditTrail,
         refreshAuditTrail,
         incomeRecords,

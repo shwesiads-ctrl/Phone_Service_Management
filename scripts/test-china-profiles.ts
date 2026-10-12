@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 /** Isolated HTTP regression tests. Never start these against the live shop database. */
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -9,8 +10,9 @@ import { once } from 'node:events';
 
 const root = process.cwd();
 const sourcePath = resolve('data/db.json');
-const original = readFileSync(sourcePath);
-const fixture = JSON.parse(original.toString());
+const sourceBytes=()=>existsSync(sourcePath)?readFileSync(sourcePath):Buffer.from('');
+const original=sourceBytes();
+const fixture = JSON.parse(readFileSync('scripts/fixtures/legacy-demo-db.json','utf8'));
 fixture.users.find((user:any)=>user.role==='admin').password='admin123';
 fixture.settings.telegramBot = { ...fixture.settings.telegramBot, enabled: false, bot_token: '' };
 fixture.users.push({id:'USR-CASH-legacy-4921fa32',username:'legacy_cashier',full_name:'Legacy Counter',role:'cashier',active:true,created_at:'2026-10-01'});
@@ -100,6 +102,6 @@ try {
   check('Stable cashier identity persists on payment',(await api('/api/payments','GET',undefined,token)).data.some((p:any)=>p.id===payment.data.id&&p.cashier_id===cashier.id));
   check('Short staff code persists after restart',(await api('/api/auth/me','GET',undefined,token)).data.user.staff_code===cashier.staff_code);
   check('Migrated legacy display code remains stable',(await api('/api/cashiers','GET',undefined,admin)).data.find((u:any)=>u.id===legacy.id).staff_code===legacy.staff_code);
-  check('Original source database remains unchanged',readFileSync(sourcePath).equals(original));
+  check('Original source database remains unchanged',sourceBytes().equals(original));
   console.log(`CHINA & CASHIER PROFILE HTTP SUMMARY: ${passed} PASSED`);
 } finally {await stop();rmSync(directory,{recursive:true,force:true});}

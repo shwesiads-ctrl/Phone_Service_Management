@@ -123,3 +123,11 @@ PHP CLI သည် ရွေးချယ်စရာဖြစ်ပြီး Node
 Start Node first, build the frontend, and ensure PHP CLI is in PATH. Settings → Local Network can start and stop the PHP router. For a manually launched router, set `PORT` to the actual Node backend port in the PHP terminal before running `php -S 0.0.0.0:8080 router.php`. The router needs either PHP cURL or enabled HTTP stream support.
 
 With PHP CLI installed, run `npm run test:lan` to check actual routing, custom ports, bearer authentication, startup/stop, occupied-port handling and payment-profile persistence using temporary data. Physical device access still depends on your local Wi-Fi and firewall configuration.
+
+## Clean first installation / Demo data
+
+Source packages contain no live `data/db.json`, historical shop backups or recovery credentials. First startup creates an empty database and a private PC recovery key. The only sample records are isolated test fixtures under `scripts/fixtures/`, which production never loads. Keep an existing shop’s `data/` when updating; unwanted old imported records must be reviewed and deleted from the relevant lists.
+
+Fresh install တွင် Demo user/data မပါပါ။ Server ပထမဆုံးဖွင့်ချိန် database အလွတ်နှင့် PC recovery key ကို ဖန်တီးပါသည်။ Update မှာ မူလဆိုင်၏ `data/` ကို ထိန်းထားပါ။ အရင် version မှ ထည့်မိထားသော မလိုအပ်သည့် record များကို စာရင်းမှ ရွေးချယ်စစ်ဆေးပြီးမှ ဖျက်ပါ။
+
+Payment profile ကို Settings မှ အမြဲသုံးမည့်ပုံစံ ရွေးနိုင်သလို payment form မှလည်း ရွေးနိုင်သည်။ Non-cash payment မပေါ်ပါက Settings → Payments တွင် မိမိအကောင့်/QR ထည့်ပြီး Enable လုပ်ပါ။ Receipt warranty သည် လက်ရှိ Shop Settings → Service မှ သတ်မှတ်ထားသည့်ရက်အတိုင်း ဖြစ်သည်။

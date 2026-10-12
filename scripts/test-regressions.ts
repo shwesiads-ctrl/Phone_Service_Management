@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 /** Isolated HTTP regression tests. Never start these against the live shop database. */
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -9,8 +10,9 @@ import { once } from 'node:events';
 
 const root = process.cwd();
 const sourcePath = resolve('data/db.json');
-const original = readFileSync(sourcePath);
-const fixture = JSON.parse(original.toString());
+const sourceBytes=()=>existsSync(sourcePath)?readFileSync(sourcePath):Buffer.from('');
+const original=sourceBytes();
+const fixture = JSON.parse(readFileSync('scripts/fixtures/legacy-demo-db.json','utf8'));
 fixture.users.find((user:any)=>user.role==='admin').password='admin123';
 fixture.settings.telegramBot = { ...fixture.settings.telegramBot, enabled: false, bot_token: '' };
 const directory = mkdtempSync(join(tmpdir(), 'fixflow-test-'));
@@ -309,10 +311,10 @@ try {
   const bad = spawn(process.execPath, ['--import', 'tsx', '--import', './scripts/mock-telegram.ts', 'server.ts'], { cwd: root, env: { ...process.env, PORT: String(port), NODE_ENV: 'production', FIXFLOW_DATA_DIR: directory }, stdio: 'ignore' });
   const [badCode] = await once(bad, 'exit');
   check('Unreadable database fails without overwriting it', badCode !== 0 && readFileSync(dbPath, 'utf8') === '{broken');
-  check('Original uploaded database is byte-for-byte unchanged', original.equals(readFileSync(sourcePath)));
+  check('Original uploaded database is byte-for-byte unchanged', original.equals(sourceBytes()));
   console.log(`\nREGRESSION SUMMARY: ${passed} PASSED (plus the existing functional suite)`);
 } finally {
   await stop();
   rmSync(directory, { recursive: true, force: true });
-  assert.ok(original.equals(readFileSync(sourcePath)), 'Tests must not change the real database');
+  assert.ok(original.equals(sourceBytes()), 'Tests must not change the real database');
 }

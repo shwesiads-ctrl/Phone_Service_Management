@@ -1,3 +1,4 @@
+import { paymentMethodLabel } from '../utils/paymentMethodLabel';
 import React, { useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import type { ServiceJob } from '../types';
@@ -14,7 +15,6 @@ export const PrintTicketModal: React.FC<PrintTicketModalProps> = ({job,onClose})
   const records=(job.payments ?? payments.filter(payment=>payment.service_job_id===job.id)).filter(payment=>!payment.is_deleted);
   const sameCurrency=records.filter(payment=>payment.currency_code===(job.currency_code || 'MMK'));
   const paid=records.length ? sameCurrency.reduce((sum,payment)=>sum+Number(payment.amount || 0),0) : (job.payments ? 0 : Number(job.amount_paid || 0));
-  const balance=Math.max(0,job.total_cost-paid);
   const receivers=[...new Set(records.map(payment=>payment.received_by?.trim() || payment.created_by || '').filter(Boolean))];
   const money=(value:number)=>formatCurrency(value,job.currency_code);
   const my=language==='my';
@@ -36,9 +36,9 @@ export const PrintTicketModal: React.FC<PrintTicketModalProps> = ({job,onClose})
             <div><span className="receipt-label">Assigned technician</span>{assigned?.full_name || '—'}<br/><small>{job.technician_id}</small></div><div><span className="receipt-label">Cashier / Payment received by</span><b>{receivers.join(', ') || job.intake_received_by || (my ? 'မှတ်တမ်းမရှိပါ' : 'Not recorded')}</b>{job.intake_received_by && <><br/><small>Intake: {job.intake_received_by}</small></>}</div>
           </div>
           <div className="receipt-note"><span className="receipt-label">Reported problem</span>{job.problem_description}{job.diagnosis && <><br/><span className="receipt-label">Diagnosis</span>{job.diagnosis}</>}</div>
-          <table aria-label="Receipt charges"><thead><tr><th>Description</th><th className="amount">Amount ({job.currency_code || 'MMK'})</th></tr></thead><tbody><tr><td>Service charge</td><td className="amount">{money(job.service_charge)}</td></tr>{job.parts_cost>0 && <tr><td>Parts</td><td className="amount">{money(job.parts_cost)}</td></tr>}<tr className="receipt-total"><td>Total</td><td className="amount">{money(job.total_cost)}</td></tr><tr><td>Paid</td><td className="amount">{money(paid)}</td></tr><tr className="receipt-total"><td>Balance due</td><td className="amount">{money(balance)}</td></tr></tbody></table>
-          {records.length>0 && <><h3 className="receipt-label">Payment records</h3><table className="receipt-payments" aria-label="Receipt payments"><thead><tr><th>Payment / Date</th><th>Cashier</th><th className="amount">Amount</th></tr></thead><tbody>{records.map(payment=><tr key={payment.id}><td><b>{payment.id}</b><br/>{formatDate(payment.paid_at)}<br/>{payment.payment_method}{payment.reference_number && <><br/>Ref: {payment.reference_number}</>}</td><td>{payment.received_by || payment.created_by || 'Not recorded'}</td><td className="amount">{formatCurrency(payment.amount,payment.currency_code)}</td></tr>)}</tbody></table></>}
-          <div className="receipt-footer"><b>Warranty: {job.warranty_days} days</b><br/>{settings.receiptFooterNote}</div><div className="receipt-signatures"><span>Staff signature</span><span>Customer signature</span></div>
+          <table aria-label="Receipt charges"><thead><tr><th>Description</th><th className="amount">Amount ({job.currency_code || 'MMK'})</th></tr></thead><tbody><tr><td>Service charge</td><td className="amount">{money(job.service_charge)}</td></tr>{job.parts_cost>0 && <tr><td>Parts</td><td className="amount">{money(job.parts_cost)}</td></tr>}<tr className="receipt-total"><td>Total</td><td className="amount">{money(job.total_cost)}</td></tr><tr><td>Paid</td><td className="amount">{money(paid)}</td></tr></tbody></table>
+          {records.length>0 && <><h3 className="receipt-label">Payment records</h3><table className="receipt-payments" aria-label="Receipt payments"><thead><tr><th>Payment / Date</th><th>Cashier</th><th className="amount">Amount</th></tr></thead><tbody>{records.map(payment=><tr key={payment.id}><td><b>{payment.id}</b><br/>{formatDate(payment.paid_at)}<br/>{paymentMethodLabel({id:payment.payment_method,name:payment.payment_method,enabled:true},language)}{payment.reference_number && <><br/>Ref: {payment.reference_number}</>}</td><td>{payment.received_by || payment.created_by || 'Not recorded'}</td><td className="amount">{formatCurrency(payment.amount,payment.currency_code)}</td></tr>)}</tbody></table></>}
+          <div className="receipt-footer"><b>Warranty: {settings.defaultWarrantyDays ?? 90} days</b><br/>{settings.receiptFooterNote}</div><div className="receipt-signatures"><span>Staff signature</span><span>Customer signature</span></div>
         </article>
       </div>
     </div>

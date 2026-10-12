@@ -2217,46 +2217,6 @@ export const SettingsView: React.FC = () => {
                 </button>
               </div>
 
-              {/* 3. Clear Demo Data & Fresh Store Card */}
-              <div className="p-4 sm:p-5 rounded-xl border border-rose-500/30 bg-rose-500/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-bold text-rose-600 dark:text-rose-400">
-                    <Trash2 className="w-4 h-4" />
-                    <span>Clear Demo Data & Start Fresh Store</span>
-                  </div>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    Permanently deletes sample demo records, jobs, and technicians. Keeps your shop settings and admin account intact for real store operations.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (window.confirm('Are you sure you want to delete all demo data and start with a fresh store database? This action cannot be undone.')) {
-                      try {
-                        const res = await fetch('/api/database/clear-demo', {
-                          method: 'POST',
-                          headers: getAuthHeaders(),
-                        });
-                        if (res.ok) {
-                          alert('Demo data cleared successfully! Store database is now fresh.');
-                          window.location.reload();
-                        } else {
-                          const err = await res.json();
-                          alert(err.error || 'Failed to clear demo data');
-                        }
-                      } catch (err: any) {
-                        alert(err.message || 'Failed to clear demo data');
-                      }
-                    }
-                  }}
-                  className="py-2.5 px-4 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs shrink-0"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>[ Clear Demo Data & Fresh Store ]</span>
-                </button>
-              </div>
-
               {/* Backup History Table */}
               <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-xs">
                 <div className="p-3.5 border-b border-[var(--border)] flex items-center justify-between">

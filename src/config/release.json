@@ -1,30 +1,34 @@
 {
-  "version": "2.8.4",
-  "date": "2026-10-12",
+  "version": "2.8.5",
+  "date": "2026-10-13",
   "changes": {
     "my": [
-      "Payment Profile ကို ဘာသာစကားနှင့် မချိတ်ဘဲ စိတ်ကြိုက်ရွေးနိုင်ပြီး အပေါ်ဘားမှ ငွေကြေးရွေးနိုင်သည်။",
-      "Account Management ကို role filter ပါသော card ပုံစံပြောင်းပြီး Cashier Accounts List တွင် search၊ status filter နှင့် pagination ထည့်ထားသည်။",
-      "Settings ထဲမှ Technician Configuration နှင့် Technician စာမျက်နှာရှိ Demo User ခလုတ်များ ဖယ်ထားသည်။",
-      "PHP CLI စတင်မှုနှင့် LAN routing ကို ပြင်ဆင်စစ်ဆေးထားပြီး About ကို ဘာသာစကား လေးမျိုးဖြင့် ပြထားသည်။"
+      "Payment method နာမည်ကို ရွေးထားသောဘာသာစကားအတိုင်း ပြပြီး payment form မှ Myanmar/Thailand/China/Global ရွေးနိုင်သည်။",
+      "Fresh install တွင် Demo user၊ Customer၊ Device နှင့် Service data မထည့်တော့ပါ။ လက်ရှိဆိုင်ဒေတာကို ထိန်းသိမ်းထားသည်။",
+      "Devices တွင် စာမျက်နှာအားလုံးမှ Select All နှင့် backup/confirmation ပါသော bulk delete ထည့်ထားသည်။",
+      "Cashier ID Card ကို ဆိုင်နာမည်၊ လိပ်စာနှင့် ဖုန်း အပေါ်တွင်ပါသော professional layout ပြောင်းထားသည်။",
+      "Service Receipt မှ Balance due ဖယ်ထားပြီး receipt warranty ကို လက်ရှိ Shop Settings အတိုင်း ပြသည်။"
     ],
     "en": [
-      "Payment profiles are selected manually, independently of language; administrators can select currency in the top bar.",
-      "Redesigned Account Management with role-filtered cards and added a searchable, status-filtered, paginated Cashier Accounts List.",
-      "Removed duplicate technician configuration from Settings and demo-user controls from the technician page.",
-      "Verified and corrected PHP CLI startup and LAN routing; About supports all four interface languages."
+      "Payment method labels follow the interface language; payment forms can select Myanmar, Thailand, China or Global.",
+      "Fresh installations start without demo users or workshop records; existing local databases are preserved.",
+      "Devices support selection across pages and confirmed bulk deletion with a safety backup.",
+      "Professional cashier ID cards place workshop name, address and phone at the top and offer three color themes.",
+      "Removed Balance due from service receipts; printed warranty follows current shop settings. New jobs use the configured warranty default."
     ],
     "th": [
-      "เลือกโปรไฟล์การชำระเงินเองโดยไม่ขึ้นกับภาษา ผู้ดูแลระบบเลือกสกุลเงินได้จากแถบด้านบน",
-      "ปรับการจัดการบัญชีเป็นการ์ดพร้อมตัวกรองบทบาท เพิ่มรายชื่อแคชเชียร์พร้อมค้นหา กรองสถานะ และแบ่งหน้า",
-      "นำการตั้งค่าช่างที่ซ้ำออกจากการตั้งค่า และนำปุ่มบัญชีสาธิตออกจากหน้าช่าง",
-      "ตรวจสอบและแก้ไขการเริ่ม PHP CLI และเส้นทาง LAN หน้าเกี่ยวกับรองรับทั้งสี่ภาษา"
+      "ชื่อวิธีชำระเงินแสดงตามภาษาที่เลือก และเลือกโปรไฟล์เมียนมา ไทย จีน หรือสากลในแบบฟอร์มได้",
+      "การติดตั้งใหม่เริ่มโดยไม่มีผู้ใช้หรือข้อมูลร้านสาธิต ฐานข้อมูลเดิมยังคงอยู่",
+      "เลือกอุปกรณ์ทั้งหมดข้ามหน้าและลบหลายรายการได้ โดยยืนยันและสำรองข้อมูลก่อน",
+      "บัตรแคชเชียร์รูปแบบใหม่แสดงชื่อร้าน ที่อยู่ และโทรศัพท์ด้านบน พร้อมธีมสีสามแบบ",
+      "นำยอดค้างชำระออกจากใบเสร็จ ระยะรับประกันบนใบเสร็จและค่าเริ่มต้นงานใหม่ใช้การตั้งค่าร้าน"
     ],
     "zh": [
-      "支付配置由用户自行选择，不随语言变化；管理员可在顶部栏选择货币。",
-      "账户管理改为按角色筛选的卡片，并新增可搜索、按状态筛选和分页的收银员账户列表。",
-      "移除设置中重复的技师配置和技师页面的演示用户按钮。",
-      "检查并修复 PHP CLI 启动和局域网路由；关于页面支持全部四种界面语言。"
+      "支付方式名称跟随界面语言；可在支付表单中选择缅甸、泰国、中国或全球配置。",
+      "全新安装不再附带演示用户或业务记录，已有本地数据库会保留。",
+      "设备支持跨页全选和批量删除，需确认并先创建安全备份。",
+      "专业收银员证将店名、地址和电话置于顶部，并提供三种颜色主题。",
+      "收据移除待付余额；收据保修期及新工单默认保修期遵循店铺设置。"
     ]
   }
 }

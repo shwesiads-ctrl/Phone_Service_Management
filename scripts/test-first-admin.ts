@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 /** Isolated HTTP regression tests. Never start these against the live shop database. */
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -9,8 +10,9 @@ import { once } from 'node:events';
 
 const root = process.cwd();
 const sourcePath = resolve('data/db.json');
-const original = readFileSync(sourcePath);
-const fixture = JSON.parse(original.toString());
+const sourceBytes=()=>existsSync(sourcePath)?readFileSync(sourcePath):Buffer.from('');
+const original=sourceBytes();
+const fixture = JSON.parse(readFileSync('scripts/fixtures/legacy-demo-db.json','utf8'));
 fixture.users=fixture.users.filter((user:any)=>user.role!=='admin');fixture.admin_setup_complete=false;
 fixture.settings.telegramBot = { ...fixture.settings.telegramBot, enabled: false, bot_token: '' };
 const directory = mkdtempSync(join(tmpdir(), 'fixflow-test-'));
@@ -77,7 +79,7 @@ try {
   check('New account persists across restart',(await api('/api/auth/login','POST',{username:'shop_admin',password:'MyAdminPassword123!'})).status===200);
   const stored=JSON.parse(readFileSync(dbPath,'utf8'));check('Only chosen administrator exists',stored.users.filter((user:any)=>user.role==='admin').length===1&&stored.admin_setup_complete===true);
   await stop();
-  const legacy=JSON.parse(original.toString());legacy.admin_setup_complete=false;legacy.users.filter((user:any)=>user.role==='admin').forEach((user:any)=>{delete user.password;});writeFileSync(dbPath,JSON.stringify(legacy));await start();
+  const legacy=JSON.parse(readFileSync('scripts/fixtures/legacy-demo-db.json','utf8'));legacy.admin_setup_complete=false;legacy.users.filter((user:any)=>user.role==='admin').forEach((user:any)=>{delete user.password;});writeFileSync(dbPath,JSON.stringify(legacy));await start();
   check('Unconfigured legacy default admin allows own-account setup',(await api('/api/auth/setup-status')).data.registration_open===true);
   const attempts=await Promise.all([api('/api/auth/setup-admin','POST',{full_name:'Own Admin',username:'admin',password:'OwnAdminPassword123!'}),api('/api/auth/setup-admin','POST',{full_name:'Other Admin',username:'other_admin',password:'OtherAdminPassword123!'})]);
   check('Concurrent first registration creates exactly one admin',attempts.filter(result=>result.status===201).length===1&&attempts.filter(result=>result.status===409).length===1);
@@ -86,6 +88,6 @@ try {
   const ownerToken=(await api('/api/auth/login','POST',chosen)).data.token;
   check('Legacy backup restores without reopening setup',(await api('/api/restore','POST',{data:legacy},ownerToken)).status===200&&(await api('/api/auth/setup-status')).data.registration_open===false);
   check('Legacy restore retains configured owner login',(await api('/api/auth/login','POST',chosen)).status===200);
-  check('Original source data unchanged',readFileSync(sourcePath).equals(original));
+  check('Original source data unchanged',sourceBytes().equals(original));
   console.log(`FIRST ADMIN HTTP SUMMARY: ${passed} PASSED`);
 } finally {await stop();rmSync(directory,{recursive:true,force:true});}

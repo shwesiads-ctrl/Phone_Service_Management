@@ -1,8 +1,8 @@
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/Pagination';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Device } from '../types';
+import { Device, CustomerDeletionPreview } from '../types';
 import {
   Search,
   Plus,
@@ -19,11 +19,15 @@ import {
 } from 'lucide-react';
 
 export const DevicesView: React.FC = () => {
-  const { devices, customers, createDevice, updateDevice, deleteDevice, t } = useApp();
+  const { devices, customers, createDevice, updateDevice, previewDeviceDeletion, deleteDevicesWithRecords, role, t } = useApp();
 
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<Device | null>(null);
+
+  const [selected,setSelected]=useState<string[]>([]),[preview,setPreview]=useState<CustomerDeletionPreview|null>(null),[deletingIds,setDeletingIds]=useState<string[]>([]),[acknowledged,setAcknowledged]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
+  useEffect(()=>setSelected(previous=>previous.filter(id=>devices.some(device=>device.id===id))),[devices]);
+  const reviewDeletion=async(ids:string[])=>{if(busy)return;setBusy(true);setError('');try{setPreview(await previewDeviceDeletion(ids));setDeletingIds(ids);setAcknowledged(false);}catch(error:any){setError(error.message);}finally{setBusy(false);}};
 
   // Form states
   const [brand, setBrand] = useState('');
@@ -101,7 +105,7 @@ export const DevicesView: React.FC = () => {
 
   const filteredDevices = devices.filter((dev) => {
     if (!search.trim()) return true;
-    const q = search.toLowerCase();
+    const q = search.trim().toLowerCase();
     const cust = customers.find((c) => c.id === dev.customer_id);
     return (
       dev.brand.toLowerCase().includes(q) ||
@@ -135,6 +139,10 @@ export const DevicesView: React.FC = () => {
           <span>{t('newDevice')}</span>
         </button>
       </div>
+
+      {error&&<p role="alert" className="text-rose-500">{error}</p>}
+      {role==='admin'&&<div className="flex flex-wrap gap-3 items-center p-3 rounded-xl border border-[var(--border)] bg-[var(--surface)]"><label className="flex gap-2 items-center text-sm"><input aria-label="Select all matching devices" type="checkbox" disabled={busy||!filteredDevices.length} checked={filteredDevices.length>0&&filteredDevices.every(device=>selected.includes(device.id))} onChange={event=>setSelected(event.target.checked?[...new Set([...selected,...filteredDevices.map(device=>device.id)])]:selected.filter(id=>!filteredDevices.some(device=>device.id===id)))}/>Select all matching devices ({filteredDevices.length})</label><button onClick={()=>setSelected([])} disabled={busy||!selected.length} className="text-sm">Clear selection</button><button disabled={busy||!selected.length} onClick={()=>reviewDeletion(selected)} className="ml-auto px-3 py-2 rounded-lg bg-rose-600 text-white text-sm disabled:opacity-40">Delete Selected ({selected.length})</button></div>}
+      {preview&&<div className="fixed inset-0 z-50 bg-black/60 p-4 flex items-center justify-center"><section role="dialog" aria-modal="true" aria-label="Delete selected devices" className="p-6 rounded-xl bg-[var(--surface)] max-w-lg w-full max-h-[90vh] overflow-y-auto space-y-4"><h2 className="text-xl font-bold">Delete selected devices?</h2><p className="text-sm">{preview.devices} devices · {preview.jobs} repair jobs · {preview.parts} parts · {preview.payments} payments · {preview.income} income records · {preview.notifications} notifications</p><ul className="text-xs max-h-36 overflow-y-auto">{preview.names.map((name,index)=><li key={index}>{name}</li>)}</ul><p className="text-sm text-[var(--text-muted)]">Customer accounts are kept. Linked records listed above will be deleted. A full backup is saved first.</p>{error&&<p role="alert" className="text-rose-500">{error}</p>}<label className="flex gap-2 items-start text-sm"><input aria-label="Acknowledge device deletion" type="checkbox" checked={acknowledged} disabled={busy} onChange={event=>setAcknowledged(event.target.checked)}/>I understand that all listed records will be deleted.</label><div className="flex gap-3"><button disabled={busy||!acknowledged} onClick={async()=>{if(busy)return;setBusy(true);setError('');try{await deleteDevicesWithRecords(deletingIds,preview.revision);setSelected([]);setPreview(null);}catch(error:any){setError(error.message);}finally{setBusy(false);}}} className="px-4 py-2 rounded-lg bg-rose-600 text-white disabled:opacity-40">{busy?'Deleting…':'Delete All Listed Records'}</button><button disabled={busy} onClick={()=>{setPreview(null);setError('');}}>Cancel</button></div></section></div>}
 
       {/* Search Bar */}
       <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
@@ -173,7 +181,7 @@ export const DevicesView: React.FC = () => {
                 {page.items.map((dev, rowIndex) => {
                   const cust = customers.find((c) => c.id === dev.customer_id);
                   return (
-                    <tr key={dev.id} className="hover:bg-[var(--surface-2)]/40 transition-colors"><td className="px-4 py-3 font-mono text-[var(--text-muted)]">{page.offset + rowIndex + 1}</td>
+                    <tr key={dev.id} className="hover:bg-[var(--surface-2)]/40 transition-colors"><td className="px-4 py-3 font-mono text-[var(--text-muted)]">{role==='admin'&&<input type="checkbox" aria-label={`Select device ${dev.id}`} checked={selected.includes(dev.id)} disabled={busy} onChange={event=>setSelected(event.target.checked?[...selected,dev.id]:selected.filter(id=>id!==dev.id))} className="mr-2"/>}{page.offset + rowIndex + 1}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           {getCategoryIcon(dev.category)}
@@ -211,15 +219,7 @@ export const DevicesView: React.FC = () => {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={async () => {
-                            if (confirm(`Are you sure you want to delete device "${dev.brand} ${dev.model}"?`)) {
-                              try {
-                                await deleteDevice(dev.id);
-                              } catch (e) {
-                                alert('Failed to delete device');
-                              }
-                            }
-                          }}
+                          onClick={()=>reviewDeletion([dev.id])}
                           className="p-1.5 rounded hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
                           title="Delete Device"
                         >

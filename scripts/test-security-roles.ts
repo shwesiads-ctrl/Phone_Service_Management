@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { LoginLimiter } from '../src/server/loginLimiter';
 /** Isolated HTTP regression tests. Never start these against the live shop database. */
 import assert from 'node:assert/strict';
@@ -10,8 +11,9 @@ import { once } from 'node:events';
 
 const root = process.cwd();
 const sourcePath = resolve('data/db.json');
-const original = readFileSync(sourcePath);
-const fixture = JSON.parse(original.toString());
+const sourceBytes=()=>existsSync(sourcePath)?readFileSync(sourcePath):Buffer.from('');
+const original=sourceBytes();
+const fixture = JSON.parse(readFileSync('scripts/fixtures/legacy-demo-db.json','utf8'));
 fixture.users.find((user:any)=>user.role==='admin').password='admin123';
 fixture.settings.telegramBot = { ...fixture.settings.telegramBot, enabled: false, bot_token: '' };
 const directory = mkdtempSync(join(tmpdir(), 'fixflow-test-'));
@@ -84,6 +86,6 @@ try {
  check('Login cooldown blocks further attempts',(await api('/api/auth/login','POST',{username:'access_test',password:'ReplacementPassword123!'})).status===429);
  check('Email cannot bypass account cooldown',(await api('/api/auth/login','POST',{username:'access@example.test',password:'ReplacementPassword123!'})).status===429);
  check('Other administrator remains usable',(await api('/api/auth/me','GET',undefined,admin)).status===200);
- check('Source data remains unchanged',readFileSync(sourcePath).equals(original));
+ check('Source data remains unchanged',sourceBytes().equals(original));
  console.log(`LOGIN SECURITY & ROLES HTTP SUMMARY: ${passed} PASSED`);
 }finally{await stop();rmSync(directory,{recursive:true,force:true});}
