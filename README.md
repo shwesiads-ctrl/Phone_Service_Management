@@ -1,5 +1,7 @@
 # FixFlow Repair & Service Manager
 
+[MIT License](LICENSE) · [Setup Guide — မြန်မာ / English](SETUP.md)
+
 [Download updated source ZIP](downloads/FixFlow-LAN-Work-Updated.zip?raw=true)
 
 The published package excludes saved Telegram credentials. Re-enter your bot token in Telegram Settings after installation.
@@ -150,3 +152,9 @@ Login, Navbar and Appearance Settings offer Light, Dark and System modes. Dark s
 Login မှားယွင်းမှု ၅ ကြိမ်ဖြစ်ပါက ထိုအကောင့်/စက်အတွက် ၁၅ မိနစ် ကန့်သတ်ထားသည်။ Admin က **User Roles & Access** မှ role၊ account enable/disable နှင့် password reset စီမံနိုင်သည်။ ကိုယ်ပိုင် Admin လုပ်ပိုင်ခွင့်ပိတ်ခြင်းနှင့် နောက်ဆုံး Admin ဖယ်ရှားခြင်းကို ကာကွယ်ထားသည်။ Role ပြောင်းပြီးနောက် သက်ဆိုင်ရာ user ကို Login ပြန်ဝင်စေသည်။
 
 Five failed logins for an account/IP trigger a 15-minute cooldown, with a broader IP limit against username spraying. Successful login clears that account’s failure count. User access changes revoke affected sessions. Admins cannot disable/demote themselves or the last active admin; technician roles require a linked technician profile. Sessions are checked on browser focus and every 30 seconds. Default-password session switching was removed; account switching requires signing in normally.
+
+## License / လိုင်စင်
+
+This project is licensed under the [MIT License](LICENSE). You may use, modify and distribute it, including commercially, while retaining the copyright and license notice.
+
+ဤ project ကို [MIT License](LICENSE) ဖြင့် အသုံးပြု၊ ပြင်ဆင်၊ ပြန်လည်ဖြန့်ဝေနိုင်ပြီး စီးပွားရေးအတွက်လည်း အသုံးပြုနိုင်ပါသည်။ Copyright နှင့် license စာသားကို ဆက်လက်ထည့်ထားရပါမည်။

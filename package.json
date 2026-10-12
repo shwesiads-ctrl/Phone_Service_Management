@@ -75,5 +75,6 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
     }
-  }
+  },
+  "license": "MIT"
 }
