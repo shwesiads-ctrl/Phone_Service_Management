@@ -55,7 +55,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     searchQuery,
     setSearchQuery,
     logout,
-    license,
     navigate,
     t,
     serverStatus,
@@ -290,26 +289,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 </div>
 
-                {/* 3. LICENSE */}
-                <div className="p-2 rounded-lg bg-[var(--surface-2)]/60 border border-[var(--border)] flex items-center justify-between">
-                  <div>
-                    <span className="font-sans font-bold text-[var(--text)] block text-xs">3. SYSTEM LICENSE</span>
-                    <span className="text-[10px] text-[var(--text-muted)] block">
-                      {license.plan} Plan ({license.license_days} Days)
-                    </span>
-                  </div>
-                  <span
-                    className={`font-black px-2 py-0.5 rounded text-[10px] uppercase ${
-                      license.status === 'ACTIVE'
-                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                        : license.status === 'EXPIRED'
-                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                        : 'bg-slate-500/15 text-slate-600 dark:text-slate-400'
-                    }`}
-                  >
-                    ● {license.status}
-                  </span>
-                </div>
+
               </div>
 
               {/* Offline Warning Banner & Retry */}

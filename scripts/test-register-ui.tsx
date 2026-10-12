@@ -1,3 +1,4 @@
+import release from '../src/config/release.json';
 import React, { act } from 'react';
 import { JSDOM } from 'jsdom';
 import assert from 'node:assert/strict';
@@ -45,8 +46,8 @@ import { NewUserRegisterModal } from '../src/modals/NewUserRegisterModal';
  await act(async()=>root.render(<AboutView/>));
  check('About shows developer name and customization service',document.body.textContent!.includes('MyominAung')&&document.body.textContent!.includes('စိတ်ကြိုက်'));
  check('Developer contacts use correct actionable links',document.querySelector('a[href="https://t.me/kominit"]')&&document.querySelector('a[href="mailto:shwetaythan@gmail.com"]')&&document.querySelector('a[href="https://wa.me/959256060722"]'));
- check('About includes current release and Myanmar update notes',document.body.textContent!.includes('2.8.6')&&document.body.textContent!.includes('ယခု Version')&&document.body.textContent!.includes('Telegram'));
- for(const [language,heading,phrase] of [['en','What’s new','PHP CLI'],['th','มีอะไรใหม่','PHP CLI'],['zh','此版本更新','PHP CLI']] as const){app.language=language;await act(async()=>root.render(<AboutView/>));check('About follows '+language,document.body.textContent!.includes(heading)&&document.body.textContent!.includes(phrase));}
+ check('About includes current release and Myanmar update notes',document.body.textContent!.includes(release.version)&&document.body.textContent!.includes('ယခု Version')&&document.body.textContent!.includes(release.changes.my[0]));
+ for(const [language,heading,phrase] of [['en','What’s new',release.changes.en[0]],['th','มีอะไรใหม่',release.changes.th[0]],['zh','此版本更新',release.changes.zh[0]]] as const){app.language=language;await act(async()=>root.render(<AboutView/>));check('About follows '+language,document.body.textContent!.includes(heading)&&document.body.textContent!.includes(phrase));}
  await act(async () => root.unmount()); dom.window.close();
  console.log(`REGISTER UI SUMMARY: ${passed} PASSED`);
 })().catch(error=>{console.error(error);process.exitCode=1;});

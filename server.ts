@@ -1267,7 +1267,8 @@ app.post('/api/payments', (req: AuthRequest, res: Response) => {
   }
 
   const receiver = (req.user?.role === 'cashier' ? req.user.full_name : received_by) || req.user?.full_name || req.user?.username || 'Admin';
-  const currency = currency_code || db.getSettings().currency || 'MMK';
+  const currency = currency_code || job.currency_code || 'MMK';
+  if (currency !== (job.currency_code || 'MMK')) return res.status(400).json({error: 'Payment currency must match the service job currency. No automatic conversion is performed.'});
   const finalNote = payment_note || notes || '';
 
   const newPayment = db.createPayment({
@@ -1329,6 +1330,7 @@ app.put('/api/payments/:id', (req: AuthRequest, res: Response) => {
   if (service_job_id !== undefined && !db.getJobById(service_job_id)) {
     return res.status(400).json({ error: 'Target service job does not exist.' });
   }
+  if (service_job_id !== undefined && service_job_id !== oldPayment.service_job_id && (db.getJobById(service_job_id)?.currency_code || 'MMK') !== oldPayment.currency_code) return res.status(400).json({error: 'Target service job currency must match the payment currency.'});
   const editReason = reason || 'Admin updated payment details';
 
   if (amount !== undefined && (!Number.isFinite(Number(amount)) || Number(amount) <= 0)) {
@@ -1546,10 +1548,11 @@ app.post('/api/finance/expense', (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'A description and positive finite amount are required.' });
   }
 
+  if (category !== undefined && (typeof category !== 'string' || !category.trim() || category.trim().length > 80)) return res.status(400).json({error: 'Category must contain 1–80 characters.'});
   const newExpense = db.createExpense({
     date: date || new Date().toISOString(),
     reference: reference || `EXP-${Date.now().toString().slice(-4)}`,
-    category: category || 'Parts',
+    category: typeof category === 'string' ? category.trim() : 'Parts',
     description,
     amount: Number(amount) || 0,
     currency: currency || db.getSettings().currency || 'MMK',
@@ -1577,6 +1580,8 @@ app.put('/api/finance/expense/:id', (req: AuthRequest, res: Response) => {
 
   if (req.body.amount !== undefined && (!Number.isFinite(Number(req.body.amount)) || Number(req.body.amount) <= 0)) return res.status(400).json({ error: 'Amount must be a positive finite number.' });
   if (req.body.description !== undefined && (typeof req.body.description !== 'string' || !req.body.description.trim())) return res.status(400).json({ error: 'Description is required.' });
+  if (req.body.category !== undefined && (typeof req.body.category !== 'string' || !req.body.category.trim() || req.body.category.trim().length > 80)) return res.status(400).json({error: 'Category must contain 1–80 characters.'});
+  if (typeof req.body.category === 'string') req.body.category = req.body.category.trim();
   const allowed = ['date', 'reference', 'description', 'amount', 'currency', 'payment_method', 'category', 'service_number', 'service_job_id', 'customer_name', 'technician_id', 'technician_name'];
   const updates = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)));
   if (updates.amount !== undefined) updates.amount = Number(updates.amount);
@@ -1867,6 +1872,10 @@ const validateDevice = (req: Request, res: Response, next: NextFunction) => {
   }
   if (req.method === 'PUT' && req.body.customer_id !== undefined && db.getJobs().some(j => j.device_id === req.params.id && j.customer_id !== req.body.customer_id)) {
     return res.status(409).json({ error: 'Cannot transfer a device linked to a repair job.' });
+  }
+  if (req.body.category !== undefined) {
+    if (typeof req.body.category !== 'string' || !req.body.category.trim() || req.body.category.trim().length > 80) return res.status(400).json({error: 'Category must contain 1–80 characters.'});
+    req.body.category = req.body.category.trim();
   }
   for (const key of ['brand', 'model']) {
     if ((req.method === 'POST' || req.body[key] !== undefined) && (typeof req.body[key] !== 'string' || !req.body[key].trim())) {

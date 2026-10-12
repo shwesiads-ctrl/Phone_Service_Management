@@ -179,6 +179,18 @@ try {
   const j4 = (await createJob()).data;
   check('Job IDs and service numbers remain unique after deletion', ![j1.id, j3.id].includes(j4.id) && ![j1.service_number, j3.service_number].includes(j4.service_number));
   check('Zero-day warranty stays zero', j1.warranty_days === 0);
+  const usdJob = (await createJob({currency_code:'USD', service_charge:45000})).data;
+  const usdReceipt = await api('/api/payments', 'POST', {service_job_id:usdJob.id,amount:30000},admin);
+  check('Payment without currency inherits saved job currency instead of shop currency', usdReceipt.status===201 && usdReceipt.data.currency_code==='USD');
+  check('Wrong-currency payment rejected without changing settlement', (await api('/api/payments','POST',{service_job_id:usdJob.id,amount:100,currency_code:'MMK'},admin)).status===400 && (await api(`/api/jobs/${usdJob.id}`,'GET',undefined,admin)).data.amount_paid===30000);
+  check('Receipt cannot be moved to a job using a different currency', (await api(`/api/payments/${usdReceipt.data.id}`,'PUT',{service_job_id:j1.id},admin)).status===400);
+  const customExpense = await api('/api/finance/expense','POST',{category:'Custom workshop category',description:'Custom expense',amount:25,currency:'USD'},admin);
+  check('Custom expense category is saved',customExpense.status===201 && customExpense.data.category==='Custom workshop category');
+  const editedExpense = await api(`/api/finance/expense/${customExpense.data.id}`,'PUT',{category:'Edited workshop category'},admin);
+  check('Expense category can be edited without changing currency or amount',editedExpense.status===200 && editedExpense.data.category==='Edited workshop category' && editedExpense.data.currency==='USD' && editedExpense.data.amount===25);
+  check('Blank expense category rejected', (await api(`/api/finance/expense/${customExpense.data.id}`,'PUT',{category:'   '},admin)).status===400);
+  check('Device category accepts custom values', (await api(`/api/devices/${d1.id}`,'PUT',{category:'Console Repairs'},admin)).data.category==='Console Repairs');
+  await api(`/api/jobs/${usdJob.id}`,'DELETE',undefined,admin);
   const payment = (await api('/api/payments', 'POST', { service_job_id: j1.id, amount: 100 }, admin)).data;
   check('Payment updates repair balance', (await api(`/api/jobs/${j1.id}`, 'GET', undefined, admin)).data.payment_status === 'paid');
   const staleUpdate = await api(`/api/jobs/${j1.id}`, 'PUT', { amount_paid: 0, diagnosis: 'Updated after receipt' }, admin);

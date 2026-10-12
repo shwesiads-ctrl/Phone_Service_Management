@@ -1,9 +1,11 @@
+import { jobPaymentSummary } from '../utils/jobPayments';
 import { usePaymentSelection } from '../hooks/usePaymentSelection';
 import { PaymentProfileSelector } from '../components/PaymentProfileSelector';
 import { paymentMethodLabel } from '../utils/paymentMethodLabel';
+import { formatCurrency as formatMoney, getCurrencySymbol as currencySymbol } from '../utils/formatters';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { ServiceJob, ServiceJobPart, ServiceStatus, TicketPriority, PaymentMethodConfig } from '../types';
+import { ServiceJob, ServiceJobPart, ServiceStatus, TicketPriority } from '../types';
 import { ThaiBankPaymentScreen } from '../components/ThaiBankPaymentScreen';
 import {
   X,
@@ -35,18 +37,20 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
     currentUser,
     role,
     technicians,
-    currency,
+    currency: shopCurrency,
     updateJob,
     deleteJob,
     recordPayment,
     payments,
-    formatCurrency,
     formatDate,
-    getCurrencySymbol,
     t,
     settings,
     language,
   } = useApp();
+
+  const currency = job.currency_code || 'MMK';
+  const formatCurrency = (amount: number, code = currency) => formatMoney(amount, code);
+  const getCurrencySymbol = () => currencySymbol(currency);
 
   const {profile:activePaymentProfile,selectProfile,methods:availablePaymentMethods}=usePaymentSelection();
   // Local states
@@ -104,16 +108,9 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
     );
   }
 
-  // Get job-specific payments (from either populated job or global payments store)
-  const jobPayments = (job.payments && job.payments.length > 0
-    ? job.payments
-    : payments.filter((p) => p.service_job_id === job.id)
-  );
-
-  // Calculate totals
+  const { records: jobPayments, paid: totalPaid } = jobPaymentSummary(job, payments);
   const partsCost = parts.reduce((sum, p) => sum + (p.total_cost || 0), 0);
   const totalCost = Number(serviceCharge || 0) + partsCost;
-  const totalPaid = jobPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0) || job.amount_paid;
   const balanceDue = Math.max(0, totalCost - totalPaid);
 
   const selectedMethodConfig = availablePaymentMethods.find(
@@ -177,11 +174,13 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
   const handleRecordPayment = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const amountNum = parseFloat(paymentAmount);
-    if (!amountNum || amountNum <= 0) return;
+    if (paymentSaving) return;
+    if (!Number.isFinite(amountNum) || amountNum <= 0) {setErrorMsg('Enter a positive payment amount.');return;}
+    setErrorMsg(null);
 
     setPaymentSaving(true);
     try {
-      const methodName = selectedMethodConfig ? (selectedMethodConfig.thai_name || selectedMethodConfig.name) : paymentMethod;
+      const methodName = selectedMethodConfig ? paymentMethodLabel(selectedMethodConfig, language) : paymentMethod;
       await recordPayment({
         service_job_id: job.id,
         amount: amountNum,
@@ -198,7 +197,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
       setPaymentNotes('');
       setShowPaymentForm(false);
       setPaymentSuccessToast(true);
-      setTimeout(() => setPaymentSuccessToast(false), 2500);
+      window.setTimeout(() => setPaymentSuccessToast(false), 2500);
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to record payment');
     } finally {
@@ -492,7 +491,8 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
                   <span>{t('paymentRecords')} & Settlement</span>
                 </div>
                 <div className="text-[11px] text-[var(--text-muted)] mt-0.5">
-                  Currency in effect: <strong className="text-[var(--primary)]">{currency} ({getCurrencySymbol()})</strong>
+                  Service job currency: <strong className="text-[var(--primary)]">{currency} ({getCurrencySymbol()})</strong>
+                  {currency !== shopCurrency && <p className="mt-1">{language==='my' ? 'အပေါ်ဘားမှ currency ပြောင်းခြင်းသည် job အသစ်များအတွက်သာ ဖြစ်သည်။ ဒီ job ၏ currency ကို မပြောင်းပါ။' : language==='th' ? 'สกุลเงินบนแถบด้านบนใช้กับงานใหม่ งานนี้ยังใช้สกุลเงินที่บันทึกไว้' : language==='zh' ? '顶部币种选择适用于新工作，此工作仍使用已保存的币种。' : 'Toolbar currency applies to new jobs. This job keeps its saved currency.'}</p>}
                 </div>
               </div>
 
@@ -559,7 +559,8 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
                         <input
                           type="number"
                           required
-                          min="1"
+                          min="0.01"
+                          step="0.01"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
                           placeholder={balanceDue > 0 ? String(balanceDue) : (currency === 'MMK' ? '50000' : '1500.00')}
@@ -600,7 +601,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
                 {selectedMethodConfig && (selectedMethodConfig.account_number || selectedMethodConfig.id === 'kplus' || selectedMethodConfig.id === 'scb_easy' || selectedMethodConfig.id === 'promptpay' || selectedMethodConfig.id === 'truemoney' || selectedMethodConfig.id === 'bank_transfer') ? (
                   <ThaiBankPaymentScreen
                     methodConfig={selectedMethodConfig}
-                    amount={parseFloat(paymentAmount) || balanceDue || 0}
+                    amount={parseFloat(paymentAmount) || 0}
                     currency={currency}
                     serviceNumber={job.service_number}
                     customerName={job.customer?.name}

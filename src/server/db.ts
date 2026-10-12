@@ -673,7 +673,7 @@ class Database {
     const job = this.data.service_jobs[jobIndex];
     // Active payments only (exclude soft deleted)
     const activePayments = this.data.service_payments.filter(
-      (p) => p.service_job_id === job.id && !p.is_deleted
+      (p) => p.service_job_id === job.id && !p.is_deleted && p.currency_code === (job.currency_code || 'MMK')
     );
     const totalPaid = activePayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     const totalCost = job.total_cost || (job.service_charge + job.parts_cost);

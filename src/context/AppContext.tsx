@@ -131,6 +131,7 @@ interface AppContextType {
     payment_method?: string;
   }) => Promise<ExpenseRecord>;
   deleteIncome: (id: string) => Promise<void>;
+  updateExpense: (id: string, data: Partial<ExpenseRecord>) => Promise<ExpenseRecord>;
   deleteExpense: (id: string) => Promise<void>;
 
   // Backup & Restore (Admin only)
@@ -933,7 +934,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       headers: getAuthHeaders(),
       body: JSON.stringify({
         ...paymentData,
-        currency_code: paymentData.currency_code || currency,
+        currency_code: paymentData.currency_code || jobs.find(job => job.id === paymentData.service_job_id)?.currency_code,
         reference_number: paymentData.reference_number || '',
         payment_note: paymentData.payment_note || paymentData.notes || '',
       }),
@@ -1141,6 +1142,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return created;
   };
 
+  const updateExpense = async (id: string, data: Partial<ExpenseRecord>): Promise<ExpenseRecord> => {
+    const response = await fetch(`/api/finance/expense/${encodeURIComponent(id)}`, {method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(data)});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to update expense');
+    await refreshFinance();
+    return result;
+  };
+
   const deleteIncome = async (id: string): Promise<void> => {
     const res = await fetch(`/api/finance/income/${id}`, {
       method: 'DELETE',
@@ -1326,6 +1335,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         refreshFinance,
         createIncome,
         createExpense,
+        updateExpense,
         deleteIncome,
         deleteExpense,
         backupMetadata,

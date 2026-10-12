@@ -24,6 +24,8 @@ export const DevicesView: React.FC = () => {
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<Device | null>(null);
+  const [savingDevice, setSavingDevice] = useState(false);
+  const [deviceSaveError, setDeviceSaveError] = useState('');
 
   const [selected,setSelected]=useState<string[]>([]),[preview,setPreview]=useState<CustomerDeletionPreview|null>(null),[deletingIds,setDeletingIds]=useState<string[]>([]),[acknowledged,setAcknowledged]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
   useEffect(()=>setSelected(previous=>previous.filter(id=>devices.some(device=>device.id===id))),[devices]);
@@ -38,6 +40,7 @@ export const DevicesView: React.FC = () => {
   const [conditionNotes, setConditionNotes] = useState('');
 
   const openAddModal = () => {
+    setDeviceSaveError('');
     setEditingDevice(null);
     setBrand('');
     setModel('');
@@ -49,6 +52,7 @@ export const DevicesView: React.FC = () => {
   };
 
   const openEditModal = (dev: Device) => {
+    setDeviceSaveError('');
     setEditingDevice(dev);
     setBrand(dev.brand);
     setModel(dev.model);
@@ -59,31 +63,28 @@ export const DevicesView: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!brand.trim() || !model.trim()) return;
-
-    if (editingDevice) {
-      await updateDevice(editingDevice.id, {
-        brand,
-        model,
-        category,
-        serial_or_imei: serialOrImei,
-        customer_id: customerId,
-        condition_notes: conditionNotes,
-      });
-    } else {
-      await createDevice({
-        brand,
-        model,
-        category,
-        serial_or_imei: serialOrImei,
-        customer_id: customerId,
-        condition_notes: conditionNotes,
-      });
+  const handleSave = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (savingDevice) return;
+    if (!brand.trim() || !model.trim() || !category.trim()) {
+      setDeviceSaveError('Brand, model and category are required.');
+      return;
     }
-
-    setModalOpen(false);
+    setSavingDevice(true);
+    setDeviceSaveError('');
+    try {
+      const data = {
+        brand: brand.trim(), model: model.trim(), category: category.trim(),
+        serial_or_imei: serialOrImei, customer_id: customerId, condition_notes: conditionNotes,
+      };
+      if (editingDevice) await updateDevice(editingDevice.id, data);
+      else await createDevice(data);
+      setModalOpen(false);
+    } catch (error: any) {
+      setDeviceSaveError(error.message || 'Device could not be saved.');
+    } finally {
+      setSavingDevice(false);
+    }
   };
 
   const getCategoryIcon = (cat: Device['category']) => {
@@ -252,7 +253,8 @@ export const DevicesView: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-4 space-y-3.5 text-xs sm:text-sm">
+            <form onSubmit={handleSave} className="p-4 space-y-3.5 text-xs sm:text-sm max-h-[80vh] overflow-y-auto">
+              {deviceSaveError && <p role="alert" className="text-rose-500">{deviceSaveError}</p>}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-[var(--text)] mb-1">
@@ -288,17 +290,8 @@ export const DevicesView: React.FC = () => {
                   <label className="block text-xs font-bold text-[var(--text)] mb-1">
                     Category
                   </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                  >
-                    <option value="smartphone">Smartphone</option>
-                    <option value="laptop">Laptop / MacBook</option>
-                    <option value="tablet">Tablet / iPad</option>
-                    <option value="desktop">Desktop / iMac</option>
-                    <option value="other">Other</option>
-                  </select>
+                  <input required maxLength={80} aria-label="Device category" list="device-categories" value={category} onChange={e=>setCategory(e.target.value)} className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)]" />
+                  <datalist id="device-categories">{[...new Set(['smartphone','laptop','tablet','desktop','audio','other',...devices.map(device=>device.category)])].map(value=><option key={value} value={value}/>)}</datalist>
                 </div>
 
                 <div>
@@ -356,6 +349,7 @@ export const DevicesView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
+                  disabled={savingDevice}
                   className="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white"
                 >
                   {t('save')}

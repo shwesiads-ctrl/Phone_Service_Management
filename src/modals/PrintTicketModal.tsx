@@ -1,3 +1,4 @@
+import { jobPaymentSummary } from '../utils/jobPayments';
 import { paymentMethodLabel } from '../utils/paymentMethodLabel';
 import React, { useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
@@ -12,11 +13,9 @@ export const PrintTicketModal: React.FC<PrintTicketModalProps> = ({job,onClose})
   const receipt=useRef<HTMLElement>(null);
   const [saved,setSaved]=useState(false),[error,setError]=useState(''),[saving,setSaving]=useState(false);
   const assigned=technicians.find(tech=>tech.id===job.technician_id) || job.technician;
-  const records=(job.payments ?? payments.filter(payment=>payment.service_job_id===job.id)).filter(payment=>!payment.is_deleted);
-  const sameCurrency=records.filter(payment=>payment.currency_code===(job.currency_code || 'MMK'));
-  const paid=records.length ? sameCurrency.reduce((sum,payment)=>sum+Number(payment.amount || 0),0) : (job.payments ? 0 : Number(job.amount_paid || 0));
+  const { records, paid, currency } = jobPaymentSummary(job, payments);
   const receivers=[...new Set(records.map(payment=>payment.received_by?.trim() || payment.created_by || '').filter(Boolean))];
-  const money=(value:number)=>formatCurrency(value,job.currency_code);
+  const money=(value:number)=>formatCurrency(value,currency);
   const my=language==='my';
   return <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 overflow-y-auto">
     <div role="dialog" aria-modal="true" aria-labelledby="receipt-modal-title" className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-2xl flex flex-col max-h-[94vh]">
@@ -38,7 +37,7 @@ export const PrintTicketModal: React.FC<PrintTicketModalProps> = ({job,onClose})
           <div className="receipt-note"><span className="receipt-label">Reported problem</span>{job.problem_description}{job.diagnosis && <><br/><span className="receipt-label">Diagnosis</span>{job.diagnosis}</>}</div>
           <table aria-label="Receipt charges"><thead><tr><th>Description</th><th className="amount">Amount ({job.currency_code || 'MMK'})</th></tr></thead><tbody><tr><td>Service charge</td><td className="amount">{money(job.service_charge)}</td></tr>{job.parts_cost>0 && <tr><td>Parts</td><td className="amount">{money(job.parts_cost)}</td></tr>}<tr className="receipt-total"><td>Total</td><td className="amount">{money(job.total_cost)}</td></tr><tr><td>Paid</td><td className="amount">{money(paid)}</td></tr></tbody></table>
           {records.length>0 && <><h3 className="receipt-label">Payment records</h3><table className="receipt-payments" aria-label="Receipt payments"><thead><tr><th>Payment / Date</th><th>Cashier</th><th className="amount">Amount</th></tr></thead><tbody>{records.map(payment=><tr key={payment.id}><td><b>{payment.id}</b><br/>{formatDate(payment.paid_at)}<br/>{paymentMethodLabel({id:payment.payment_method,name:payment.payment_method,enabled:true},language)}{payment.reference_number && <><br/>Ref: {payment.reference_number}</>}</td><td>{payment.received_by || payment.created_by || 'Not recorded'}</td><td className="amount">{formatCurrency(payment.amount,payment.currency_code)}</td></tr>)}</tbody></table></>}
-          <div className="receipt-footer"><b>Warranty: {settings.defaultWarrantyDays ?? 90} days</b><br/>{settings.receiptFooterNote}</div><div className="receipt-signatures"><span>Staff signature</span><span>Customer signature</span></div>
+          <div className="receipt-footer"><b>Warranty: {settings.defaultWarrantyDays ?? 90} days</b><br/>{settings.receiptFooterNote}</div><div className="receipt-signatures"><span>Staff signature</span></div>
         </article>
       </div>
     </div>

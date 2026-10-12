@@ -8,7 +8,7 @@ The published package excludes saved Telegram credentials. Re-enter your bot tok
 
 Staff registration and Telegram Bot settings are available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
 
-## မြန်မာလမ်းညွှန် — Version 2.8.6
+## မြန်မာလမ်းညွှန် — Version 2.8.7
 
 Settings → Local Network မှ PHP CLI On/Off ရွေးနိုင်ပြီး တကယ်အလုပ်လုပ်ကြောင်း စစ်ပြီးမှ On ပြသည်။ Print report ကို app menu မပါဘဲ A4 သီးခြားစာရွက်ဖြင့် ထုတ်သည်။ Technician report တွင် ပထမ ၁၀ ခုသာမက record အားလုံး ထုတ်သည်။ Repair Records service warranty ကို Shop Settings အတိုင်း ပြသည်။ Telegram Summary Preview၊ Delivery History နှင့် daily schedule အသစ် ထည့်ထားသည်။
 
@@ -24,15 +24,18 @@ Technician စာရင်းကို compact table၊ search၊ status filter�
 
 **Login ဝင်ပြီး Admin menu မှဖွင့်ရန်:** လက်ရှိ Admin ဖြင့် Login ဝင်ပြီး အပေါ်ညာဘက် အကောင့် menu → **New User Register** ကို ဖွင့်ပါ။ Account role ကို **Admin** ရွေးပြီး အမည်၊ username၊ password နှင့် confirm password ဖြည့်ပါ။ Technician / Cashier အကောင့်များအတွက်လည်း သက်ဆိုင်ရာ role ကို ရွေးနိုင်သည်။ အဟောင်း Quick Register entry ကို ဖျောက်ထားပြီး လက်ရှိအကောင့်များကို ဆက်လက်အသုံးပြုနိုင်သည်။
 
-**Developer:** MyominAung · [Telegram @kominit](https://t.me/kominit) · [Email](mailto:shwetaythan@gmail.com) · [WhatsApp 09256060722](https://wa.me/959256060722)
+**Email:** [shwetaythan@gmail.com](mailto:shwetaythan@gmail.com)
 
-ဆိုင်လုပ်ငန်းအလိုက် feature အသစ်ထည့်ခြင်း၊ UI / receipt / ID card ပုံစံပြင်ခြင်း၊ payment channel၊ report၊ LAN setup နှင့် အသုံးပြုနည်းအကူအညီအတွက် ဆက်သွယ်နိုင်ပါသည်။ လိုအပ်သည့်လုပ်ဆောင်ချက်နှင့် နမူနာပုံစံကို ပေးပို့ပြီး အသေးစိတ်ညှိနှိုင်းနိုင်သည်။
 
 လက်ရှိ version တွင် Search၊ နံပါတ်စဉ်ပါ pagination၊ Receipt JPEG Save၊ Shop Settings၊ Cashier ID အတိုနှင့် Notifications ပြင်ဆင်မှုများ ပါဝင်သည်။ ဘာသာစကားမှာ မြန်မာ / English / Thai / Chinese ဖြစ်ပြီး ငွေကြေးကို Ks / USD / THB / CNY မှ စိတ်ကြိုက်ရွေးနိုင်သည်။
 
 **တပ်ဆင်ရန်:** Node.js 22.12 နှင့်အထက်ဖြင့် `npm ci` → `npm run build` → `npm run start:production` လုပ်ပါ။ Update မလုပ်မီ backup သိမ်းပြီး မူလ `data/` နှင့် ၎င်းအတွင်းရှိ `.security/` ကို ထိန်းထားပါ။ Recovery အောင်မြင်တိုင်း key အသစ်ပြောင်းသောကြောင့် key အသစ်ကို ထပ်သိမ်းရန်လိုသည်။
 
-## Version 2.8.6 — Reliable LAN controls, printing and Telegram
+Receipt နှင့် Job Detail တွင် job currency တစ်မျိုးတည်းဖြင့် တွက်ပြပြီး currency မတူသော payment အသစ်ကို လက်မခံပါ။ Receipt မှာ ဆိုင် logo နှင့် Staff signature ပါပြီး Customer signature ဖယ်ထားသည်။ Expense နှင့် Device Category ကို စိတ်ကြိုက်ရေးထည့်/ပြင်နိုင်သည်။ Finance တွင် Ledger currency ရွေးပြီး currency တူသော စာရင်းများကိုသာ ပေါင်းပြသည်။ System License plan/day badge ကို ဖယ်ထားသည်။
+
+## Version 2.8.7 — Payment consistency, custom categories and receipt updates
+
+Version 2.8.7 fixes job/payment currency consistency without converting historical amounts. Receipts retain shop logos and staff signatures, with customer signatures removed. Expense records can be edited, and expense/device categories accept custom names. The system license plan/day badge is removed.
 
 The PHP CLI switch verifies actual backend health and waits for the process to exit before showing Off. Reports print in an isolated A4 document (landscape for wide service and analytics tables) without clipped modal containers or app navigation, including all filtered records. Repair Records service warranty follows shop policy. Telegram summaries support previews, four languages, time zones, delivery history and opt-in schedules.
 
@@ -46,7 +49,7 @@ Technician management now uses a compact paginated table with name/contact/ID se
 
 An existing administrator can also create a **new Admin account** from the account menu → **New User Register**, using a unique username and confirmed password of at least eight characters. Technician and cashier roles are also available. The old Quick User Register entry is hidden; existing accounts remain available.
 
-Developer: **MyominAung** · [Telegram @kominit](https://t.me/kominit) · [shwetaythan@gmail.com](mailto:shwetaythan@gmail.com) · [WhatsApp 09256060722](https://wa.me/959256060722). Contact the developer for custom features, UI/receipt/card layouts, payment channels, reports, LAN setup and usage support.
+**Email:** [shwetaythan@gmail.com](mailto:shwetaythan@gmail.com)
 
 About and the sidebar use shared release metadata. Every product upgrade must update that metadata, accurate About content and the Myanmar/English README notes; see [AGENTS.md](AGENTS.md).
 
@@ -178,3 +181,6 @@ Save the bot token and recipient first. In Settings → Telegram → Daily Summa
 Bot/recipient ကို Save လုပ်ပြီး Daily Summary panel မှ အချိန်၊ timezone နှင့် ဘာသာစကား ရွေးကာ schedule ကို ဖွင့်ပြီး Save လုပ်ပါ။ Automatic Telegram alerts ကိုလည်း ဖွင့်ထားရမည်။ Server နှင့် Internet အလုပ်လုပ်နေမှ ပို့နိုင်သည်။ တစ်ရက်တစ်ကြိမ်သာ ကြိုးစားပြီး failure ကို Delivery History မှ ကြည့်နိုင်သည်။ Preview သည် စာမပို့ပါ။
 
 The PHP switch controls the managed PHP endpoint; the Node backend remains required. PHP Off closes its port. Manually started PHP processes must be stopped from their own terminal. Physical LAN connectivity and printer-driver margins should be checked on the destination PC.
+
+
+Finance uses a selectable ledger currency so totals never add different currencies together. The currency selector also sets the currency of newly recorded income and expenses; editing an existing expense preserves its original currency.

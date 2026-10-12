@@ -73,7 +73,7 @@ export interface Device {
   id: string;
   brand: string;
   model: string;
-  category: 'smartphone' | 'laptop' | 'tablet' | 'desktop' | 'audio' | 'other';
+  category: string;
   serial_or_imei: string;
   customer_id: string;
   condition_notes: string;

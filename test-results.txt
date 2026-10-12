@@ -1,28 +1,29 @@
-FixFlow 2.8.6 validation: TypeScript lint and fresh frontend/server builds passed.
-The extracted source ZIP passed npm test without a shipped database. Chromium generated four multi-page PDFs; every one contains all 180 fixture records once, with correct orientation and no app/modal controls.
-Actual PHP CLI start, health, repeated On, occupied ports, Off endpoint closure and shutdown were checked. Telegram traffic was mocked: no live messages were sent. The actual scheduling worker and restart deduplication passed.
-Physical printer hardware and remote devices were not available; their drivers/network settings remain destination-PC checks. Existing local data remains byte-for-byte unchanged.
+FixFlow 2.8.7 validation
+TypeScript lint, npm test, fresh frontend and server builds passed. The extracted source ZIP passed lint and npm test without a shipped database.
+HTTP regressions: 150 passed plus 38 existing functional checks. Chromium UI: 40 passed, including mobile Light/Dark, receipt logo/signature, JPEG saves and multi-page reports.
+Targeted payment/category UI tests passed after final form refactoring and currency fallback changes. Finance summaries exclude other currencies and deleted records; expense edits preserve original currency and amount.
+Tests use isolated fixtures; Telegram transport is mocked. Original local database remains byte-for-byte unchanged. Physical printers and remote PCs were not exercised.
 
 
-> react-example@2.8.6 test
-> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx && node --import tsx scripts/test-cashier-recovery.ts && node --import tsx scripts/test-recovery-store.ts && node scripts/run-notification-ui.cjs scripts/test-account-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-manual-currency-ui.tsx --real-context && node --import tsx scripts/test-china-profiles.ts && node scripts/run-notification-ui.cjs scripts/test-china-dashboard-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-pagination-ui.tsx && node --import tsx scripts/test-admin-register.ts && node scripts/run-notification-ui.cjs scripts/test-login-register-ui.tsx && node --import tsx scripts/test-first-admin.ts && node --import tsx scripts/test-security-roles.ts && node scripts/run-notification-ui.cjs scripts/test-user-access-ui.tsx && node --import tsx scripts/test-device-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-device-payment-ui.tsx && node --import tsx scripts/test-telegram-summary.ts && node --import tsx scripts/test-telegram-upgrade.ts && node scripts/run-notification-ui.cjs scripts/test-report-print-ui.tsx
+> react-example@2.8.7 test
+> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx && node --import tsx scripts/test-cashier-recovery.ts && node --import tsx scripts/test-recovery-store.ts && node scripts/run-notification-ui.cjs scripts/test-account-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-manual-currency-ui.tsx --real-context && node --import tsx scripts/test-china-profiles.ts && node scripts/run-notification-ui.cjs scripts/test-china-dashboard-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-pagination-ui.tsx && node --import tsx scripts/test-admin-register.ts && node scripts/run-notification-ui.cjs scripts/test-login-register-ui.tsx && node --import tsx scripts/test-first-admin.ts && node --import tsx scripts/test-security-roles.ts && node scripts/run-notification-ui.cjs scripts/test-user-access-ui.tsx && node --import tsx scripts/test-device-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-device-payment-ui.tsx && node --import tsx scripts/test-telegram-summary.ts && node --import tsx scripts/test-telegram-upgrade.ts && node scripts/run-notification-ui.cjs scripts/test-report-print-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-payment-category-ui.tsx
 
 
-> react-example@2.8.6 build
+> react-example@2.8.7 build
 > node scripts/check-release.cjs && vite build
 
-Release 2.8.6: About metadata, package versions and bilingual README checked.
+Release 2.8.7: About metadata, package versions and bilingual README checked.
 vite v8.3.4 building client environment for production...
 transforming...
-✓ 1755 modules transformed.
+✓ 1756 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/index.html                        2.34 kB │ gzip:   0.97 kB
-dist/assets/index-BPUYXEnJ.css        85.06 kB │ gzip:  13.14 kB
-dist/assets/html2canvas-CU-hATeM.js  199.45 kB │ gzip:  46.76 kB
-dist/assets/index-Blr2hGma.js        927.78 kB │ gzip: 217.74 kB
+dist/assets/index-DsVxOjg2.css        85.27 kB │ gzip:  13.16 kB
+dist/assets/html2canvas-CPjK0bdt.js  199.45 kB │ gzip:  46.76 kB
+dist/assets/index-vZxYbJAe.js        929.60 kB │ gzip: 218.65 kB
 
-✓ built in 349ms
+✓ built in 393ms
 [plugin builtin:vite-reporter]
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
@@ -153,6 +154,13 @@ PASS: Infinite deposit rejected
 PASS: Invalid warranty rejected
 PASS: Job IDs and service numbers remain unique after deletion
 PASS: Zero-day warranty stays zero
+PASS: Payment without currency inherits saved job currency instead of shop currency
+PASS: Wrong-currency payment rejected without changing settlement
+PASS: Receipt cannot be moved to a job using a different currency
+PASS: Custom expense category is saved
+PASS: Expense category can be edited without changing currency or amount
+PASS: Blank expense category rejected
+PASS: Device category accepts custom values
 PASS: Payment updates repair balance
 PASS: Stale modal cannot overwrite payment ledger
 PASS: Infinite payment rejected
@@ -238,7 +246,7 @@ PASS: Cleared customers stay empty after restart
 PASS: Unreadable database fails without overwriting it
 PASS: Original uploaded database is byte-for-byte unchanged
 
-REGRESSION SUMMARY: 143 PASSED (plus the existing functional suite)
+REGRESSION SUMMARY: 150 PASSED (plus the existing functional suite)
 PASS: Bell shows unread count before opening
 PASS: Notification panel starts closed
 PASS: Opening the bell shows all inbox events
@@ -662,6 +670,7 @@ PASS: Schedule remains explicitly off
 PASS: Source database remains unchanged
 TELEGRAM UPGRADE HTTP SUMMARY: 17 PASSED
 PASS: Repair, technician, finance and payment reports print all 125 records once without app/modal controls; Telegram preview does not send and schedule requires explicit save; PHP On/Off only changes after successful server actions.
+PASS: Mixed/deleted payments excluded; USD job totals and submission stay USD under MMK shop; receipt logo/staff signature and no customer signature; custom expense category edit failure/retry preserves amounts and currency.
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.0
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
@@ -669,11 +678,8 @@ npm notice To update run: npm install -g npm@12.2.0
 npm notice
 
 
-PASS: Repair, technician, finance and payment reports print all 125 records once without app/modal controls; Telegram preview does not send and schedule requires explicit save; PHP On/Off only changes after successful server actions.
 
-
-
-> react-example@2.8.6 test:cashier:browser
+> react-example@2.8.7 test:cashier:browser
 > node scripts/test-cashier-browser.cjs
 
 PASS: Header search navigates and finds trimmed customer name
@@ -704,11 +710,19 @@ PASS: Top bar offers exactly four currencies
 PASS: Top-bar currency selection updates
 PASS: Professional cashier card renders with theme options
 PASS: Receipt removes Balance due and follows 90-day shop setting
+PASS: Receipt keeps staff signature and removes customer signature
+PASS: Uploaded shop logo renders in service receipt
+PASS: Receipt remains readable in light
+PASS: Receipt remains readable in dark
+PASS: Saved USD job totals remain USD under a different toolbar currency
+PASS: Job details fit mobile light
+PASS: Job details fit mobile dark
+PASS: Browser payment submits saved job currency
 PASS: history report prints all 180 rows and excludes modal controls
 PASS: technician report prints all 180 rows and excludes modal controls
 PASS: finance report prints all 180 rows and excludes modal controls
 PASS: payments report prints all 180 rows and excludes modal controls
-CASHIER BROWSER SUMMARY: 32 PASSED
+CASHIER BROWSER SUMMARY: 40 PASSED
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.0
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
@@ -716,78 +730,22 @@ npm notice To update run: npm install -g npm@12.2.0
 npm notice
 
 
-PASS: history: 8 pages, 180 records exactly once; one shop heading; correct paper orientation; no app/modal controls.
-PASS: technician: 6 pages, 180 records exactly once; one shop heading; correct paper orientation; no app/modal controls.
-PASS: finance: 5 pages, 180 records exactly once; one shop heading; correct paper orientation; no app/modal controls.
-PASS: payments: 7 pages, 180 records exactly once; one shop heading; correct paper orientation; no app/modal controls.
 
-
-PASS: PHP CLI is detected
-PASS: Network details use configured backend port
-PASS: PHP rejects Node port collision
-PASS: Occupied port returns failure rather than false success
-PASS: PHP reports ready only after actual backend health check
-PASS: Repeated On verifies the existing server
-PASS: PHP proxies custom-port backend
-PASS: PHP serves deep-link SPA
-PASS: PHP serves production JS asset
-PASS: PHP forwards POST body for login
-PASS: PHP forwards bearer Authorization
-PASS: PHP preserves backend rejection status
-PASS: Payment profile is persisted as manual through PHP
-PASS: PHP stop succeeds
-PASS: Off closes the PHP HTTP endpoint
-PASS: Network status becomes stopped
-PASS: PHP can restart
-PASS: Stopping Node also stops its PHP child
-PASS: Manual profile survives server restart
-PASS: Source database is unchanged
-PHP CLI & MANUAL PAYMENTS SUMMARY: 20 PASSED
-
-
-PASS: Preview is admin-only
-PASS: Delivery history is admin-only
-PASS: Invalid calendar dates rejected
-PASS: Invalid summary time rejected
-PASS: Invalid time zone rejected
-PASS: Unsupported summary language rejected
-PASS: Preview uses selected language and time zone
-PASS: Preview excludes credentials
-PASS: Preview creates no delivery history
-PASS: Partial recipient failure is reported
-PASS: History records successful and failed recipients
-PASS: History contains no bot token
-PASS: Manual summary delivery succeeds
-PASS: Successful delivery updates bot connection status
-PASS: History survives restart
-PASS: Schedule remains explicitly off
-PASS: Source database remains unchanged
-TELEGRAM UPGRADE HTTP SUMMARY: 17 PASSED
-
-
-PASS: Actual schedule worker delivers one mocked summary
-PASS: Scheduled attempt day is persisted
-PASS: Restart does not send the daily summary twice
-PASS: Real shop database is unchanged
-TELEGRAM SCHEDULE WORKER SUMMARY: 4 PASSED
-
-
-
-> react-example@2.8.6 build
+> react-example@2.8.7 build
 > node scripts/check-release.cjs && vite build
 
-Release 2.8.6: About metadata, package versions and bilingual README checked.
+Release 2.8.7: About metadata, package versions and bilingual README checked.
 vite v8.3.4 building client environment for production...
 transforming...
-✓ 1755 modules transformed.
+✓ 1756 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/index.html                        2.34 kB │ gzip:   0.97 kB
-dist/assets/index-BPUYXEnJ.css        85.06 kB │ gzip:  13.14 kB
-dist/assets/html2canvas-CU-hATeM.js  199.45 kB │ gzip:  46.76 kB
-dist/assets/index-Blr2hGma.js        927.78 kB │ gzip: 217.74 kB
+dist/assets/index-DsVxOjg2.css        85.27 kB │ gzip:  13.16 kB
+dist/assets/html2canvas-DMntzUa1.js  199.45 kB │ gzip:  46.76 kB
+dist/assets/index-CBjmw74t.js        929.50 kB │ gzip: 218.63 kB
 
-✓ built in 414ms
+✓ built in 355ms
 [plugin builtin:vite-reporter]
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
@@ -798,3 +756,13 @@ npm notice New major version of npm available! 11.9.0 -> 12.2.0
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
 npm notice To update run: npm install -g npm@12.2.0
 npm notice
+
+
+
+> react-example@2.8.7 desktop:build-server
+> esbuild server.ts --bundle --platform=node --format=cjs --packages=external --outfile=server.cjs
+
+
+  server.cjs  188.8kb
+
+⚡ Done in 20ms

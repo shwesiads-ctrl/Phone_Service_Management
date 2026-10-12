@@ -3,7 +3,7 @@ import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/Pagination';
 import React, { useState, useMemo, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { IncomeRecord, ExpenseRecord, Currency } from '../types';
+import { ExpenseRecord, Currency } from '../types';
 import {
   DollarSign,
   TrendingUp,
@@ -41,16 +41,14 @@ export const FinanceView: React.FC = () => {
     expenseRecords,
     createIncome,
     createExpense,
+    updateExpense,
     deleteIncome,
     deleteExpense,
     technicians,
-    jobs,
     settings,
-    currency,
-    formatCurrency,
+    currency: shopCurrency,
+    formatCurrency: formatMoney,
     formatDate,
-    license,
-    navigate,
     t,
   } = useApp();
 
@@ -70,6 +68,10 @@ export const FinanceView: React.FC = () => {
   }
 
 
+
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency | null>(null);
+  const currency = selectedCurrency || shopCurrency;
+  const formatCurrency = (amount: number, code = currency) => formatMoney(amount, code);
 
   // Active view tab
   const [activeTab, setActiveTab] = useState<'summary' | 'income' | 'expense'>('summary');
@@ -115,6 +117,8 @@ export const FinanceView: React.FC = () => {
   const [newExpDesc, setNewExpDesc] = useState('');
   const [newExpAmount, setNewExpAmount] = useState('');
   const [newExpPayMethod, setNewExpPayMethod] = useState('Cash');
+  const [editingExpense, setEditingExpense] = useState<ExpenseRecord | null>(null);
+  const [expenseError, setExpenseError] = useState('');
   const [expenseSaving, setExpenseSaving] = useState(false);
 
   // Helper date preset changer
@@ -143,6 +147,7 @@ export const FinanceView: React.FC = () => {
   // Filter Income Records
   const filteredIncome = useMemo(() => {
     return incomeRecords.filter((inc) => {
+      if (inc.is_deleted || (inc.currency || shopCurrency) !== currency) return false;
       if (dateFrom && inc.date.slice(0, 10) < dateFrom) return false;
       if (dateTo && inc.date.slice(0, 10) > dateTo) return false;
       if (selectedTech !== 'all' && inc.technician_id !== selectedTech) return false;
@@ -162,11 +167,12 @@ export const FinanceView: React.FC = () => {
       }
       return true;
     });
-  }, [incomeRecords, dateFrom, dateTo, selectedTech, selectedPaymentMethod, searchQuery]);
+  }, [incomeRecords, dateFrom, dateTo, selectedTech, selectedPaymentMethod, searchQuery, currency, shopCurrency]);
 
   // Filter Expense Records
   const filteredExpense = useMemo(() => {
     return expenseRecords.filter((exp) => {
+      if (exp.is_deleted || (exp.currency || shopCurrency) !== currency) return false;
       if (dateFrom && exp.date.slice(0, 10) < dateFrom) return false;
       if (dateTo && exp.date.slice(0, 10) > dateTo) return false;
       if (selectedCategory !== 'all' && exp.category !== selectedCategory) return false;
@@ -185,9 +191,9 @@ export const FinanceView: React.FC = () => {
       }
       return true;
     });
-  }, [expenseRecords, dateFrom, dateTo, selectedCategory, selectedPaymentMethod, searchQuery]);
+  }, [expenseRecords, dateFrom, dateTo, selectedCategory, selectedPaymentMethod, searchQuery, currency, shopCurrency]);
 
-  const paginationKey = JSON.stringify([dateFrom, dateTo, selectedTech, selectedPaymentMethod, selectedCategory, searchQuery]);
+  const paginationKey = JSON.stringify([currency, dateFrom, dateTo, selectedTech, selectedPaymentMethod, selectedCategory, searchQuery, currency, shopCurrency]);
   const combinedRecords = [...filteredIncome.map(i => ({ ...i, txType: 'income' as const })), ...filteredExpense.map(e => ({ ...e, txType: 'expense' as const }))].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const combinedPage = usePagination(combinedRecords, paginationKey);
   const incomePage = usePagination(filteredIncome, paginationKey);
@@ -213,7 +219,7 @@ export const FinanceView: React.FC = () => {
         technician_id: newIncTechId || undefined,
         description: newIncDesc.trim(),
         amount: amountNum,
-        currency,
+        currency: shopCurrency,
         payment_method: newIncPayMethod,
       });
 
@@ -234,32 +240,36 @@ export const FinanceView: React.FC = () => {
   const handleCreateExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     const amountNum = parseFloat(newExpAmount);
-    if (!amountNum || amountNum <= 0 || !newExpDesc.trim()) return;
+    if (expenseSaving) return;
+    if (!Number.isFinite(amountNum) || amountNum <= 0 || !newExpDesc.trim() || !newExpCategory.trim()) {setExpenseError('Enter a category, description and positive amount.');return;}
 
     setExpenseSaving(true);
+    setExpenseError('');
     try {
-      await createExpense({
+      const expenseData = {
         date: newExpDate ? new Date(newExpDate).toISOString() : new Date().toISOString(),
         reference: newExpRef.trim() || `EXP-${Date.now().toString().slice(-4)}`,
-        category: newExpCategory,
+        category: newExpCategory.trim(),
         description: newExpDesc.trim(),
         amount: amountNum,
-        currency,
+        currency: editingExpense?.currency || currency,
         payment_method: newExpPayMethod,
-      });
+      };
+      if (editingExpense) await updateExpense(editingExpense.id, expenseData);
+      else await createExpense(expenseData);
 
       setNewExpDesc('');
       setNewExpAmount('');
       setNewExpRef(`EXP-${Date.now().toString().slice(-4)}`);
       setExpenseModalOpen(false);
     } catch (err: any) {
-      alert(err.message || 'Failed to save expense record');
+      setExpenseError(err.message || 'Failed to save expense record');
     } finally {
       setExpenseSaving(false);
     }
   };
 
-  const expenseCategories = [
+  const expenseCategories = [...new Set([
     'Parts',
     'Workshop Tools',
     'Shop Rent',
@@ -269,7 +279,8 @@ export const FinanceView: React.FC = () => {
     'Courier & Shipping',
     'Software & Firmware Tools',
     'Other Expenses',
-  ];
+    ...expenseRecords.map(expense => expense.category),
+  ])];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
@@ -291,6 +302,9 @@ export const FinanceView: React.FC = () => {
 
         {/* Quick Action Buttons */}
         <div className="flex flex-wrap items-center gap-2">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">Ledger currency
+            <select aria-label="Finance currency" value={currency} onChange={event=>setSelectedCurrency(event.target.value as Currency)} className="ml-2 p-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]">{(['MMK','USD','THB','CNY'] as Currency[]).map(code=><option key={code} value={code}>{code}</option>)}</select>
+          </label>
           <button
             onClick={() => setIncomeModalOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors cursor-pointer shadow-xs"
@@ -300,7 +314,7 @@ export const FinanceView: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setExpenseModalOpen(true)}
+            onClick={() => {setEditingExpense(null);setExpenseError('');setNewExpCategory('Parts');setNewExpDesc('');setNewExpAmount('');setNewExpDate(new Date().toISOString().slice(0,10));setNewExpRef(`EXP-${Date.now().toString().slice(-4)}`);setNewExpPayMethod('Cash');setExpenseModalOpen(true);}}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition-colors cursor-pointer shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -773,6 +787,7 @@ combinedPage.items.map((tx, rowIndex) => (
                         -{formatCurrency(exp.amount, exp.currency)}
                       </td>
                       <td className="py-3 px-4 text-center font-sans">
+                        <button title="Edit Expense Record" aria-label={`Edit expense ${exp.reference}`} className="p-1 rounded text-[var(--primary)] hover:bg-blue-500/10" onClick={()=>{setEditingExpense(exp);setExpenseError('');setNewExpDate(exp.date.slice(0,10));setNewExpRef(exp.reference);setNewExpCategory(exp.category);setNewExpDesc(exp.description);setNewExpAmount(String(exp.amount));setNewExpPayMethod(exp.payment_method);setExpenseModalOpen(true);}}><Edit2 className="w-3.5 h-3.5"/></button>
                         <button
                           onClick={async () => {
                             if (confirm(`Delete expense record ${exp.reference}?`)) {
@@ -960,7 +975,7 @@ combinedPage.items.map((tx, rowIndex) => (
             <div className="p-4 border-b border-[var(--border)] flex items-center justify-between bg-rose-500/10">
               <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-bold text-sm">
                 <ArrowUpRight className="w-4 h-4" />
-                <span>Record Business Expense</span>
+                <span>{editingExpense ? 'Edit Business Expense' : 'Record Business Expense'} · {editingExpense?.currency || currency}</span>
               </div>
               <button
                 onClick={() => setExpenseModalOpen(false)}
@@ -970,7 +985,8 @@ combinedPage.items.map((tx, rowIndex) => (
               </button>
             </div>
 
-            <form onSubmit={handleCreateExpense} className="p-5 space-y-4 text-xs">
+            <form onSubmit={handleCreateExpense} className="p-5 space-y-4 text-xs max-h-[80vh] overflow-y-auto">
+              {expenseError && <p role="alert" className="text-rose-500">{expenseError}</p>}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-[var(--text)] mb-1">Date *</label>
@@ -996,17 +1012,8 @@ combinedPage.items.map((tx, rowIndex) => (
 
               <div>
                 <label className="block font-bold text-[var(--text)] mb-1">Category *</label>
-                <select
-                  value={newExpCategory}
-                  onChange={(e) => setNewExpCategory(e.target.value)}
-                  className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] font-semibold cursor-pointer"
-                >
-                  {expenseCategories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                <input required maxLength={80} aria-label="Expense category" list="expense-categories" value={newExpCategory} onChange={e=>setNewExpCategory(e.target.value)} className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)]" />
+                <datalist id="expense-categories">{expenseCategories.map(value=><option key={value} value={value}/>)}</datalist>
               </div>
 
               <div>
@@ -1024,7 +1031,7 @@ combinedPage.items.map((tx, rowIndex) => (
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-[var(--text)] mb-1">
-                    Amount ({currency}) *
+                    Amount ({editingExpense?.currency || currency}) *
                   </label>
                   <input
                     type="number"
@@ -1069,7 +1076,7 @@ combinedPage.items.map((tx, rowIndex) => (
                   className="px-5 py-2 font-bold rounded-lg bg-rose-600 hover:bg-rose-700 text-white cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                 >
                   <Check className="w-3.5 h-3.5" />
-                  <span>{expenseSaving ? 'Saving...' : 'Save Expense'}</span>
+                  <span>{expenseSaving ? 'Saving...' : editingExpense ? 'Save Changes' : 'Save Expense'}</span>
                 </button>
               </div>
             </form>

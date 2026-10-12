@@ -193,7 +193,7 @@ const AuthenticatedLayout: React.FC = () => {
       {selectedJob && role === 'cashier' && <CashierJobModal job={jobs.find(j => j.id === selectedJob.id) || selectedJob} onClose={() => setSelectedJob(null)} onPrint={job => { setSelectedJob(null); handlePrintReceipt(job); }} />}
       {selectedJob && role !== 'cashier' && (
         <JobDetailModal
-          job={selectedJob}
+          job={jobs.find(job => job.id === selectedJob.id) || selectedJob}
           onClose={() => setSelectedJob(null)}
           onPrint={(jobToPrint) => {
             setSelectedJob(null);
