@@ -66,3 +66,19 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# FixFlow development files
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Local shop backups and generated desktop bundles
+data/backups/
+server.cjs
+release/
+*.bak

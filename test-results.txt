@@ -1,0 +1,304 @@
+
+> react-example@1.0.0 test
+> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx
+
+
+> react-example@1.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 1745 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   2.25 kB │ gzip:   0.94 kB
+dist/assets/index-CW3iatc7.css   82.81 kB │ gzip:  13.00 kB
+dist/assets/index-CUax0gNA.js   972.22 kB │ gzip: 210.49 kB
+
+✓ built in 294ms
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+============================================================
+1. AUTHENTICATION & ROLE ISOLATION TESTS
+============================================================
+PASS: Admin Login
+PASS: Technician Login
+PASS: Invalid Password Rejected
+
+============================================================
+2. TECHNICIAN NEGATIVE SECURITY & PERMISSION TESTS (403)
+============================================================
+PASS: Technician [New Payment] blocked with 403 Forbidden
+PASS: Technician [Edit Payment] blocked with 403 Forbidden
+PASS: Technician [Delete Payment] blocked with 403 Forbidden
+PASS: Technician [New Settlement] blocked with 403 Forbidden
+PASS: Technician [Close Settlement] blocked with 403 Forbidden
+PASS: Technician [Add Income] blocked with 403 Forbidden
+PASS: Technician [Add Expense] blocked with 403 Forbidden
+PASS: Technician [Create Backup] blocked with 403 Forbidden
+PASS: Technician [Restore Backup] blocked with 403 Forbidden
+PASS: Technician [Register Technician] blocked with 403 Forbidden
+PASS: Technician [Settings Update] blocked with 403 Forbidden
+PASS: Technician [Reassign Job Technician] blocked with 403 Forbidden
+PASS: Technician [Alter Service Charge] blocked with 403 Forbidden
+
+============================================================
+3. ADMIN FUNCTIONAL CRUD & SERVICE LIFECYCLE TESTS
+============================================================
+PASS: Admin [Add Customer]
+PASS: Admin [Add Device]
+PASS: Admin [Register Technician]
+PASS: Admin [Create Service Job]
+PASS: Admin [Add Parts]
+PASS: Admin [Add Payment / Record Receipt]
+PASS: Admin [Add Income]
+PASS: Admin [Add Expense]
+PASS: Admin [Create Backup]
+PASS: Admin [Restore Backup]
+
+============================================================
+4. TECHNICIAN PERMITTED WORKFLOW TESTS
+============================================================
+PASS: Technician [My Services] views ONLY assigned jobs
+PASS: Technician [Update Diagnosis / Notes / Status]
+
+============================================================
+5. LICENSE STATE, PLAN ENFORCEMENT & FEATURE GATING TESTS
+============================================================
+PASS: Get Current License State
+PASS: Verify License Locally
+PASS: Activate PAID License Key
+PASS: PAID Plan: Telegram Bot configuration accessible (200 OK)
+PASS: Chat ID Maker: Missing token returns 400 Bad Request
+PASS: Chat ID Maker: Technician blocked with 403 Forbidden
+PASS: Remove License is CLIENT-ONLY (reset to FREE/NOT_ACTIVATED)
+PASS: FREE Plan: Telegram Bot accessible
+PASS: FREE Plan: Chat ID Maker validates missing token
+PASS: FREE Plan: Income Report locked with 403 Forbidden
+
+============================================================
+TEST SUMMARY: 38 PASSED, 0 FAILED
+============================================================
+PASS: Password omission is rejected
+PASS: Invalid username type returns 400 instead of crashing
+PASS: Wrong credentials fail
+PASS: Forged user identity cannot authenticate
+PASS: Role header cannot authenticate
+PASS: Login issues an opaque token
+PASS: Technician login succeeds
+PASS: Customer delete succeeds
+PASS: Customer IDs remain unique after deleting a middle record
+PASS: Deleted highest customer ID is never reused
+PASS: Empty customer input rejected
+PASS: Technician cannot modify customers
+PASS: Device IDs remain unique after deletion
+PASS: Unknown device owner rejected
+PASS: Notifications require an authenticated session
+PASS: Old database opens with an empty notification inbox
+PASS: New ticket and deposit notify the administrator
+PASS: Assigned technician receives one assignment alert
+PASS: Technician inbox does not include payment amounts
+PASS: Unassigned technician gets no ticket alert
+PASS: Technician cannot read another recipient alert
+PASS: Administrator cannot change another account inbox
+PASS: Technician cannot dismiss administrator alert
+PASS: Query string cannot change notification recipient
+PASS: Reading an alert records a server timestamp
+PASS: Reading the same alert is idempotent
+PASS: Own read action reduces unread badge
+PASS: Other recipient unread badge stays unchanged
+PASS: Status endpoint notifies administrator and assigned technician
+PASS: Repeated status does not duplicate notifications
+PASS: Notes-only edit does not create status noise
+PASS: Reassignment creates an administrator event
+PASS: Reassignment notifies the newly assigned technician
+PASS: General update endpoint also creates status alert
+PASS: Reassigned-away technician gets no later status updates
+PASS: Historical alert cannot bypass current ticket access
+PASS: Receipt creation emits a payment alert
+PASS: Mark all read is isolated to the current account
+PASS: Clear read retains unread notifications
+PASS: Dismissed alerts leave inbox and unread count
+PASS: Unknown notification read returns 404
+PASS: Repeated dismissal returns 404
+PASS: Backup includes read and dismissed notification history
+PASS: All-read action clears badge
+PASS: Notification snapshot restores successfully
+PASS: Restore preserves read and dismiss state
+PASS: Backup rejects notification with invalid recipient
+PASS: Backup rejects unknown notification type
+PASS: Unread and dismiss state persist through server restart
+PASS: Inbox retains only the latest 250 alerts per recipient
+PASS: Retention keeps the newest status event
+PASS: Legacy backup without notifications still restores
+PASS: Legacy restore starts with empty inbox
+PASS: Mismatched customer and device rejected
+PASS: Negative charge rejected
+PASS: Infinite deposit rejected
+PASS: Invalid warranty rejected
+PASS: Job IDs and service numbers remain unique after deletion
+PASS: Zero-day warranty stays zero
+PASS: Payment updates repair balance
+PASS: Stale modal cannot overwrite payment ledger
+PASS: Infinite payment rejected
+PASS: Cannot move receipt to missing job
+PASS: Cannot modify immutable job ID
+PASS: Invalid status rejected on normal endpoint
+PASS: Invalid status rejected on status endpoint
+PASS: Technician notes can be saved
+PASS: Adding parts recalculates payment status
+PASS: Negative part quantity rejected
+PASS: Invalid parts array rejected
+PASS: Part totals come from quantity and price
+PASS: Deleted payment is removed from balance
+PASS: Deleted payment cannot be edited
+PASS: Referenced customer cannot be deleted
+PASS: Referenced device cannot be deleted
+PASS: Referenced technician cannot be deleted
+PASS: Technician cannot start PHP server
+PASS: Invalid PHP server port rejected
+PASS: Technician cannot stop PHP server
+PASS: Technician cannot download project archive
+PASS: Duplicate profile username rejected
+PASS: Duplicate technician username rejected
+PASS: Unknown license key cannot unlock PAID
+PASS: Registered license can activate
+PASS: Reactivation cannot extend license expiry
+PASS: Revocation disables installed license
+PASS: Revoked license cannot reactivate
+PASS: Malformed backup array rejected
+PASS: Duplicate backup IDs rejected
+PASS: Missing administrator backup rejected
+PASS: Broken backup references rejected
+PASS: Malformed backup user rejected
+PASS: Server stays usable after bad restore
+PASS: Unknown API returns JSON 404
+PASS: Malformed JSON yields JSON error
+PASS: Production SPA route returns built HTML
+PASS: Reset technician password succeeds
+PASS: Password reset invalidates old technician session
+PASS: Reset password can log in
+PASS: Login response never exposes password
+PASS: Technician list never exposes password
+PASS: Nested jobs never expose password
+PASS: Public registration is protected
+PASS: Technician cannot register users
+PASS: Weak register password rejected
+PASS: Quick register creates linked active technician
+PASS: Registered profile carries phone
+PASS: Registration never exposes password
+PASS: Case insensitive duplicate registration rejected
+PASS: Reserved legacy alias rejected
+PASS: New user can immediately sign in
+PASS: New user cannot use default password
+PASS: New password is stored as salted hash
+PASS: Hashed password can be changed
+PASS: Changed hashed password signs in
+PASS: Telegram is available without PAID license
+PASS: Telegram token endpoint is admin only
+PASS: Telegram boolean input validated
+PASS: Telegram requires token and chat to enable
+PASS: FREE config can be saved
+PASS: Clients cannot forge connected flag
+PASS: FREE bot test verifies and sends to saved chat
+PASS: Failed draft test cannot overwrite saved verification
+PASS: Delivery failure never reports connected
+PASS: Daily summary reports partial channel delivery failure
+PASS: Connection test verifies saved channel delivery too
+PASS: Daily summary provides separate currency totals
+PASS: FREE daily summary succeeds with working destination
+PASS: Chat detection includes edited and callback chats without duplicates
+PASS: Invalid saved bot token rejected
+PASS: Dedicated status endpoint sends Telegram alert on FREE
+PASS: Unchanged status never sends duplicate Telegram alert
+PASS: Malformed Telegram token rejected safely
+PASS: Technician settings hide bot secret
+PASS: Inactive technician login denied
+PASS: Inactive technician session denied
+PASS: Logout revokes bearer token
+PASS: Restart invalidates old sessions
+PASS: Cleared finance records stay empty after restart
+PASS: Demo clear also clears notification inbox
+PASS: Cleared customers stay empty after restart
+PASS: Unreadable database fails without overwriting it
+PASS: Original uploaded database is byte-for-byte unchanged
+
+REGRESSION SUMMARY: 143 PASSED (plus the existing functional suite)
+PASS: Bell shows unread count before opening
+PASS: Notification panel starts closed
+PASS: Opening the bell shows all inbox events
+PASS: Payment event displays actual currency and amount
+PASS: Unread filter hides already-read notifications
+PASS: Single read immediately updates badge and filtered list
+PASS: Mark all read displays caught-up empty state
+PASS: Read events remain in the All view
+PASS: Clear read removes read notifications
+PASS: Fetch errors display an actionable message
+PASS: Refreshing recovers from an inbox error
+PASS: Clicking notification marks it read and opens the correct ticket
+PASS: Escape closes panel and restores bell focus
+PASS: Clicking outside closes panel
+PASS: A reassigned or deleted ticket shows a friendly access error
+PASS: Dismiss action removes its notification
+PASS: Myanmar notification labels render
+PASS: Account change closes old inbox and removes old badge
+PASS: Inbox calls use server-issued authentication headers
+
+NOTIFICATION UI SUMMARY: 19 PASSED
+PASS: Telegram HTML escapes customer markup
+PASS: Delivery failures are never retried
+PASS: Rate limits are never retried
+PASS: HTML rejection retries decoded plain text only
+PASS: Invalid Telegram JSON becomes safe error
+PASS: Network errors cannot expose token
+PASS: Every Telegram call has timeout signal
+PASS: Webhook conflict explains manual Chat ID option
+PASS: Telegram error descriptions redact tokens
+TELEGRAM UNIT SUMMARY: 9 PASSED
+PASS: Register dialog opens with name focus
+PASS: Password field requires eight characters and hides input
+PASS: Register submits real form values with authentication
+PASS: Successful registration refreshes staff and clears password
+PASS: Registration failure is visible and permits retry
+PASS: Escape closes registration
+PASS: Quick register has Myanmar labels
+PASS: Technician never sees registration dialog
+REGISTER UI SUMMARY: 8 PASSED
+PASS: Default hints available before login
+PASS: Unauthenticated demo creation blocked
+PASS: Technician demo creation blocked
+PASS: Technician demo deletion blocked
+PASS: Admin can add marked demo user
+PASS: Repeated add returns same demo account
+PASS: Demo user can sign in with displayed default
+PASS: Demo deletion refuses assigned repair jobs
+PASS: Demo marker survives restart
+PASS: Demo deletion succeeds once jobs are reassigned
+PASS: Repeated demo deletion is safe
+PASS: Regular accounts remain intact
+PASS: Deleted demo session cannot authenticate
+PASS: Changing admin password succeeds
+PASS: Admin hint disappears immediately
+PASS: Unchanged technician hint stays visible
+PASS: Admin password reset succeeds
+PASS: Technician hint disappears after reset
+PASS: Hidden hints persist across restart
+PASS: Changed admin password works after restart
+PASS: Old default password no longer works
+PASS: Original uploaded database unchanged
+REQUESTED FEATURES HTTP SUMMARY: 22 PASSED
+PASS: Native close is blocked until confirmation, repeated clicks are coalesced, Cancel preserves window, Close exits without prompting again.
+PASS: Credential hints hide immediately, refresh from server, browser close confirmation activates and cleans up, sample payments disabled, custom accounts and QR preserved.
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

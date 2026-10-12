@@ -1,0 +1,365 @@
+import React, { useState } from 'react';
+import { useApp } from '../context/AppContext';
+import { Device } from '../types';
+import {
+  Search,
+  Plus,
+  Smartphone,
+  Laptop,
+  Tablet,
+  Monitor,
+  Headphones,
+  Cpu,
+  Edit2,
+  Trash2,
+  X,
+  User,
+} from 'lucide-react';
+
+export const DevicesView: React.FC = () => {
+  const { devices, customers, createDevice, updateDevice, deleteDevice, t } = useApp();
+
+  const [search, setSearch] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingDevice, setEditingDevice] = useState<Device | null>(null);
+
+  // Form states
+  const [brand, setBrand] = useState('');
+  const [model, setModel] = useState('');
+  const [category, setCategory] = useState<Device['category']>('smartphone');
+  const [serialOrImei, setSerialOrImei] = useState('');
+  const [customerId, setCustomerId] = useState('');
+  const [conditionNotes, setConditionNotes] = useState('');
+
+  const openAddModal = () => {
+    setEditingDevice(null);
+    setBrand('');
+    setModel('');
+    setCategory('smartphone');
+    setSerialOrImei('');
+    setCustomerId(customers[0]?.id || '');
+    setConditionNotes('');
+    setModalOpen(true);
+  };
+
+  const openEditModal = (dev: Device) => {
+    setEditingDevice(dev);
+    setBrand(dev.brand);
+    setModel(dev.model);
+    setCategory(dev.category);
+    setSerialOrImei(dev.serial_or_imei);
+    setCustomerId(dev.customer_id);
+    setConditionNotes(dev.condition_notes);
+    setModalOpen(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!brand.trim() || !model.trim()) return;
+
+    if (editingDevice) {
+      await updateDevice(editingDevice.id, {
+        brand,
+        model,
+        category,
+        serial_or_imei: serialOrImei,
+        customer_id: customerId,
+        condition_notes: conditionNotes,
+      });
+    } else {
+      await createDevice({
+        brand,
+        model,
+        category,
+        serial_or_imei: serialOrImei,
+        customer_id: customerId,
+        condition_notes: conditionNotes,
+      });
+    }
+
+    setModalOpen(false);
+  };
+
+  const getCategoryIcon = (cat: Device['category']) => {
+    switch (cat) {
+      case 'smartphone':
+        return <Smartphone className="w-4 h-4 text-blue-500" />;
+      case 'laptop':
+        return <Laptop className="w-4 h-4 text-indigo-500" />;
+      case 'tablet':
+        return <Tablet className="w-4 h-4 text-purple-500" />;
+      case 'desktop':
+        return <Monitor className="w-4 h-4 text-teal-500" />;
+      case 'audio':
+        return <Headphones className="w-4 h-4 text-amber-500" />;
+      default:
+        return <Cpu className="w-4 h-4 text-slate-500" />;
+    }
+  };
+
+  const filteredDevices = devices.filter((dev) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    const cust = customers.find((c) => c.id === dev.customer_id);
+    return (
+      dev.brand.toLowerCase().includes(q) ||
+      dev.model.toLowerCase().includes(q) ||
+      (dev.serial_or_imei || '').toLowerCase().includes(q) ||
+      (cust?.name || '').toLowerCase().includes(q) ||
+      (dev.condition_notes || '').toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      {/* Header bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--text)] tracking-tight">
+            {t('devices')}
+          </h1>
+          <p className="text-sm text-[var(--text-muted)] mt-0.5">
+            {filteredDevices.length} registered hardware units
+          </p>
+        </div>
+
+        <button
+          onClick={openAddModal}
+          className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-lg shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
+        >
+          <Plus className="w-4 h-4" />
+          <span>{t('newDevice')}</span>
+        </button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by brand, model, IMEI, customer..."
+            className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+          />
+        </div>
+      </div>
+
+      {/* Device List Table */}
+      <div className="rounded-xl bg-[var(--surface)] border border-[var(--border)] overflow-hidden">
+        {filteredDevices.length === 0 ? (
+          <div className="p-12 text-center">
+            <Smartphone className="w-10 h-10 mx-auto text-[var(--text-muted)] opacity-40 mb-3" />
+            <h3 className="text-base font-semibold text-[var(--text)]">{t('noRecordsFound')}</h3>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-[var(--surface-2)] text-[var(--text-muted)] text-xs border-b border-[var(--border)]">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">{t('device')}</th>
+                  <th className="px-4 py-3 font-semibold">{t('imei')}</th>
+                  <th className="px-4 py-3 font-semibold">{t('customer')}</th>
+                  <th className="px-4 py-3 font-semibold">Physical Condition / Notes</th>
+                  <th className="px-4 py-3 font-semibold text-right">{t('actions')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)] text-[var(--text)]">
+                {filteredDevices.map((dev) => {
+                  const cust = customers.find((c) => c.id === dev.customer_id);
+                  return (
+                    <tr key={dev.id} className="hover:bg-[var(--surface-2)]/40 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {getCategoryIcon(dev.category)}
+                          <div>
+                            <div className="font-bold text-xs sm:text-sm">
+                              {dev.brand} {dev.model}
+                            </div>
+                            <div className="text-[11px] text-[var(--text-muted)] capitalize">
+                              {dev.category}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap text-xs font-mono text-[var(--text)]">
+                        {dev.serial_or_imei || '—'}
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-semibold">
+                          {cust ? cust.name : 'Unknown Customer'}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 text-xs text-[var(--text-muted)] max-w-sm truncate">
+                        {dev.condition_notes || 'No cosmetic defects noted.'}
+                      </td>
+
+                      <td className="px-4 py-3 text-right whitespace-nowrap space-x-1">
+                        <button
+                          onClick={() => openEditModal(dev)}
+                          className="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
+                          title={t('edit')}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (confirm(`Are you sure you want to delete device "${dev.brand} ${dev.model}"?`)) {
+                              try {
+                                await deleteDevice(dev.id);
+                              } catch (e) {
+                                alert('Failed to delete device');
+                              }
+                            }
+                          }}
+                          className="p-1.5 rounded hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                          title="Delete Device"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Add / Edit Device Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+            <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
+              <h3 className="font-bold text-base text-[var(--text)]">
+                {editingDevice ? t('edit') : t('newDevice')}
+              </h3>
+              <button
+                onClick={() => setModalOpen(false)}
+                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-2)]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSave} className="p-4 space-y-3.5 text-xs sm:text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text)] mb-1">
+                    Brand *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={brand}
+                    onChange={(e) => setBrand(e.target.value)}
+                    placeholder="Apple, Samsung..."
+                    className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text)] mb-1">
+                    Model *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                    placeholder="e.g. iPhone 13"
+                    className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text)] mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as any)}
+                    className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  >
+                    <option value="smartphone">Smartphone</option>
+                    <option value="laptop">Laptop / MacBook</option>
+                    <option value="tablet">Tablet / iPad</option>
+                    <option value="desktop">Desktop / iMac</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text)] mb-1">
+                    IMEI / Serial
+                  </label>
+                  <input
+                    type="text"
+                    value={serialOrImei}
+                    onChange={(e) => setSerialOrImei(e.target.value)}
+                    placeholder="IMEI"
+                    className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[var(--text)] mb-1">
+                  Registered Customer *
+                </label>
+                <select
+                  value={customerId}
+                  onChange={(e) => setCustomerId(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                >
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.phone})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[var(--text)] mb-1">
+                  Physical Condition / Intake Scratches
+                </label>
+                <textarea
+                  rows={2}
+                  value={conditionNotes}
+                  onChange={(e) => setConditionNotes(e.target.value)}
+                  placeholder="Scratches on frame, cracked screen..."
+                  className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg border border-[var(--border)] hover:bg-[var(--surface-2)] text-[var(--text)]"
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white"
+                >
+                  {t('save')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

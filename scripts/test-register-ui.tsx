@@ -1,0 +1,41 @@
+import React, { act } from 'react';
+import { JSDOM } from 'jsdom';
+import assert from 'node:assert/strict';
+import { QuickUserRegisterModal } from '../src/modals/QuickUserRegisterModal';
+(async () => {
+ const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost' });
+ Object.assign(globalThis, { window: dom.window, document: dom.window.document, HTMLElement: dom.window.HTMLElement, IS_REACT_ACT_ENVIRONMENT: true });
+ const { createRoot } = require('react-dom/client');
+ let refreshed = 0, closed = 0, fail = false;
+ const app: any = { language: 'en', currentUser: { role: 'admin' }, getAuthHeaders: () => ({ Authorization: 'Bearer session', 'Content-Type': 'application/json' }), refreshTechnicians: async () => { refreshed++; } };
+ (globalThis as any).__testApp = app;
+ let request: any;
+ globalThis.fetch = async (path: any, options: any) => { request = { path, options }; return new Response(JSON.stringify(fail ? {error:'Username already in use'} : {user:{username:'new_user'}}),{status:fail?409:201}); };
+ const root = createRoot(document.getElementById('root')!);
+ const close = () => { closed++; };
+ const render = () => act(async () => { root.render(<QuickUserRegisterModal onClose={close} />); });
+ let passed = 0;
+ const check = (name: string, value: any) => { assert.ok(value,name); console.log(`PASS: ${name}`); passed++; };
+ await render();
+ check('Register dialog opens with name focus', document.activeElement === document.querySelector('input'));
+ check('Password field requires eight characters and hides input', document.querySelector('input[type=password]')?.getAttribute('minlength') === '8');
+ const inputs = Array.from(document.querySelectorAll('input'));
+ async function fill(input: HTMLInputElement, value: string) {
+   await act(async () => { Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype,'value')!.set!.call(input,value); input.dispatchEvent(new dom.window.Event('input',{bubbles:true})); });
+ }
+ await fill(inputs[0], 'New User'); await fill(inputs[1], 'new_user'); await fill(inputs[2], 'SecretPass123');
+ await act(async () => { document.querySelector('form')!.dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true})); });
+ check('Register submits real form values with authentication', request.path === '/api/users/quick-register' && JSON.parse(request.options.body).password==='SecretPass123' && request.options.headers.Authorization==='Bearer session');
+ check('Successful registration refreshes staff and clears password', refreshed===1 && inputs[2].value==='' && document.querySelector('[role=status]')?.textContent?.includes('new_user'));
+ fail=true;
+ await act(async () => { document.querySelector('form')!.dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true})); });
+ check('Registration failure is visible and permits retry', document.querySelector('[role=alert]')?.textContent?.includes('already in use') && !document.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled);
+ await act(async () => { document.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true})); });
+ check('Escape closes registration', closed===1);
+ app.language='my'; await render();
+ check('Quick register has Myanmar labels', document.getElementById('quick-register-title')?.textContent?.includes('အမြန်'));
+ app.currentUser.role='technician'; await render();
+ check('Technician never sees registration dialog', !document.querySelector('[role=dialog]'));
+ await act(async () => root.unmount()); dom.window.close();
+ console.log(`REGISTER UI SUMMARY: ${passed} PASSED`);
+})().catch(error=>{console.error(error);process.exitCode=1;});

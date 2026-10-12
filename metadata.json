@@ -1,0 +1,6 @@
+{
+  "name": "FixFlow Repair & Service Manager",
+  "description": "Clean, modern device repair and workshop management system with multilingual support, multi-currency accounting, and dark mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
