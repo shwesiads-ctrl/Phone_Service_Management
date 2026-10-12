@@ -1,3 +1,4 @@
+import { buildTelegramSummary, localDay, summaryDue } from './src/server/telegramSummary';
 import { createServer as createPortProbe } from 'node:net';
 import { LoginLimiter } from './src/server/loginLimiter.ts';
 import { imageValidationError } from './src/utils/imageUpload.ts';
@@ -117,6 +118,10 @@ const isPaidPlanActive = (): boolean => {
 };
 
 // Telegram Notification Services
+function logTelegramDelivery(event:string,destination:string,result:{ok:boolean;description?:string}) {
+  const current=db.getTelegramBot();
+  db.updateTelegramBot({delivery_history:[{id:randomBytes(8).toString('hex'),event,destination,ok:result.ok,created_at:new Date().toISOString(),...(result.description?{error:result.description.slice(0,500)}:{})},...(current.delivery_history || [])].slice(0,50)});
+}
 async function dispatchTelegramAlert(
   eventType: 'new_job' | 'status_change' | 'payment' | 'daily_summary',
   htmlContent: string
@@ -139,6 +144,8 @@ async function dispatchTelegramAlert(
     ) {
       results.push(await sendRawTelegramMessage(config.bot_token, config.channel_username.trim(), htmlContent));
     }
+    const destinations=[config.chat_id,...(config.channel_username&&config.channel_username.trim()!==config.chat_id.trim()?[config.channel_username.trim()]:[])];
+    results.forEach((result,index)=>logTelegramDelivery(eventType,destinations[index],result));
     if (results.some(r => !r.ok)) {
       db.updateTelegramBot({ is_connected: false });
       console.warn('[Telegram Dispatch Warning]', results.filter(r => !r.ok).map(r => r.description).join('; '));
@@ -2111,11 +2118,11 @@ app.put('/api/telegram', (req: AuthRequest, res: Response) => {
   if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden: Only administrators can configure Telegram Bot.' });
   }
-  const allowed = ['enabled', 'bot_token', 'chat_id', 'channel_username', 'notify_on_new_job', 'notify_on_status_change', 'notify_on_payment', 'notify_on_daily_summary'];
+  const allowed = ['enabled', 'bot_token', 'chat_id', 'channel_username', 'notify_on_new_job', 'notify_on_status_change', 'notify_on_payment', 'notify_on_daily_summary','daily_summary_schedule_enabled','daily_summary_time','summary_time_zone','summary_language'];
   const updates: any = {};
   for (const key of allowed) {
     if (req.body[key] === undefined) continue;
-    if (['bot_token', 'chat_id', 'channel_username'].includes(key)) {
+    if (['bot_token', 'chat_id', 'channel_username','daily_summary_time','summary_time_zone','summary_language'].includes(key)) {
       if (typeof req.body[key] !== 'string' || req.body[key].length > 512) return res.status(400).json({ error: `Invalid ${key}.` });
       updates[key] = req.body[key].trim();
     } else {
@@ -2124,6 +2131,9 @@ app.put('/api/telegram', (req: AuthRequest, res: Response) => {
     }
   }
   if (updates.bot_token && !/^\d+:[A-Za-z0-9_-]+$/.test(updates.bot_token)) return res.status(400).json({ error: 'Invalid Telegram Bot Token format.' });
+  if(updates.daily_summary_time&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(updates.daily_summary_time))return res.status(400).json({error:'Choose a valid summary time.'});
+  if(updates.summary_language&&!['my','en','th','zh'].includes(updates.summary_language))return res.status(400).json({error:'Choose a supported summary language.'});
+  if(updates.summary_time_zone!==undefined){try{new Intl.DateTimeFormat('en',{timeZone:updates.summary_time_zone});}catch{return res.status(400).json({error:'Choose a valid time zone.'});}}
   const previous = db.getTelegramBot();
   if ((updates.enabled ?? previous.enabled) && (!(updates.bot_token ?? previous.bot_token) || !(updates.chat_id ?? previous.chat_id))) return res.status(400).json({ error: 'Token and Chat ID are required to enable alerts.' });
   if (['bot_token', 'chat_id', 'channel_username'].some(key => updates[key] !== undefined && updates[key] !== (previous as any)[key])) {
@@ -2212,81 +2222,37 @@ app.post('/api/telegram/test', async (req: AuthRequest, res: Response) => {
 });
 
 // Daily Workshop Summary Telegram Dispatch
-app.post('/api/telegram/daily-summary', async (req: AuthRequest, res: Response) => {
-  if (req.user?.role !== 'admin') {
-    return res.status(403).json({ error: 'Forbidden: Only administrators can dispatch daily summaries.' });
-  }
-
-  const jobs = db.getJobs();
-  const payments = db.getPayments();
-  const config = db.getTelegramBot();
-
-  if (!config.bot_token || !config.chat_id) {
-    return res.status(400).json({ error: 'Telegram Bot Token and Chat ID must be configured first.' });
-  }
-
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const activeJobs = jobs.filter(
-    (j) => j.status_id !== 'completed' && j.status_id !== 'delivered' && j.status_id !== 'cancelled'
-  );
-  const readyJobs = jobs.filter((j) => j.status_id === 'ready');
-  const completedToday = jobs.filter((j) => (j.completed_at || '').slice(0, 10) === todayStr);
-  const todaysPayments = payments.filter((p) => (p.paid_at || '').slice(0, 10) === todayStr);
-  const totals: Record<string, number> = {};
-  for (const payment of todaysPayments) { const code = payment.currency_code || db.getSettings().currency || 'MMK'; totals[code] = (totals[code] || 0) + Number(payment.amount || 0); }
-  const totalCollectedToday = totals[db.getSettings().currency || 'MMK'] || 0;
-  const collectedText = Object.entries(totals).map(([code, amount]) => `${tgHtml(code)} ${amount.toLocaleString()}`).join(', ') || '0';
-  const currency = db.getSettings().currency || 'MMK';
-
-  const summaryHtml =
-    `📊 <b>FixFlow Daily Workshop Summary</b>\n` +
-    `📅 <b>Date:</b> ${todayStr}\n\n` +
-    `• <b>Active Repairs:</b> ${activeJobs.length} job(s)\n` +
-    `• <b>Ready for Pickup:</b> ${readyJobs.length} unit(s)\n` +
-    `• <b>Completed Today:</b> ${completedToday.length} job(s)\n` +
-    `• <b>Payments Collected Today:</b> ${collectedText} (${todaysPayments.length} txns)\n\n` +
-    `<i>Automated FixFlow Service Management Dispatch</i>`;
-
-  const sendResult = await sendRawTelegramMessage(config.bot_token, config.chat_id, summaryHtml);
-  const deliveries = [{ chat_id: config.chat_id, ...sendResult }];
-  if (
-    config.channel_username &&
-    config.channel_username.trim() &&
-    config.channel_username.trim() !== config.chat_id.trim()
-  ) {
-    deliveries.push({ chat_id: config.channel_username.trim(), ...await sendRawTelegramMessage(config.bot_token, config.channel_username.trim(), summaryHtml) });
-  }
-
-  if (deliveries.some(d => !d.ok)) {
-    db.updateTelegramBot({ is_connected: false });
-    return res.status(400).json({
-      success: false,
-      deliveries,
-      error: `Failed sending Telegram summary: ${deliveries.filter(d => !d.ok).map(d => d.description).join('; ')}`,
-      message: `Failed sending Telegram summary: ${deliveries.filter(d => !d.ok).map(d => d.description).join('; ')}`,
-      summary: {
-        active_jobs: activeJobs.length,
-        ready_jobs: readyJobs.length,
-        completed_today: completedToday.length,
-        revenue_today: totalCollectedToday,
-        revenue_by_currency: totals,
-      },
-    });
-  }
-
-  return res.json({
-    success: true,
-    deliveries,
-    message: `Daily summary dispatched successfully to Telegram (${config.chat_id})!`,
-    summary: {
-      active_jobs: activeJobs.length,
-      ready_jobs: readyJobs.length,
-      completed_today: completedToday.length,
-      revenue_today: totalCollectedToday,
-        revenue_by_currency: totals,
-    },
-  });
+function validSummaryDate(date:unknown):date is string {return typeof date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(date)&&Number.isFinite(new Date(date).getTime())&&new Date(date).toISOString().slice(0,10)===date;}
+function previewSummary(date?:string) {
+  const config=db.getTelegramBot(),zone=config.summary_time_zone || 'Asia/Yangon';
+  return buildTelegramSummary(db.getJobs(),db.getPayments(),db.getSettings(),date || localDay(new Date(),zone),zone,config.summary_language || db.getSettings().language);
+}
+let summarySending=false;
+async function deliverDailySummary(date?:string) {
+  if(summarySending)throw new Error('A summary is already being sent.');
+  const config=db.getTelegramBot();if(!config.bot_token || !config.chat_id)throw new Error('Telegram Bot Token and Chat ID must be configured first.');
+  summarySending=true;
+  try{
+    const preview=previewSummary(date),destinations=[config.chat_id,...(config.channel_username&&config.channel_username.trim()!==config.chat_id.trim()?[config.channel_username.trim()]:[])];
+    const deliveries=[];
+    for(const destination of destinations){const result=await sendRawTelegramMessage(config.bot_token,destination,preview.html);logTelegramDelivery('daily_summary',destination,result);deliveries.push({chat_id:destination,...result});}
+    const success=deliveries.every(delivery=>delivery.ok);db.updateTelegramBot({is_connected:success});
+    return {success,deliveries,summary:preview.summary,message:success?'Daily summary delivered.':deliveries.filter(delivery=>!delivery.ok).map(delivery=>delivery.description).join('; ')};
+  }finally{summarySending=false;}
+}
+app.get('/api/telegram/summary-preview',requireAdmin,(req,res)=>{
+  if(req.query.date!==undefined&&!validSummaryDate(req.query.date))return res.status(400).json({error:'Choose a valid summary date.'});
+  return res.json(previewSummary(req.query.date as string|undefined));
 });
+app.get('/api/telegram/delivery-history',requireAdmin,(_req,res)=>res.json(db.getTelegramBot().delivery_history || []));
+app.post('/api/telegram/daily-summary',requireAdmin,async(req,res)=>{
+  if(req.body.date!==undefined&&!validSummaryDate(req.body.date))return res.status(400).json({error:'Choose a valid summary date.'});
+  try{const result=await deliverDailySummary(req.body.date);return res.status(result.success?200:400).json({...result,...(!result.success?{error:result.message}:{})});}
+  catch(error:any){return res.status(summarySending?409:400).json({error:error.message});}
+});
+const summaryTimer=setInterval(async()=>{
+  try{const config=db.getTelegramBot();if(!summaryDue(config)||summarySending)return;const date=localDay(new Date(),config.summary_time_zone || 'Asia/Yangon');db.updateTelegramBot({last_daily_summary_attempt:date});await deliverDailySummary(date);}catch{console.warn('[Telegram Summary] Scheduled attempt failed; inspect delivery history and configuration.');}
+},30000);summaryTimer.unref();
 
 // Chat ID Maker API: Fetch recent chats and updates from Telegram Bot
 app.post('/api/telegram/get-chat-ids', async (req: AuthRequest, res: Response) => {
@@ -2354,6 +2320,7 @@ app.get('/api/download-project', (_req: AuthRequest, res: Response) => {
 let phpCliProcess: ChildProcess | null = null;
 let phpCliActivePort = 8080;
 let phpCliStarting = false;
+let phpCliStopping = false;
 process.once('exit',()=>phpCliProcess?.kill());
 for(const signal of ['SIGINT','SIGTERM'] as const)process.once(signal,()=>{phpCliProcess?.kill();process.exit(0);});
 
@@ -2400,11 +2367,13 @@ function checkPhpCli() {
   return { installed, version };
 }
 
-app.get('/api/system/network-info', (_req: Request, res: Response) => {
+app.get('/api/system/network-info', async (_req: Request, res: Response) => {
   const { list, primaryIp } = getSystemNetworkInterfaces();
   const php = checkPhpCli();
 
-  const isPhpRunning = phpCliProcess !== null && !phpCliProcess.killed;
+  let isPhpRunning=false;
+  if(phpCliProcess&&phpCliProcess.exitCode===null&&phpCliProcess.signalCode===null&&!phpCliStarting&&!phpCliStopping){try{const response=await fetch(`http://127.0.0.1:${phpCliActivePort}/api/health`,{signal:AbortSignal.timeout(1000)});isPhpRunning=response.ok&&(await response.json()).server==='FixFlow-Node';}catch{}}
+
 
   return res.json({
     hostname: os.hostname(),
@@ -2415,6 +2384,9 @@ app.get('/api/system/network-info', (_req: Request, res: Response) => {
     node_lan_url: `http://${primaryIp}:${port}`,
     php_cli: {
       installed: php.installed,
+      process_alive: Boolean(phpCliProcess&&phpCliProcess.exitCode===null&&phpCliProcess.signalCode===null),
+      is_starting: phpCliStarting,
+      is_stopping: phpCliStopping,
       version: php.version,
       is_running: isPhpRunning,
       port: phpCliActivePort,
@@ -2430,12 +2402,15 @@ app.post('/api/system/php-cli/start', async (req: AuthRequest, res: Response) =>
   if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Admin access required.' });
   const requestedPort = Number(req.body?.port ?? 8080);
   if (!Number.isInteger(requestedPort) || requestedPort < 1 || requestedPort > 65535 || requestedPort === port) return res.status(400).json({ error: 'Choose a valid PHP port different from the Node server port.' });
-  if (phpCliStarting) return res.status(409).json({success:false,error:'PHP startup is already in progress.'});
+  if (phpCliStarting || phpCliStopping) return res.status(409).json({success:false,error:'PHP startup is already in progress.'});
   if (!fs.existsSync(path.resolve(process.env.FIXFLOW_DIST_DIR || 'dist','index.html'))) return res.status(409).json({success:false,error:'Build the frontend with npm run build before starting PHP CLI.'});
   const php = checkPhpCli();
   if (!php.installed) return res.status(400).json({success:false,error:'PHP CLI is not installed or not in PATH. Install PHP CLI and restart FixFlow.'});
   const { primaryIp } = getSystemNetworkInterfaces();
-  if (phpCliProcess && !phpCliProcess.killed) return res.json({success:true,message:`PHP CLI server is already running on port ${phpCliActivePort}`,port:phpCliActivePort,lan_url:`http://${primaryIp}:${phpCliActivePort}`,is_running:true});
+  if (phpCliProcess && phpCliProcess.exitCode===null && phpCliProcess.signalCode===null) {
+    try{const response=await fetch(`http://127.0.0.1:${phpCliActivePort}/api/health`,{signal:AbortSignal.timeout(1000)});if(response.ok&&(await response.json()).server==='FixFlow-Node')return res.json({success:true,message:`PHP CLI server is already running on port ${phpCliActivePort}`,port:phpCliActivePort,lan_url:`http://${primaryIp}:${phpCliActivePort}`,is_running:true});}catch{}
+    return res.status(503).json({success:false,is_running:false,error:'PHP process is not responding. Stop it and turn it on again.'});
+  }
   phpCliStarting = true;
   let child:ChildProcess|undefined;
   try {
@@ -2465,26 +2440,18 @@ app.post('/api/system/php-cli/start', async (req: AuthRequest, res: Response) =>
   } finally {phpCliStarting=false;}
 });
 
-app.post('/api/system/php-cli/stop', (_req: AuthRequest, res: Response) => {
-  if (_req.user?.role !== 'admin') return res.status(403).json({ error: 'Admin access required.' });
-  if (phpCliProcess && !phpCliProcess.killed) {
-    try {
-      phpCliProcess.kill();
-    } catch (e) {}
-    phpCliProcess = null;
-    return res.json({
-      success: true,
-      message: 'PHP CLI multi-device server stopped.',
-      is_running: false,
-    });
-  }
-
-  phpCliProcess = null;
-  return res.json({
-    success: true,
-    message: 'PHP CLI server is not currently running.',
-    is_running: false,
-  });
+app.post('/api/system/php-cli/stop', async (req: AuthRequest, res: Response) => {
+  if(req.user?.role!=='admin')return res.status(403).json({error:'Admin access required.'});
+  if(phpCliStarting || phpCliStopping)return res.status(409).json({success:false,error:'Wait for the current PHP server action to finish.'});
+  const child=phpCliProcess;
+  if(!child)return res.json({success:true,message:'PHP CLI server is off.',is_running:false});
+  phpCliStopping=true;
+  try{
+    const stopped=await new Promise<boolean>(resolve=>{if(child.exitCode!==null || child.signalCode!==null){resolve(true);return;}const timer=setTimeout(()=>resolve(false),3000);child.once('exit',()=>{clearTimeout(timer);resolve(true);});if(!child.kill()){clearTimeout(timer);resolve(false);}});
+    if(!stopped)return res.status(500).json({success:false,error:'PHP server did not stop. Check the server terminal.',is_running:true});
+    if(phpCliProcess===child)phpCliProcess=null;
+    return res.json({success:true,message:'PHP CLI multi-device server is off.',is_running:false});
+  }finally{phpCliStopping=false;}
 });
 
 // ==========================================

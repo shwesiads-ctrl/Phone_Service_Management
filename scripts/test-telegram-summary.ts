@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {localDay,summaryDue,buildTelegramSummary} from '../src/server/telegramSummary';
+const settings:any={shopName:'Shop & <Name>',currency:'MMK'};
+const stamp=new Date('2026-10-12T18:00:00Z');assert.equal(localDay(stamp),'2026-10-13');
+const payments:any[]=[{paid_at:stamp.toISOString(),amount:100,currency_code:'MMK'},{paid_at:stamp.toISOString(),amount:5,currency_code:'USD'},{paid_at:stamp.toISOString(),amount:99,currency_code:'MMK',is_deleted:true},{paid_at:'2026-10-13T18:00:00Z',amount:999,currency_code:'MMK'}];
+const report=buildTelegramSummary([{completed_at:stamp.toISOString(),status_id:'completed'}] as any,payments,settings,'2026-10-13');assert.deepEqual(report.summary.revenue_by_currency,{MMK:100,USD:5});assert.equal(report.summary.completed_today,1);assert.ok(report.html.includes('Shop &amp; &lt;Name&gt;'));
+const config:any={enabled:true,bot_token:'test',chat_id:'123',daily_summary_schedule_enabled:true,notify_on_daily_summary:true,daily_summary_time:'18:00',summary_time_zone:'Asia/Yangon'};
+assert.equal(summaryDue(config,new Date('2026-10-13T11:29:00Z')),false);assert.equal(summaryDue(config,new Date('2026-10-13T11:30:00Z')),true);
+assert.equal(summaryDue({...config,last_daily_summary_attempt:'2026-10-13'},new Date('2026-10-13T15:00:00Z')),false);
+assert.equal(summaryDue({...config,enabled:false},new Date('2026-10-13T15:00:00Z')),false);
+assert.equal(summaryDue({...config,daily_summary_schedule_enabled:false},new Date('2026-10-13T15:00:00Z')),false);
+for(const language of ['my','en','th','zh'] as const)assert.ok(buildTelegramSummary([],[],settings,'2026-10-13','Asia/Yangon',language).html);
+console.log('PASS: Myanmar date boundary, currency separation, deleted-payment exclusion, HTML escaping, schedule time, once-per-day guard, off states and four-language summaries.');

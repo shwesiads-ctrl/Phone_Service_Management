@@ -131,3 +131,11 @@ Source packages contain no live `data/db.json`, historical shop backups or recov
 Fresh install တွင် Demo user/data မပါပါ။ Server ပထမဆုံးဖွင့်ချိန် database အလွတ်နှင့် PC recovery key ကို ဖန်တီးပါသည်။ Update မှာ မူလဆိုင်၏ `data/` ကို ထိန်းထားပါ။ အရင် version မှ ထည့်မိထားသော မလိုအပ်သည့် record များကို စာရင်းမှ ရွေးချယ်စစ်ဆေးပြီးမှ ဖျက်ပါ။
 
 Payment profile ကို Settings မှ အမြဲသုံးမည့်ပုံစံ ရွေးနိုင်သလို payment form မှလည်း ရွေးနိုင်သည်။ Non-cash payment မပေါ်ပါက Settings → Payments တွင် မိမိအကောင့်/QR ထည့်ပြီး Enable လုပ်ပါ။ Receipt warranty သည် လက်ရှိ Shop Settings → Service မှ သတ်မှတ်ထားသည့်ရက်အတိုင်း ဖြစ်သည်။
+
+## PHP On/Off, reports and Telegram schedules
+
+Settings → Local Network offers a PHP CLI On/Off switch. PHP must be installed in PATH, the frontend built, and Node running. On is reported only after a successful health check; Off waits for the managed PHP process to stop. Node access uses its own port. A PHP process started manually in another terminal must be stopped there.
+
+Print buttons for repair, technician, financial and analytics reports open only the report document on A4 paper, including all filtered records. Wide service-history and analytics tables use landscape; financial and individual repair reports use portrait. Service warranty displayed in repair records and printed receipts follows Settings → Service Policy & Workflow; part-specific warranty records remain separate.
+
+Telegram schedules start disabled. Configure/save the bot and recipient, enable automatic alerts, then set the daily schedule, time zone and language in the summary panel. The server must remain running. Preview never sends; Delivery History stores the latest 50 recipient results. One scheduled attempt per local day is persisted across restarts. Review failed deliveries and retry manually if appropriate.

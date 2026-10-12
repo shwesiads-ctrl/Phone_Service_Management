@@ -70,6 +70,7 @@ try {
  phpPort=await freePort();const result=await api('/api/system/php-cli/start','POST',{port:phpPort},admin);
  assert.equal(result.status,200,JSON.stringify(result.data));
  check('PHP reports ready only after actual backend health check',result.status===200&&result.data.success&&result.data.is_running);
+ check('Repeated On verifies the existing server',(await api('/api/system/php-cli/start','POST',{port:phpPort},admin)).data.is_running===true);
  const proxy=`http://127.0.0.1:${phpPort}`;
  const health=await fetch(proxy+'/api/health');check('PHP proxies custom-port backend',health.ok&&(await health.json()).server==='FixFlow-Node');
  const spa=await fetch(proxy+'/cashier/dashboard');check('PHP serves deep-link SPA',spa.ok&&(await spa.text()).includes('<div id="root">'));
@@ -80,6 +81,7 @@ try {
  const denied=await fetch(proxy+'/api/users');check('PHP preserves backend rejection status',denied.status===401);
  const selection=await fetch(proxy+'/api/settings',{method:'PUT',headers:headers(token),body:JSON.stringify({paymentSettings:{mode:'auto',active_profile:'china'}})});const saved=await selection.json();check('Payment profile is persisted as manual through PHP',selection.ok&&saved.paymentSettings.mode==='manual'&&saved.paymentSettings.active_profile==='china');
  check('PHP stop succeeds',(await api('/api/system/php-cli/stop','POST',{},admin)).data.success);
+ let unreachable=false;try{await fetch(proxy+'/api/health',{signal:AbortSignal.timeout(500)});}catch{unreachable=true;}check('Off closes the PHP HTTP endpoint',unreachable);
  check('Network status becomes stopped',!(await api('/api/system/network-info')).data.php_cli.is_running);
  check('PHP can restart',(await api('/api/system/php-cli/start','POST',{port:phpPort},admin)).data.success);
  await stop();

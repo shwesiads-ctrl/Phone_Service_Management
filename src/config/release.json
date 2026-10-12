@@ -1,34 +1,30 @@
 {
-  "version": "2.8.5",
+  "version": "2.8.6",
   "date": "2026-10-13",
   "changes": {
     "my": [
-      "Payment method နာမည်ကို ရွေးထားသောဘာသာစကားအတိုင်း ပြပြီး payment form မှ Myanmar/Thailand/China/Global ရွေးနိုင်သည်။",
-      "Fresh install တွင် Demo user၊ Customer၊ Device နှင့် Service data မထည့်တော့ပါ။ လက်ရှိဆိုင်ဒေတာကို ထိန်းသိမ်းထားသည်။",
-      "Devices တွင် စာမျက်နှာအားလုံးမှ Select All နှင့် backup/confirmation ပါသော bulk delete ထည့်ထားသည်။",
-      "Cashier ID Card ကို ဆိုင်နာမည်၊ လိပ်စာနှင့် ဖုန်း အပေါ်တွင်ပါသော professional layout ပြောင်းထားသည်။",
-      "Service Receipt မှ Balance due ဖယ်ထားပြီး receipt warranty ကို လက်ရှိ Shop Settings အတိုင်း ပြသည်။"
+      "PHP CLI On/Off switch ထည့်ပြီး health check နှင့် process ရပ်ပြီးကြောင်း စစ်ပြီးမှ status ပြသည်။",
+      "Repair၊ Technician၊ Finance နှင့် Analytics report များကို သီးခြား A4 စာရွက်ဖြင့် ထုတ်ပြီး record အားလုံး print ထုတ်နိုင်သည်။",
+      "Service Warranty ကို Repair Records နှင့် receipt မှာ Shop Settings အတိုင်း တူညီစွာ ပြသည်။",
+      "Telegram တွင် ဘာသာစကား လေးမျိုးပါ Summary Preview၊ timezone/time schedule နှင့် Delivery History ထည့်ထားသည်။ Schedule ကို Admin က သီးခြားဖွင့်မှ အလုပ်လုပ်သည်။"
     ],
     "en": [
-      "Payment method labels follow the interface language; payment forms can select Myanmar, Thailand, China or Global.",
-      "Fresh installations start without demo users or workshop records; existing local databases are preserved.",
-      "Devices support selection across pages and confirmed bulk deletion with a safety backup.",
-      "Professional cashier ID cards place workshop name, address and phone at the top and offer three color themes.",
-      "Removed Balance due from service receipts; printed warranty follows current shop settings. New jobs use the configured warranty default."
+      "PHP CLI On/Off uses actual health checks and waits for shutdown before reporting Off.",
+      "Isolated A4 printing for repair, technician, finance and analytics reports prevents clipping, duplicate pages and app navigation; all filtered records are printed.",
+      "Repair Records and service receipts consistently use the shop service warranty policy.",
+      "Telegram adds localized summary previews, time-zone-aware opt-in schedules and persistent delivery history. Scheduled sending requires explicit administrator configuration."
     ],
     "th": [
-      "ชื่อวิธีชำระเงินแสดงตามภาษาที่เลือก และเลือกโปรไฟล์เมียนมา ไทย จีน หรือสากลในแบบฟอร์มได้",
-      "การติดตั้งใหม่เริ่มโดยไม่มีผู้ใช้หรือข้อมูลร้านสาธิต ฐานข้อมูลเดิมยังคงอยู่",
-      "เลือกอุปกรณ์ทั้งหมดข้ามหน้าและลบหลายรายการได้ โดยยืนยันและสำรองข้อมูลก่อน",
-      "บัตรแคชเชียร์รูปแบบใหม่แสดงชื่อร้าน ที่อยู่ และโทรศัพท์ด้านบน พร้อมธีมสีสามแบบ",
-      "นำยอดค้างชำระออกจากใบเสร็จ ระยะรับประกันบนใบเสร็จและค่าเริ่มต้นงานใหม่ใช้การตั้งค่าร้าน"
+      "สวิตช์ PHP CLI On/Off ตรวจสอบสถานะจริงและรอให้เซิร์ฟเวอร์หยุดก่อนแสดง Off",
+      "พิมพ์รายงานซ่อม ช่าง การเงิน และวิเคราะห์บน A4 แยกจากแอป แสดงทุกรายการที่กรองโดยไม่ตัดหรือซ้ำหน้า",
+      "ประวัติซ่อมและใบเสร็จใช้ระยะรับประกันจากการตั้งค่าร้านอย่างสอดคล้องกัน",
+      "Telegram เพิ่มตัวอย่างสรุปสี่ภาษา กำหนดเวลาตามเขตเวลา และประวัติการส่ง ต้องเปิดตารางเวลาโดยผู้ดูแลระบบ"
     ],
     "zh": [
-      "支付方式名称跟随界面语言；可在支付表单中选择缅甸、泰国、中国或全球配置。",
-      "全新安装不再附带演示用户或业务记录，已有本地数据库会保留。",
-      "设备支持跨页全选和批量删除，需确认并先创建安全备份。",
-      "专业收银员证将店名、地址和电话置于顶部，并提供三种颜色主题。",
-      "收据移除待付余额；收据保修期及新工单默认保修期遵循店铺设置。"
+      "PHP CLI On/Off 开关检查实际运行状态，并确认进程停止后才显示 Off。",
+      "维修、技师、财务和分析报表使用独立 A4 打印，包含所有筛选记录，避免截断、重复页面及应用菜单。",
+      "维修记录和服务收据统一使用店铺设置中的服务保修政策。",
+      "Telegram 新增四语言摘要预览、时区定时发送和持久发送记录；管理员需主动启用定时发送。"
     ]
   }
 }

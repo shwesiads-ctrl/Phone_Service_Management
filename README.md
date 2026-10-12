@@ -8,7 +8,9 @@ The published package excludes saved Telegram credentials. Re-enter your bot tok
 
 Staff registration and Telegram Bot settings are available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
 
-## မြန်မာလမ်းညွှန် — Version 2.8.5
+## မြန်မာလမ်းညွှန် — Version 2.8.6
+
+Settings → Local Network မှ PHP CLI On/Off ရွေးနိုင်ပြီး တကယ်အလုပ်လုပ်ကြောင်း စစ်ပြီးမှ On ပြသည်။ Print report ကို app menu မပါဘဲ A4 သီးခြားစာရွက်ဖြင့် ထုတ်သည်။ Technician report တွင် ပထမ ၁၀ ခုသာမက record အားလုံး ထုတ်သည်။ Repair Records service warranty ကို Shop Settings အတိုင်း ပြသည်။ Telegram Summary Preview၊ Delivery History နှင့် daily schedule အသစ် ထည့်ထားသည်။
 
 Fresh install မှာ demo data မပါပါ။ Payment form မှ profile ရွေးပြီး နာမည်များကို လက်ရှိဘာသာစကားအတိုင်း ပြသည်။ Non-cash channel သုံးရန် Settings → Payments မှ မိမိဆိုင်၏အကောင့်/QR ထည့်ပြီး Enable လုပ်ပါ။ Devices တွင် Select All နှင့် ဆက်စပ် record အရေအတွက် ပြပြီး backup သိမ်းကာ bulk delete လုပ်နိုင်သည်။ Customer account မဖျက်ပါ။ Cashier ID အပေါ်မှာ ဆိုင်နာမည်၊ လိပ်စာ၊ ဖုန်း ပါလာပြီး Receipt မှ Balance due ကို ဖယ်ထားသည်။ Receipt warranty ကို Shop Settings အတိုင်း ပြသည်။
 
@@ -30,7 +32,9 @@ Technician စာရင်းကို compact table၊ search၊ status filter�
 
 **တပ်ဆင်ရန်:** Node.js 22.12 နှင့်အထက်ဖြင့် `npm ci` → `npm run build` → `npm run start:production` လုပ်ပါ။ Update မလုပ်မီ backup သိမ်းပြီး မူလ `data/` နှင့် ၎င်းအတွင်းရှိ `.security/` ကို ထိန်းထားပါ။ Recovery အောင်မြင်တိုင်း key အသစ်ပြောင်းသောကြောင့် key အသစ်ကို ထပ်သိမ်းရန်လိုသည်။
 
-## Version 2.8.5 — Payment labels, clean installs and professional cards
+## Version 2.8.6 — Reliable LAN controls, printing and Telegram
+
+The PHP CLI switch verifies actual backend health and waits for the process to exit before showing Off. Reports print in an isolated A4 document (landscape for wide service and analytics tables) without clipped modal containers or app navigation, including all filtered records. Repair Records service warranty follows shop policy. Telegram summaries support previews, four languages, time zones, delivery history and opt-in schedules.
 
 Payment forms offer a region selector and localized method labels. Enable your configured non-cash channels in Settings → Payments. Devices can select all search matches across pages and delete confirmed linked records after a backup, keeping customer accounts. Cashier cards show workshop contacts in the header. Receipts omit Balance due and use the current shop warranty; new jobs inherit that default, including zero-day warranties. Existing saved job/part warranty records remain unchanged.
 
@@ -166,3 +170,11 @@ Five failed logins for an account/IP trigger a 15-minute cooldown, with a broade
 This project is licensed under the [MIT License](LICENSE). You may use, modify and distribute it, including commercially, while retaining the copyright and license notice.
 
 ဤ project ကို [MIT License](LICENSE) ဖြင့် အသုံးပြု၊ ပြင်ဆင်၊ ပြန်လည်ဖြန့်ဝေနိုင်ပြီး စီးပွားရေးအတွက်လည်း အသုံးပြုနိုင်ပါသည်။ Copyright နှင့် license စာသားကို ဆက်လက်ထည့်ထားရပါမည်။
+
+## Telegram daily schedules / အချိန်သတ်မှတ်ပို့ခြင်း
+
+Save the bot token and recipient first. In Settings → Telegram → Daily Summary & Delivery History, choose time, time zone and summary language. Enable scheduled summaries and save; automatic Telegram alerts must also be enabled. The server must remain running with Internet access. Scheduling starts disabled. One scheduled attempt is made per local calendar day, including after server restart; inspect failures in Delivery History and retry manually if needed. Previewing never sends a message. Deleted payments are excluded and totals stay separated by currency.
+
+Bot/recipient ကို Save လုပ်ပြီး Daily Summary panel မှ အချိန်၊ timezone နှင့် ဘာသာစကား ရွေးကာ schedule ကို ဖွင့်ပြီး Save လုပ်ပါ။ Automatic Telegram alerts ကိုလည်း ဖွင့်ထားရမည်။ Server နှင့် Internet အလုပ်လုပ်နေမှ ပို့နိုင်သည်။ တစ်ရက်တစ်ကြိမ်သာ ကြိုးစားပြီး failure ကို Delivery History မှ ကြည့်နိုင်သည်။ Preview သည် စာမပို့ပါ။
+
+The PHP switch controls the managed PHP endpoint; the Node backend remains required. PHP Off closes its port. Manually started PHP processes must be stopped from their own terminal. Physical LAN connectivity and printer-driver margins should be checked on the destination PC.

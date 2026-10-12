@@ -1,8 +1,9 @@
+import { TelegramSummaryPanel } from '../components/TelegramSummaryPanel';
 import release from '../config/release.json';
 import { DeveloperInfo } from '../components/DeveloperInfo';
 import { ShopSettings } from '../components/ShopSettings';
 import { RecoveryKeySettings } from '../components/RecoveryKeySettings';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { Currency, DateFormat, Language, Theme, PaymentMethodConfig, PaymentProfile } from '../types';
 import { PaymentMethodConfigModal } from '../modals/PaymentMethodConfigModal';
@@ -241,6 +242,7 @@ export const SettingsView: React.FC = () => {
   };
 
   // Local Network & Multi-Device (PHP CLI) state
+  const portInitialized=useRef(false);
   const [networkInfo, setNetworkInfo] = useState<any>(null);
   const [networkLoading, setNetworkLoading] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
@@ -259,7 +261,8 @@ export const SettingsView: React.FC = () => {
       if (res.ok) {
         const data = await res.json();
         setNetworkInfo(data);
-        if (data.php_cli?.port) {
+        if (data.php_cli?.port && (!portInitialized.current || data.php_cli.is_running)) {
+          portInitialized.current=true;
           setCustomPhpPort(data.php_cli.port);
         }
       }
@@ -272,7 +275,9 @@ export const SettingsView: React.FC = () => {
 
   useEffect(() => {
     if (activeSection === 'network') {
-      fetchNetworkInfo();
+      void fetchNetworkInfo();
+      const timer=window.setInterval(()=>void fetchNetworkInfo(),5000);
+      return()=>window.clearInterval(timer);
     }
   }, [activeSection]);
 
@@ -297,6 +302,7 @@ export const SettingsView: React.FC = () => {
       });
       const data = await res.json();
       if (data.success) {
+        setSelectedNetworkProtocol('php');
         setPhpActionNotice({ type: 'success', message: data.message });
         await fetchNetworkInfo();
       } else {
@@ -581,7 +587,7 @@ export const SettingsView: React.FC = () => {
                     <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-bold">Multi-Device POS</div>
                     <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 truncate">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>Ready for Same Wi-Fi</span>
+                      <span>{selectedNetworkProtocol==='php'?(networkInfo?.php_cli?.is_running?'PHP access ON':'PHP access OFF'):'Node server online'}</span>
                     </div>
                   </div>
                 </div>
@@ -593,7 +599,7 @@ export const SettingsView: React.FC = () => {
                   {/* Left: Dynamic QR Code */}
                   <div className="flex flex-col items-center text-center shrink-0">
                     <div className="p-3 rounded-2xl bg-white shadow-md border border-slate-200">
-                      {qrCodeDataUrl ? (
+                      {selectedNetworkProtocol==='php'&&!networkInfo?.php_cli?.is_running?<div className="w-44 h-44 flex items-center justify-center text-slate-500 text-sm p-4">PHP access is OFF. Turn it ON to show the connection QR.</div>:qrCodeDataUrl ? (
                         <img
                           src={qrCodeDataUrl}
                           alt="Multi-Device Scan QR Code"
@@ -810,27 +816,8 @@ export const SettingsView: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {networkInfo?.php_cli?.is_running ? (
-                      <button
-                        type="button"
-                        disabled={phpActionLoading}
-                        onClick={handleStopPhpCli}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50 transition-colors shadow-xs"
-                      >
-                        <Square className="w-3.5 h-3.5 fill-current" />
-                        <span>{phpActionLoading ? 'Stopping...' : 'Stop PHP Server'}</span>
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled={phpActionLoading || !networkInfo?.php_cli?.installed}
-                        onClick={handleStartPhpCli}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50 transition-colors shadow-xs"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>{phpActionLoading ? 'Starting...' : 'Start PHP CLI Server'}</span>
-                      </button>
-                    )}
+                    <button type="button" role="switch" aria-label="PHP CLI server" aria-checked={Boolean(networkInfo?.php_cli?.is_running)} disabled={phpActionLoading||networkLoading||!networkInfo?.php_cli?.installed||networkInfo?.php_cli?.is_starting||networkInfo?.php_cli?.is_stopping} onClick={()=>networkInfo?.php_cli?.is_running||networkInfo?.php_cli?.process_alive?handleStopPhpCli():handleStartPhpCli()} className={`flex items-center gap-3 px-4 py-2 rounded-lg font-bold text-sm disabled:opacity-50 ${networkInfo?.php_cli?.is_running?'bg-emerald-600 text-white':'bg-[var(--surface-2)] border border-[var(--border)]'}`}><span className={`w-9 h-5 rounded-full p-0.5 ${networkInfo?.php_cli?.is_running?'bg-white/30':'bg-slate-400'}`}><span className={`block w-4 h-4 rounded-full bg-white transition-transform ${networkInfo?.php_cli?.is_running?'translate-x-4':''}`}/></span>{phpActionLoading?'Checking…':networkInfo?.php_cli?.is_running?'ON':networkInfo?.php_cli?.process_alive?'Error • Stop':'OFF'}</button>
+
                   </div>
                 </div>
 
@@ -958,9 +945,10 @@ export const SettingsView: React.FC = () => {
                   <span className="text-xs font-bold text-emerald-600">FREE · All plans</span>
                 </div>
               </div>
+              <TelegramSummaryPanel/>
               <div className="space-y-5">
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={telegramEnabled} onChange={e => setTelegramEnabled(e.target.checked)} />Enable automatic Telegram alerts</label>
-                  <p className="text-xs text-[var(--text-muted)]">Save configuration before testing or sending a summary. Daily summaries are sent manually using the button below.</p>
+                  <p className="text-xs text-[var(--text-muted)]">Save configuration before testing or sending. Use the summary panel to preview reports and enable a daily schedule.</p>
                   {/* Status Banner */}
                   <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/30 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
@@ -971,7 +959,7 @@ export const SettingsView: React.FC = () => {
                     </div>
                     {telegramBot.is_connected && (
                       <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
-                        Last delivery test passed
+                        Last Telegram delivery succeeded
                       </span>
                     )}
                   </div>

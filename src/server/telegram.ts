@@ -9,6 +9,7 @@ export async function telegramRequest(token: string, method: string, body?: obje
     if (typeof data?.ok !== 'boolean') return { ok: false, description: 'Invalid response from Telegram.' };
     if (!response.ok) data.ok = false;
     if (data.description) data.description = String(data.description).split(token).join('[redacted]');
+    if(data.error_code===429&&data.parameters?.retry_after)data.description=String(data.description || 'Telegram rate limit')+` Try again after ${data.parameters.retry_after} seconds.`;
     if (data.error_code === 409 && method === 'getUpdates') data.description += ' Chat detection requires polling; a webhook or another polling process may be active. Enter the Chat ID manually or resolve the other integration first.';
     return data;
   } catch { return { ok: false, description: 'Telegram request timed out or failed. Check internet access and try again.' }; }

@@ -1,3 +1,4 @@
+import { printReport, createReportSheet } from '../utils/reportPrint';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/Pagination';
 import React, { useState } from 'react';
@@ -19,6 +20,7 @@ import {
 
 export const ReportsView: React.FC = () => {
   const {
+    settings,
     jobs,
     technicians,
     payments,
@@ -52,7 +54,7 @@ export const ReportsView: React.FC = () => {
   });
 
   // Compile stats per technician
-  const technicianReports = technicians.map((tech) => {
+  const technicianReports = technicians.filter(tech=>selectedTechId==='all'||tech.id===selectedTechId).map((tech) => {
     const techJobs = filteredJobs.filter((j) => j.technician_id === tech.id);
     const received = techJobs.filter((j) => j.status_id === 'received').length;
     const diagnosing = techJobs.filter((j) => j.status_id === 'diagnosing').length;
@@ -107,7 +109,10 @@ export const ReportsView: React.FC = () => {
   const totalRevenueCollected = filteredPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
   const handlePrint = () => {
-    window.print();
+    const headers=activeTab==='workload'?['Technician','Total jobs','Diagnosing','Repairing','Waiting','Ready','Completed','Charges']:activeTab==='payments'?['Date','Service','Customer','Cashier','Method','Currency','Amount']:['Date','User','Action','Details'];
+    const rows=activeTab==='workload'?technicianReports.map(report=>[report.tech.full_name,report.totalJobs,report.diagnosing,report.repairing,report.waiting_parts,report.ready,report.completed+report.delivered,formatCurrency(report.totalServiceCharges)]):activeTab==='payments'?filteredPayments.map(payment=>[formatDate(payment.paid_at),payment.service_number,payment.customer_name,payment.received_by,payment.payment_method,payment.currency_code,formatCurrency(payment.amount,payment.currency_code)]):auditTrail.map(record=>[formatDate(record.created_at),record.username,record.action,record.details]);
+    const title=activeTab==='workload'?'Technician Performance & Workload':activeTab==='payments'?'Payment History & Transactions':'Security Audit Trail';
+    printReport(createReportSheet(settings.shopName,title,`Generated: ${new Date().toLocaleDateString()} · ${activeTab==='workload'?`Period: ${dateFrom||'Beginning'} to ${dateTo||'Present'}`:`Records: ${rows.length}`}`,headers,rows),'FixFlow '+title,activeTab==='audit'?'portrait':'landscape');
   };
 
   return (

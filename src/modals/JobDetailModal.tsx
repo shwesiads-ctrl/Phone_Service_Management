@@ -58,7 +58,6 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
   const [completionNotes, setCompletionNotes] = useState<string>(job.completion_notes || '');
   const [serviceCharge, setServiceCharge] = useState<number>(job.service_charge);
   const [parts, setParts] = useState<ServiceJobPart[]>(job.parts_used || []);
-  const [warrantyDays, setWarrantyDays] = useState<number>(job.warranty_days ?? settings.defaultWarrantyDays ?? 90);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -154,7 +153,6 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
         diagnosis,
         repair_notes: repairNotes,
         completion_notes: completionNotes,
-        warranty_days: Number(warrantyDays),
         parts_used: parts,
       };
 
@@ -765,8 +763,9 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
                 </label>
                 <input
                   type="number"
-                  value={warrantyDays}
-                  onChange={(e) => setWarrantyDays(parseInt(e.target.value) || 30)}
+                  aria-label="Service warranty policy"
+                  value={settings.defaultWarrantyDays ?? 90}
+                  readOnly
                   className="w-full px-3 py-1.5 text-xs bg-[var(--surface)] border border-[var(--border)] rounded-lg text-[var(--text)] font-mono font-bold"
                 />
               </div>

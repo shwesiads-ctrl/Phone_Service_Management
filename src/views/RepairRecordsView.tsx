@@ -1,6 +1,7 @@
+import { printReport } from '../utils/reportPrint';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/Pagination';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { ServiceJob, ServiceStatus } from '../types';
 import {
@@ -31,6 +32,7 @@ interface RepairRecordsViewProps {
 }
 
 export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob }) => {
+  const reportSheet=useRef<HTMLDivElement>(null);
   const {
     role,
     currentUser,
@@ -528,7 +530,7 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
                       {/* Warranty */}
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--text)] border border-[var(--border)]">
-                          {job.warranty_days || 30}d
+                          {settings.defaultWarrantyDays ?? 90}d
                         </span>
                       </td>
 
@@ -590,7 +592,7 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => window.print()}
+                  onClick={() => {if(reportSheet.current)printReport(reportSheet.current,'FixFlow Report',printReportType==='service_history'||printReportType==='date_range'?'landscape':'portrait');}}
                   className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-lg bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors cursor-pointer shadow-sm"
                 >
                   <Printer className="w-4 h-4" />
@@ -609,7 +611,7 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
             </div>
 
             {/* Printable Content Area */}
-            <div className="p-6 sm:p-8 overflow-y-auto flex-1 bg-white text-slate-900 print:p-0 print:m-0 print:overflow-visible">
+            <div ref={reportSheet} data-report-sheet="repairs" className="p-6 sm:p-8 overflow-y-auto flex-1 bg-white text-slate-900 print:p-0 print:m-0 print:overflow-visible">
               {/* PRINT TYPE 1: INDIVIDUAL REPAIR RECORD */}
               {printReportType === 'individual' && printRecordJob && (
                 <div className="max-w-3xl mx-auto space-y-6 text-slate-800 text-xs">
@@ -617,10 +619,10 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
                   <div className="flex items-start justify-between border-b-2 border-slate-900 pb-4">
                     <div>
                       <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase">
-                        {settings.shopName || 'Hacked Shop'}
+                        {settings.shopName || 'FixFlow Workshop'}
                       </h1>
                       <p className="text-xs text-slate-600 mt-0.5">
-                        {settings.address || 'Naypyitaw (Myanmar)'}
+                        {settings.address || ''}
                       </p>
                       <p className="text-xs text-slate-600">
                         Phone: {settings.phone || '+95 9256060722'} · Email: {settings.email || 'shwetaythan@gmail.com'}
@@ -681,7 +683,7 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
                         Workbench ID: {printRecordJob.technician_id}
                       </div>
                       <div className="text-[10px] text-slate-500">
-                        Warranty: {printRecordJob.warranty_days || 30} Days Service Warranty
+                        Warranty: {settings.defaultWarrantyDays ?? 90} Days Service Warranty
                       </div>
                     </div>
                   </div>
@@ -857,14 +859,14 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
                   </div>
 
                   <div className="space-y-4">
-                    {technicians.map((tech) => {
+                    {technicians.filter(tech=>filteredJobs.some(job=>job.technician_id===tech.id)).map((tech) => {
                       const techJobs = filteredJobs.filter((j) => j.technician_id === tech.id);
                       const techCompleted = techJobs.filter((j) => j.status_id === 'completed' || j.status_id === 'delivered').length;
                       const techCharges = techJobs.reduce((s, j) => s + (j.service_charge || 0), 0);
 
                       return (
-                        <div key={tech.id} className="border border-slate-200 rounded-lg p-3 bg-slate-50">
-                          <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                        <div key={tech.id} className="report-group border border-slate-200 rounded-lg p-3 bg-slate-50">
+                          <div className="report-group-heading flex items-center justify-between pb-2 border-b border-slate-200">
                             <div>
                               <div className="font-bold text-sm text-slate-900">{tech.full_name}</div>
                               <div className="text-[11px] text-slate-500 font-mono">
@@ -893,7 +895,7 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-200 font-mono">
-                                {techJobs.slice(0, 10).map((j) => (
+                                {techJobs.map((j) => (
                                   <tr key={j.id}>
                                     <td className="py-1 font-bold">{j.service_number}</td>
                                     <td className="py-1 font-sans">{j.customer?.name}</td>

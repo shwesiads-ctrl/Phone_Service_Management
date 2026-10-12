@@ -307,7 +307,16 @@ export interface LicenseRegistryItem {
   installation_id?: string | null;
 }
 
+export interface TelegramDelivery {
+  id:string;event:string;destination:string;ok:boolean;created_at:string;error?:string;
+}
 export interface TelegramBotConfig {
+  daily_summary_schedule_enabled?:boolean;
+  daily_summary_time?:string;
+  summary_time_zone?:string;
+  summary_language?:Language;
+  last_daily_summary_attempt?:string;
+  delivery_history?:TelegramDelivery[];
   enabled: boolean;
   bot_token: string;
   chat_id: string;

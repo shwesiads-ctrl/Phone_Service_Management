@@ -31,6 +31,7 @@ import {generateCashierCard} from '../src/utils/cashierCard';
  for(const element of [<CashierJobModal job={job} onClose={()=>{}} onPrint={()=>{}}/>,<JobDetailModal job={job} onClose={()=>{}} onPrint={()=>{}}/>,<NewTicketModal onClose={()=>{}} onCreated={()=>{}}/>]){
   await render(element);
   if(!document.querySelector('[aria-label="Payment profile"]'))await click(Array.from(document.querySelectorAll('button')).find(button=>button.textContent?.toLowerCase().replace(/\s/g,'').includes('recordpayment'))!);
+  const warranty=document.querySelector('[aria-label="Service warranty policy"]') as HTMLInputElement|null;if(warranty){assert.equal(warranty.value,'90');assert.ok(warranty.readOnly);}
   const profile=document.querySelector('[aria-label="Payment profile"]') as HTMLSelectElement;assert.ok(profile);
   assert.ok(Array.from(document.querySelectorAll('option')).some(option=>option.textContent==='Cash'));
   assert.ok(!Array.from(document.querySelectorAll('option')).some(option=>option.textContent?.includes('เงินสด')));

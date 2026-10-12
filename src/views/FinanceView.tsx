@@ -1,6 +1,7 @@
+import { printReport } from '../utils/reportPrint';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/Pagination';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { IncomeRecord, ExpenseRecord, Currency } from '../types';
 import {
@@ -32,6 +33,7 @@ import {
 } from 'lucide-react';
 
 export const FinanceView: React.FC = () => {
+  const reportSheet=useRef<HTMLDivElement>(null);
   const {
     role,
     currentUser,
@@ -1090,7 +1092,7 @@ combinedPage.items.map((tx, rowIndex) => (
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => window.print()}
+                  onClick={() => {if(reportSheet.current)printReport(reportSheet.current,'FixFlow Report');}}
                   className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-lg bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors cursor-pointer shadow-sm"
                 >
                   <Printer className="w-4 h-4" />
@@ -1106,7 +1108,7 @@ combinedPage.items.map((tx, rowIndex) => (
             </div>
 
             {/* Printable Sheet */}
-            <div className="p-8 overflow-y-auto flex-1 bg-white text-slate-900 print:p-0 print:m-0 space-y-5 text-xs">
+            <div ref={reportSheet} data-report-sheet="finance" className="p-8 overflow-y-auto flex-1 bg-white text-slate-900 print:p-0 print:m-0 space-y-5 text-xs">
               <div className="border-b-2 border-slate-900 pb-3 flex items-start justify-between">
                 <div>
                   <h1 className="text-xl font-black text-slate-900 uppercase">

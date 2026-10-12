@@ -49,7 +49,6 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
   const [paymentMethod, setPaymentMethod] = useState<string>(() => {
     return availablePaymentMethods[0]?.id || 'cash';
   });
-  const [warrantyDays, setWarrantyDays] = useState(settings.defaultWarrantyDays ?? 90);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -100,7 +99,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
         amount_paid: parseFloat(amountPaid) || 0,
         currency_code: currency,
         payment_method: paymentMethod,
-        warranty_days: Number(warrantyDays),
+        warranty_days: settings.defaultWarrantyDays ?? 90,
         passlock_pin: passlockPin,
       });
 
