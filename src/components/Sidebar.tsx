@@ -47,6 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
     { id: 'finance', path: '/finance', label: t('finance'), icon: DollarSign },
     { id: 'customers', path: '/customers', label: t('customers'), icon: Users },
     { id: 'devices', path: '/devices', label: t('devices'), icon: Smartphone },
+    { id: 'users', path: '/users', label: language==='my'?'User လုပ်ပိုင်ခွင့်':'User Roles & Access', icon: Users },
     { id: 'cashiers', path: '/cashiers', label: accountLabels(language).cashier, icon: DollarSign },
     { id: 'technicians', path: '/technicians', label: t('technicians'), icon: UserCog },
     { id: 'reports', path: '/reports', label: t('reports'), icon: BarChart3 },

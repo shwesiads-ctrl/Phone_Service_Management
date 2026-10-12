@@ -16,7 +16,6 @@ import {
   X,
   CheckCircle,
   AlertCircle,
-  UserCheck,
   Power,
   RotateCcw,
   CreditCard,
@@ -35,7 +34,6 @@ export const TechniciansView: React.FC = () => {
     updateTechnician,
     resetTechnicianPassword,
     deleteTechnician,
-    loginAs,
     navigate,
     setActiveTab,
     formatDate,
@@ -323,7 +321,6 @@ export const TechniciansView: React.FC = () => {
               <button title="Reset password" aria-label={`Reset password for ${tech.full_name}`} onClick={()=>setPasswordModalTech(tech)} className="p-2 rounded hover:bg-[var(--surface-2)] text-blue-500"><Key size={15}/></button>
               <button title={tech.status==='active'?'Disable technician':'Enable technician'} aria-label={`Toggle status for ${tech.full_name}`} onClick={()=>handleToggleStatus(tech)} className="p-2 rounded hover:bg-[var(--surface-2)] text-amber-500"><Power size={15}/></button>
               <button title="Generate Technician ID Card" aria-label={`ID card for ${tech.full_name}`} onClick={()=>setIdCardModalTech(tech)} className="p-2 rounded hover:bg-[var(--surface-2)] text-blue-500"><CreditCard size={15}/></button>
-              <button title="Switch session to this technician" aria-label={`Switch to ${tech.full_name}`} onClick={()=>loginAs(tech.username)} className="p-2 rounded hover:bg-[var(--surface-2)]"><UserCheck size={15}/></button>
               <button title="Edit technician" aria-label={`Edit ${tech.full_name}`} onClick={()=>openEditModal(tech)} className="p-2 rounded hover:bg-[var(--surface-2)]"><Edit2 size={15}/></button>
               <button title="Delete Technician" aria-label={`Delete ${tech.full_name}`} onClick={()=>handleDeleteTech(tech)} className="p-2 rounded hover:bg-rose-500/10 text-rose-500"><Trash2 size={15}/></button>
             </div></td>

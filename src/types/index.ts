@@ -27,6 +27,7 @@ export type TicketPriority = 'normal' | 'urgent' | 'express';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid';
 
 export interface User {
+  password_configured?: boolean;
   staff_code?: string;
   address?: string;
   password?: string;

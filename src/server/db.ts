@@ -1071,6 +1071,17 @@ class Database {
     }catch(error){this.data=before;throw error;}
   }
 
+  public updateUserAccess(id:string,updates:Pick<User,'role'|'active'> & {password?:string}):void {
+    const before=structuredClone(this.data);
+    try {
+      const user=this.data.users.find(user=>user.id===id);if(!user)throw new Error('Unknown account.');Object.assign(user,updates);
+      const tech=this.data.technicians.find(tech=>tech.id===user.technician_id);
+      if(tech){tech.status=updates.active?'active':'inactive';if(updates.password)tech.password=updates.password;}
+      if(updates.role==='cashier'&&!user.staff_code)user.staff_code=this.nextCashierCode();
+      this.saveDatabase();
+    }catch(error){this.data=before;throw error;}
+  }
+
   public createAdmin(input: { username: string; full_name: string; password: string; phone?: string; email?: string }): User {
     const user: User = { ...input, id: `USR-ADMIN-${randomUUID()}`, role: 'admin', active: true, created_at: new Date().toISOString() };
     this.data.users.push(user); this.saveDatabase(); return user;

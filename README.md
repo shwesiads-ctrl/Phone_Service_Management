@@ -6,7 +6,7 @@ The published package excludes saved Telegram credentials. Re-enter your bot tok
 
 Staff registration and Telegram Bot settings are available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
 
-## မြန်မာလမ်းညွှန် — Version 2.8.2
+## မြန်မာလမ်းညွှန် — Version 2.8.3
 
 FixFlow သည် ဖုန်းနှင့် စက်ပစ္စည်းပြုပြင်ရေးဆိုင်အတွက် Service Job၊ Customer၊ Device၊ Technician၊ Cashier၊ ငွေလက်ခံခြင်းနှင့် Report များကို စီမံနိုင်သည့် Local / LAN စနစ်ဖြစ်ပါသည်။
 
@@ -24,7 +24,7 @@ Technician စာရင်းကို compact table၊ search၊ status filter�
 
 **တပ်ဆင်ရန်:** Node.js 22.12 နှင့်အထက်ဖြင့် `npm ci` → `npm run build` → `npm run start:production` လုပ်ပါ။ Update မလုပ်မီ backup သိမ်းပြီး မူလ `data/` နှင့် ၎င်းအတွင်းရှိ `.security/` ကို ထိန်းထားပါ။ Recovery အောင်မြင်တိုင်း key အသစ်ပြောင်းသောကြောင့် key အသစ်ကို ထပ်သိမ်းရန်လိုသည်။
 
-## Version 2.8.2 — Accounts and developer services
+## Version 2.8.3 — Accounts and developer services
 
 A fresh installation offers **New User Register — Create Admin Account** on Login. Create the first administrator with your own name, username and confirmed password; no previous/default administrator credentials are needed. Registration closes on the server and hides from Login immediately after creation, including after restart. Existing configured administrator accounts are preserved. Login registration also stays closed after restoring older backups from a configured installation.
 
@@ -142,3 +142,11 @@ Cashier accounts receive intake/status notifications and their own payment notif
 Existing cashier accounts automatically receive a persistent short display code such as `CASH-0001`. Profile, account list and ID cards show this code; internal record IDs and QR identifiers retain their original values. Cards now show workshop name, phone, email and address.
 
 `npm run test:cashier:browser` runs real headless Chromium checks using fixture data, including actual JPEG downloads and image dimensions. Set `CHROMIUM_PATH` if Chromium is not located at `/usr/bin/chromium`. The standard `npm test` suite uses isolated HTTP/component fixtures and does not require Chromium.
+
+### Login security, themes and user roles
+
+Login, Navbar and Appearance Settings offer Light, Dark and System modes. Dark styling follows the selected application theme.
+
+Login မှားယွင်းမှု ၅ ကြိမ်ဖြစ်ပါက ထိုအကောင့်/စက်အတွက် ၁၅ မိနစ် ကန့်သတ်ထားသည်။ Admin က **User Roles & Access** မှ role၊ account enable/disable နှင့် password reset စီမံနိုင်သည်။ ကိုယ်ပိုင် Admin လုပ်ပိုင်ခွင့်ပိတ်ခြင်းနှင့် နောက်ဆုံး Admin ဖယ်ရှားခြင်းကို ကာကွယ်ထားသည်။ Role ပြောင်းပြီးနောက် သက်ဆိုင်ရာ user ကို Login ပြန်ဝင်စေသည်။
+
+Five failed logins for an account/IP trigger a 15-minute cooldown, with a broader IP limit against username spraying. Successful login clears that account’s failure count. User access changes revoke affected sessions. Admins cannot disable/demote themselves or the last active admin; technician roles require a linked technician profile. Sessions are checked on browser focus and every 30 seconds. Default-password session switching was removed; account switching requires signing in normally.

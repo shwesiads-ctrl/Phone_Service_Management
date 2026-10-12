@@ -45,7 +45,7 @@ import { NewUserRegisterModal } from '../src/modals/NewUserRegisterModal';
  await act(async()=>root.render(<AboutView/>));
  check('About shows developer name and customization service',document.body.textContent!.includes('MyominAung')&&document.body.textContent!.includes('စိတ်ကြိုက်'));
  check('Developer contacts use correct actionable links',document.querySelector('a[href="https://t.me/kominit"]')&&document.querySelector('a[href="mailto:shwetaythan@gmail.com"]')&&document.querySelector('a[href="https://wa.me/959256060722"]'));
- check('About includes current release and Myanmar update notes',document.body.textContent!.includes('2.8.2')&&document.body.textContent!.includes('ယခု Version')&&document.body.textContent!.includes('Admin အကောင့်အသစ်'));
+ check('About includes current release and Myanmar update notes',document.body.textContent!.includes('2.8.3')&&document.body.textContent!.includes('ယခု Version')&&document.body.textContent!.includes('Admin အကောင့်အသစ်'));
  await act(async () => root.unmount()); dom.window.close();
  console.log(`REGISTER UI SUMMARY: ${passed} PASSED`);
 })().catch(error=>{console.error(error);process.exitCode=1;});

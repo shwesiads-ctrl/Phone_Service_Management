@@ -19,7 +19,8 @@
     <script>
       (function() {
         try {
-          const storedTheme = localStorage.getItem('fixflow_theme') || 'system';
+          const savedTheme = localStorage.getItem('fixflow_theme');
+          const storedTheme = ['light','dark','system'].includes(savedTheme) ? savedTheme : 'system';
           const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
           if (storedTheme === 'dark' || (storedTheme === 'system' && prefersDark)) {
             document.documentElement.classList.add('dark');

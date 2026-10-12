@@ -11,7 +11,7 @@ export const Forbidden403View: React.FC<Forbidden403ViewProps> = ({
   attemptedPath = '/admin/dashboard',
   onRedirectToTechnician,
 }) => {
-  const { currentUser, role, navigate, loginAs, t } = useApp();
+  const { currentUser, role, navigate, logout, t } = useApp();
 
   const handleGoToTechnician = () => {
     if (onRedirectToTechnician) {
@@ -90,13 +90,12 @@ export const Forbidden403View: React.FC<Forbidden403ViewProps> = ({
           <button
             type="button"
             onClick={async () => {
-              await loginAs('admin');
-              navigate('/admin/dashboard');
+              await logout();
             }}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-[var(--text)] bg-[var(--surface-2)] hover:bg-[var(--surface-2)]/80 border border-[var(--border)] transition-all cursor-pointer"
           >
             <Shield className="w-4 h-4 text-blue-500" />
-            <span>Switch to Admin Account</span>
+            <span>Sign in with another account</span>
           </button>
         </div>
       </div>

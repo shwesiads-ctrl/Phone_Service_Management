@@ -1,3 +1,4 @@
+import type { Theme } from '../types';
 import { RegisterAdminForm } from './RegisterAdminForm';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 import { accountLabels } from '../i18n/accountLabels';
@@ -6,7 +7,7 @@ import { useApp } from '../context/AppContext';
 import { Shield, Wrench, Lock, User as UserIcon, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const LoginView: React.FC = () => {
-  const { login, t, language } = useApp();
+  const { login, t, language, theme='system', setTheme } = useApp();
   const setupRequestVersion=useRef(0);
   const [registrationAvailable,setRegistrationAvailable]=useState(false);
   useEffect(()=>{let active=true;const refresh=async()=>{const version=++setupRequestVersion.current;try{const response=await fetch('/api/auth/setup-status',{cache:'no-store'});if(response.ok){const value=await response.json();if(active&&version===setupRequestVersion.current){setRegistrationAvailable(value.registration_open===true);if(!value.registration_open)setRegisterOpen(false);}}}catch{}};void refresh();window.addEventListener('focus',refresh);const timer=window.setInterval(refresh,15000);return()=>{active=false;clearInterval(timer);window.removeEventListener('focus',refresh);};},[]);
@@ -57,6 +58,7 @@ export const LoginView: React.FC = () => {
           </p>
         </div>
 
+        <label className="flex items-center justify-end gap-2 text-xs text-[var(--text-muted)]">Theme<select aria-label="Login theme" value={theme} onChange={e=>setTheme(e.target.value as Theme)} className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface-2)]"><option value="light">Light</option><option value="dark">Dark</option><option value="system">System</option></select></label>
         {registerOpen ? <RegisterAdminForm language={language} onClose={()=>setRegisterOpen(false)} onCreated={name=>{setupRequestVersion.current++;setRegistrationAvailable(false);setRegisterOpen(false);setRegistered(name);setUsername(name);setPassword('');}}/> : forgotOpen ? <ForgotPasswordForm language={language} onClose={() => setForgotOpen(false)} /> : <>
         {registered && <p role="status" className="text-sm text-emerald-500">{language==='my'?'Admin အကောင့်ဖွင့်ပြီးပါပြီ။ Login ဝင်နိုင်ပါပြီ။':'Admin account created. Sign in with your new password.'} ({registered})</p>}
         {error && (

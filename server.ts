@@ -1,3 +1,4 @@
+import { LoginLimiter } from './src/server/loginLimiter.ts';
 import { imageValidationError } from './src/utils/imageUpload.ts';
 import { RecoveryKeyStore } from './src/server/recovery.ts';
 import { hashPassword, verifyPassword } from './src/server/passwords.ts';
@@ -19,6 +20,7 @@ interface AuthRequest extends Request {
 
 const recoveryKeys = new RecoveryKeyStore(path.resolve(process.env.FIXFLOW_DATA_DIR || 'data', '.security'));
 const app = express();
+const loginLimiter=new LoginLimiter();
 const port = Number(process.env.PORT || 3000);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT');
 
@@ -39,7 +41,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
 const sessions = new Map<string, { userId: string; expiresAt: number; credential: string }>();
 const credentialFor = (user: User) => {
   const tech = user.technician_id ? db.getTechnicianById(user.technician_id) : undefined;
-  return createHash('sha256').update(String((user as any).password || tech?.password || '')).digest('hex');
+  return createHash('sha256').update(String((user as any).password || tech?.password || '') + ':' + user.role).digest('hex');
 };
 const authenticate = (req: AuthRequest, _res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : '';
@@ -169,6 +171,7 @@ app.post('/api/auth/recover-password', (req, res) => {
   try {
     const recovery = recoveryKeys.rotate(() => db.resetPasswordTransaction(user.id, hashPassword(new_password), ip));
     for (const [token, session] of sessions) if (session.userId === user.id) sessions.delete(token);
+    loginLimiter.reset(user.username);
     recoveryAttempts.delete(ip);
     return res.json({ success: true, recovery });
   } catch { return res.status(500).json({ error: 'Recovery could not be saved. Check database and local recovery-key storage access.' }); }
@@ -177,7 +180,7 @@ const checkRecoveryAdmin = (req: AuthRequest, res: Response, next: NextFunction)
   res.setHeader('Cache-Control', 'no-store');
   if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Administrator access required.' });
   const stored = req.user.password;
-  const valid = stored ? verifyPassword(req.body.current_password, stored) : req.body.current_password === 'admin123';
+  const valid = stored ? verifyPassword(req.body.current_password, stored) : false;
   if (!valid) return res.status(403).json({ error: 'Enter the current administrator password.' });
   next();
 };
@@ -215,20 +218,24 @@ app.post('/api/auth/login', (req: AuthRequest, res: Response) => {
   const { username, password } = req.body;
   const ip = req.ip || '127.0.0.1';
 
-  if (typeof username !== 'string' || !username.trim() || typeof password !== 'string' || !password) {
+  if (typeof username !== 'string' || !username.trim() || username.length>200 || typeof password !== 'string' || !password || password.length>128) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
-  let resolvedUsername = username;
-  if (username === 'tech1') resolvedUsername = 'kyawzin';
-
-  const user = db.getUserByUsername(resolvedUsername);
+  const identifier=username.trim();
+  const resolvedUsername=identifier==='tech1'?'kyawzin':identifier;
+  const emailMatches=identifier.includes('@')?db.getUsers().filter(account=>(account.email || db.getTechnicianById(account.technician_id || '')?.email || '').toLowerCase()===identifier.toLowerCase()):[];
+  const user=db.getUserByUsername(resolvedUsername) || (emailMatches.length===1?emailMatches[0]:undefined);
+  const limitIdentity=user?.username || resolvedUsername;
+  const retryAfter=loginLimiter.retryAfter(ip,limitIdentity);
+  if(retryAfter){res.setHeader('Retry-After',String(retryAfter));return res.status(429).json({error:'Too many failed login attempts. Try again in 15 minutes.',retry_after:retryAfter});}
   if (!user) {
+    loginLimiter.fail(ip,limitIdentity);
     db.recordLoginAttempt(username, false, ip);
     return res.status(401).json({ error: 'Invalid username or credentials' });
   }
 
-  if(user.role==='admin'&&!user.password)return res.status(401).json({error:'Administrator password is not configured. Use password recovery.'});
+  if(['admin','cashier'].includes(user.role)&&!user.password)return res.status(401).json({error:'Account password is not configured. Use password recovery.'});
   if (user.active === false) return res.status(403).json({ error: 'Account is inactive.' });
   if (user.role === 'technician' && db.getTechnicianById(user.technician_id || '')?.status !== 'active') {
     return res.status(403).json({ error: 'Technician account is inactive.' });
@@ -244,16 +251,18 @@ app.post('/api/auth/login', (req: AuthRequest, res: Response) => {
       validPassword = verifyPassword(password, storedPass);
     } else {
       // System default credentials before user updates their password
-      const defaultPass = user.role === 'admin' ? 'admin123' : 'tech123';
+      const defaultPass = 'tech123';
       validPassword = password === defaultPass;
     }
 
     if (!validPassword) {
-      db.recordLoginAttempt(username, false, ip);
+      loginLimiter.fail(ip,limitIdentity);
+    db.recordLoginAttempt(username, false, ip);
       return res.status(401).json({ error: 'Invalid password credentials' });
     }
   }
 
+  loginLimiter.success(ip,limitIdentity);
   // Record successful login
   db.recordLoginAttempt(username, true, ip);
   db.recordAudit({
@@ -327,6 +336,7 @@ app.post('/api/auth/change-password', (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'New password must be at least 8 characters.' });
   }
   db.updatePassword(req.user.id, hashPassword(new_password));
+  loginLimiter.reset(req.user.username);
   for (const [token, session] of sessions) {
     if (session.userId === req.user.id && token !== req.headers.authorization?.slice(7)) sessions.delete(token);
   }
@@ -421,6 +431,7 @@ app.delete('/api/demo-users', (req: AuthRequest, res) => {
   if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Admin access required.' });
   const demo = db.getTechnicians().filter(t => t.is_demo);
   if (demo.some(t => db.getJobs().some(j => j.technician_id === t.id))) return res.status(409).json({ error: 'Reassign demo users’ repair jobs before deleting them.' });
+  if(demo.some(tech=>db.getUsers().some(user=>user.technician_id===tech.id&&user.role==='admin')))return res.status(409).json({error:'Change demo administrator roles before removing demo accounts.'});
   for (const tech of demo) db.deleteTechnician(tech.id);
   db.recordAudit({ user_id: req.user.id, username: req.user.username, action: 'DEMO_USERS_DELETED', target_type: 'system', target_id: 'demo-users', details: `Deleted ${demo.length} demo accounts.`, ip_address: req.ip || '127.0.0.1' });
   res.json({ success: true, deleted: demo.length });
@@ -610,6 +621,7 @@ app.delete('/api/technicians/:id', (req: AuthRequest, res: Response) => {
     return res.status(403).json({ error: 'Forbidden: Only administrators can delete technicians.' });
   }
 
+  if(db.getUsers().some(user=>user.technician_id===id&&user.role==='admin'))return res.status(409).json({error:'Change the linked administrator role before deleting this technician.'});
   if (db.getJobs().some(j => j.technician_id === id)) {
     return res.status(409).json({ error: "Reassign this technician's repair jobs before deleting the account." });
   }
@@ -1755,6 +1767,26 @@ const requireIntakeUser = (req: AuthRequest, res: Response, next: NextFunction) 
   if (!req.user || !['admin','cashier'].includes(req.user.role)) return res.status(403).json({ error: 'Admin or cashier access required.' });
   next();
 };
+app.get('/api/users',requireAdmin,(_req,res)=>res.json(db.getUsers().map(user=>({...user,password_configured:Boolean(user.password || db.getTechnicianById(user.technician_id || '')?.password),active:user.active!==false && (user.role!=='admin'||Boolean(user.password)) && (user.role!=='technician' || db.getTechnicianById(user.technician_id || '')?.status==='active')}))));
+app.put('/api/users/:id/access',requireAdmin,(req:AuthRequest,res)=>{
+  const user=db.getUsers().find(user=>user.id===req.params.id);if(!user)return res.status(404).json({error:'Account not found.'});
+  const {role=user.role,active=user.active!==false,password}=req.body;
+  if(!['admin','technician','cashier'].includes(role)||typeof active!=='boolean'||(password!==undefined&&(typeof password!=='string'||password.length<8||password.length>128)))return res.status(400).json({error:'Choose a valid role, account status and password of 8–128 characters.'});
+  if(role==='technician'&&(!user.technician_id||!db.getTechnicianById(user.technician_id)))return res.status(400).json({error:'Register a linked technician account first. This account has no technician profile.'});
+  if(user.id===req.user!.id&&(role!=='admin'||!active))return res.status(409).json({error:'You cannot disable or remove your own administrator access.'});
+  if(user.role==='admin'&&user.active!==false&&Boolean(user.password)&&(role!=='admin'||!active)&&db.getUsers().filter(account=>account.role==='admin'&&account.active!==false&&Boolean(account.password)).length<=1)return res.status(409).json({error:'Keep at least one active administrator.'});
+  const effectivePassword=user.password || db.getTechnicianById(user.technician_id || '')?.password;
+  if(active&&['admin','cashier'].includes(role)&&!effectivePassword&&!password)return res.status(400).json({error:'Set a new password before granting this role.'});
+  const copiedPassword=['admin','cashier'].includes(role)&&!user.password&&effectivePassword?(effectivePassword.startsWith('scrypt$')?effectivePassword:hashPassword(effectivePassword)):undefined;
+  const changed=role!==user.role || active!==(user.active!==false) || Boolean(password || copiedPassword);
+  if(!changed)return res.json({user,changed:false});
+  db.updateUserAccess(user.id,{role,active,...(password?{password:hashPassword(password)}:copiedPassword?{password:copiedPassword}:{})});
+  if(password)loginLimiter.reset(user.username);
+  for(const [token,session] of sessions)if(session.userId===user.id)sessions.delete(token);
+  db.recordAudit({user_id:req.user!.id,username:req.user!.username,action:'USER_ACCESS_UPDATED',target_type:'auth',target_id:user.id,details:`Updated role to ${role}; active: ${active}.`,ip_address:req.ip || ''});
+  return res.json({user,changed:true});
+});
+
 app.get('/api/cashiers', requireAdmin, (_req, res) => res.json(db.getUsers().filter(u => u.role === 'cashier')));
 app.post('/api/cashiers', requireAdmin, (req: AuthRequest, res) => {
   const { username, full_name, password } = req.body;

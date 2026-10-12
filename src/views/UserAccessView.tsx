@@ -1,0 +1,27 @@
+import React,{useEffect,useState} from 'react';
+import {useApp} from '../context/AppContext';
+import type {User,Role} from '../types';
+import {usePagination} from '../hooks/usePagination';
+import {Pagination} from '../components/Pagination';
+import {NewUserRegisterModal} from '../modals/NewUserRegisterModal';
+export function UserAccessView(){
+ const {role,currentUser,getAuthHeaders,logout,language}=useApp();
+ const [users,setUsers]=useState<User[]>([]),[search,setSearch]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[register,setRegister]=useState(false);
+ const [selected,setSelected]=useState<User|null>(null),[draft,setDraft]=useState<{role:Role;active:boolean;password:string}>({role:'cashier',active:true,password:''});
+ const refresh=async()=>{try{const response=await fetch('/api/users',{headers:getAuthHeaders()});const data=await response.json();if(!response.ok)throw new Error(data.error);setUsers(data);}catch(e:any){setError(e.message || 'Could not load accounts.');}};
+ useEffect(()=>{if(role==='admin')void refresh();},[role]);
+ const page=usePagination(users.filter(user=>[user.full_name,user.username,user.role].join(' ').toLowerCase().includes(search.trim().toLowerCase())),search);
+ if(role!=='admin')return <p>Administrator access required.</p>;
+ return <div className="space-y-5 max-w-6xl mx-auto"><div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-2xl font-bold">{language==='my'?'User လုပ်ပိုင်ခွင့် စီမံရန်':'User Roles & Access'}</h1><p className="text-sm text-[var(--text-muted)]">Role, account status and password controls. Changes sign out the affected account.</p></div><button onClick={()=>setRegister(true)} className="px-4 py-2 rounded-lg bg-blue-600 text-white">New User Register</button></div>
+ {error&&<p role="alert" className="text-rose-500">{error}</p>}
+ <input aria-label="Search user accounts" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name, username or role" className="w-full p-3 rounded-lg border border-[var(--border)] bg-[var(--surface)]"/>
+ <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[550px] text-sm text-left"><thead className="bg-[var(--surface-2)]"><tr><th className="p-3">#</th><th className="p-3">Account</th><th className="p-3">Role</th><th className="p-3">Status</th><th className="p-3">Actions</th></tr></thead><tbody>{page.items.map((user,index)=><tr key={user.id} className="border-t border-[var(--border)]"><td className="p-3">{page.offset+index+1}</td><td className="p-3"><b>{user.full_name}</b><p className="text-xs text-[var(--text-muted)]">@{user.username}</p></td><td className="p-3 capitalize">{user.role}</td><td className="p-3">{user.active!==false?'Active':'Disabled'}</td><td className="p-3"><button onClick={()=>{setError('');setSelected(user);setDraft({role:user.role,active:user.active!==false,password:''});}} className="px-3 py-1.5 rounded-lg border border-[var(--border)]">Manage access</button></td></tr>)}</tbody></table></div><Pagination {...page}/></div>
+ {selected&&<div className="fixed inset-0 z-50 bg-black/60 p-4 flex items-center justify-center"><form role="dialog" aria-modal="true" aria-label="Manage user access" className="w-full max-w-md p-6 rounded-xl bg-[var(--surface)] space-y-4" onSubmit={async e=>{e.preventDefault();if(busy)return;setBusy(true);setError('');try{const response=await fetch(`/api/users/${selected.id}/access`,{method:'PUT',headers:getAuthHeaders(),body:JSON.stringify({role:draft.role,active:draft.active,...(draft.password?{password:draft.password}:{})})});const value=await response.json();if(!response.ok)throw new Error(value.error);const own=selected.id===currentUser.id;setSelected(null);if(own&&value.changed)await logout();else await refresh();}catch(e:any){setError(e.message);}finally{setBusy(false);}}}>
+ <h2 className="font-bold text-lg">@{selected.username}</h2><label className="block">Role<select aria-label="Account role" disabled={busy||selected.id===currentUser.id} value={draft.role} onChange={e=>setDraft({...draft,role:e.target.value as Role})} className="block w-full p-2 rounded-lg bg-[var(--surface-2)]"><option value="admin">Admin</option><option value="cashier">Cashier</option>{selected.technician_id&&<option value="technician">Technician</option>}</select></label>
+ <label className="flex gap-2"><input type="checkbox" disabled={busy||selected.id===currentUser.id} checked={draft.active} onChange={e=>setDraft({...draft,active:e.target.checked})}/>Account enabled</label>
+ <label className="block">New password (required for unconfigured admin/cashier accounts)<input type="password" required={draft.active&&['admin','cashier'].includes(draft.role)&&!selected.password_configured} autoComplete="new-password" minLength={8} maxLength={128} disabled={busy} value={draft.password} onChange={e=>setDraft({...draft,password:e.target.value})} className="block w-full p-2 rounded-lg bg-[var(--surface-2)]"/></label>
+ {error&&<p role="alert" className="text-rose-500">{error}</p>}<div className="flex gap-3"><button disabled={busy} className="px-4 py-2 bg-blue-600 rounded-lg text-white">{busy?'Saving…':'Save access'}</button><button type="button" disabled={busy} onClick={()=>setSelected(null)} className="px-4 py-2 border border-[var(--border)] rounded-lg">Cancel</button></div>
+ </form></div>}
+ {register&&<NewUserRegisterModal onClose={()=>{setRegister(false);void refresh();}}/>}
+ </div>;
+}

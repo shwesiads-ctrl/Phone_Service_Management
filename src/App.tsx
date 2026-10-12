@@ -1,3 +1,4 @@
+import { UserAccessView } from './views/UserAccessView';
 import { CashierDashboardView } from './views/CashierDashboardView';
 import { CashierAccountsView } from './views/CashierAccountsView';
 import { CashierJobModal } from './modals/CashierJobModal';
@@ -124,6 +125,7 @@ const AuthenticatedLayout: React.FC = () => {
       case 'devices':
         return <DevicesView />;
 
+      case 'users': return <UserAccessView />;
       case 'cashiers': return role === 'admin' ? <CashierAccountsView /> : <div>Administrator access required.</div>;
       case 'technicians':
         if (role !== 'admin') {

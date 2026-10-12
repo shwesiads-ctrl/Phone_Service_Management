@@ -8,7 +8,7 @@ import { formatCurrency, getCurrencySymbol } from '../src/utils/formatters';
  const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost'});
  Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,IS_REACT_ACT_ENVIRONMENT:true});
  Object.defineProperty(globalThis,'navigator',{value:dom.window.navigator,configurable:true});
- window.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}} as any);
+ let systemHandler:any;window.matchMedia=()=>({matches:true,addEventListener(_type:string,handler:any){systemHandler=handler;},removeEventListener(){}} as any);
  const user={id:'USR-001',username:'admin',role:'admin',full_name:'Administrator',created_at:''};
  localStorage.setItem('fixflow_auth_token','test-token');localStorage.setItem('fixflow_current_user',JSON.stringify(user));localStorage.setItem('fixflow_lang','fr');
  let settings:any={currency:'CNY',currency_mode:'manual',language:'en',dateFormat:'DD-MM-YYYY'};
@@ -26,6 +26,13 @@ import { formatCurrency, getCurrencySymbol } from '../src/utils/formatters';
  let app:any;function Probe(){app=useApp();return <p>{app.language}:{app.currency}</p>;}
  const {createRoot}=require('react-dom/client');const root=createRoot(document.getElementById('root')!);
  await act(async()=>root.render(<AppProvider><Probe /></AppProvider>));
+ await act(async()=>app.setTheme('light'));assert.equal(document.documentElement.getAttribute('data-theme'),'light');assert.ok(!document.documentElement.classList.contains('dark'));
+ await act(async()=>app.setTheme('dark'));assert.equal(document.documentElement.getAttribute('data-theme'),'dark');assert.equal(localStorage.getItem('fixflow_theme'),'dark');
+ await act(async()=>app.setTheme('system'));assert.equal(document.documentElement.getAttribute('data-theme'),'dark');
+ await act(async()=>systemHandler({matches:false}));assert.equal(document.documentElement.getAttribute('data-theme'),'light');
+ await act(async()=>window.dispatchEvent(new dom.window.StorageEvent('storage',{key:'fixflow_theme',newValue:'dark'})));assert.equal(app.theme,'dark');
+ await act(async()=>app.setTheme('invalid'));assert.equal(app.theme,'dark');
+ console.log('PASS: Real context Light/Dark/System selection, system changes, persistence, cross-tab sync and invalid-theme protection.');
  assert.deepEqual(Object.keys(translations).sort(),['en','my','th','zh']);
  assert.equal(app.language,'en');assert.equal(app.currency,'CNY');
  for(const lang of ['my','th','zh','en']){await act(async()=>app.setLanguage(lang));assert.equal(app.currency,'CNY');}

@@ -98,6 +98,7 @@ export const SettingsView: React.FC = () => {
     currentUser,
     getAuthHeaders,
     deleteTechnician,
+    navigate,
   } = useApp();
 
   const [activeSection, setActiveSection] = useState<string>('general');
@@ -488,6 +489,9 @@ export const SettingsView: React.FC = () => {
 
   // Theme options
   const themeOptions: { code: Theme; label: string; icon: React.ReactNode; desc: string }[] = [
+    { code: 'light', label: 'Light', icon: <Sun className="w-4 h-4" />, desc: 'Light background' },
+    { code: 'dark', label: 'Dark', icon: <Moon className="w-4 h-4" />, desc: 'Dark background' },
+    { code: 'system', label: 'System', icon: <Monitor className="w-4 h-4" />, desc: 'Follow device appearance' },
   ];
 
   // Backup Export
@@ -2728,6 +2732,7 @@ export const SettingsView: React.FC = () => {
           {activeSection === 'security' && (
             <div className="space-y-4">
               <RecoveryKeySettings />
+              <button onClick={()=>navigate('/users')} className="px-4 py-2 rounded-lg bg-blue-600 text-white">User Roles & Access</button>
               <div className="border-b border-[var(--border)] pb-3 mb-4">
                 <h2 className="text-base font-bold text-[var(--text)]">
                   {t('settings_security')} & Role Governance

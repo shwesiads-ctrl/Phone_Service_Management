@@ -1,0 +1,19 @@
+import React,{act} from 'react';
+import {JSDOM} from 'jsdom';
+import assert from 'node:assert/strict';
+import {UserAccessView} from '../src/views/UserAccessView';
+(async()=>{
+ const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost'});Object.assign(globalThis,{window:dom.window,document:dom.window.document,HTMLElement:dom.window.HTMLElement,IS_REACT_ACT_ENVIRONMENT:true});
+ const {createRoot}=require('react-dom/client');const root=createRoot(document.getElementById('root')!);
+ let users:any[]=Array.from({length:25},(_,i)=>({id:'user'+i,full_name:'User '+i,username:'user'+i,role:i===0?'admin':'cashier',active:true,password_configured:true})),saved:any;
+ const app:any={role:'admin',currentUser:users[0],language:'en',getAuthHeaders:()=>({Authorization:'Bearer owner','Content-Type':'application/json'}),logout:async()=>{}};(globalThis as any).__testApp=app;
+ globalThis.fetch=async(path:any,options:any={})=>{if(options.method==='PUT'){saved=JSON.parse(options.body);Object.assign(users.find(u=>path.includes('/'+u.id+'/'))!,saved);return new Response(JSON.stringify({changed:true}));}return new Response(JSON.stringify(users));};
+ await act(async()=>root.render(<UserAccessView/>));assert.equal(document.querySelectorAll('tbody tr').length,20);
+ const buttons=Array.from(document.querySelectorAll('button')).filter(b=>b.textContent==='Manage access');await act(async()=>buttons[1].click());
+ const select=document.querySelector('[aria-label="Account role"]') as HTMLSelectElement;assert.ok(!select.disabled);assert.ok(!Array.from(select.options).some(o=>o.value==='technician'));
+ await act(async()=>{Object.getOwnPropertyDescriptor(dom.window.HTMLSelectElement.prototype,'value')!.set!.call(select,'admin');select.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});
+ await act(async()=>document.querySelector('form[role=dialog]')!.dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true})));assert.equal(saved.role,'admin');assert.ok(!document.querySelector('[role=dialog]'));
+ await act(async()=>Array.from(document.querySelectorAll('button')).filter(b=>b.textContent==='Manage access')[0].click());assert.ok((document.querySelector('[aria-label="Account role"]') as HTMLSelectElement).disabled);assert.ok((document.querySelector('input[type=checkbox]') as HTMLInputElement).disabled);
+ app.role='cashier';await act(async()=>root.render(<UserAccessView/>));assert.ok(!document.querySelector('table'));
+ await act(async()=>root.unmount());dom.window.close();console.log('PASS: User access pagination, role edits, unlinked-tech restriction, self-protection and cashier exclusion.');
+})().catch(e=>{console.error(e);process.exitCode=1;});

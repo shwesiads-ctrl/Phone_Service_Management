@@ -52,7 +52,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     activeTab,
     searchQuery,
     setSearchQuery,
-    loginAs,
     logout,
     license,
     navigate,
@@ -105,7 +104,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const currentLangObj = languages.find((l) => l.code === language) || languages[1];
 
-  const themeOptions: { code: Theme; label: string; icon: React.ReactNode }[] = [
+  const themeOptions: { code: Theme; label: string; icon: React.ReactNode; desc?: string }[] = [
+    { code: 'light', label: 'Light', icon: <Sun className="w-4 h-4" />, desc: 'Light background' },
+    { code: 'dark', label: 'Dark', icon: <Moon className="w-4 h-4" />, desc: 'Dark background' },
+    { code: 'system', label: 'System', icon: <Monitor className="w-4 h-4" />, desc: 'Follow device appearance' },
   ];
 
   const currentThemeIcon =
@@ -127,6 +129,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         return t('customers');
       case 'devices':
         return t('devices');
+      case 'users': return 'User Roles & Access';
       case 'cashiers': return 'Cashier Accounts';
       case 'technicians':
         return t('technicians');

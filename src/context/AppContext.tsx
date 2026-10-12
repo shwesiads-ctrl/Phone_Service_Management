@@ -167,7 +167,6 @@ interface AppContextType {
   t: (key: TranslationKey) => string;
 
   login: (username: string, password?: string) => Promise<boolean>;
-  loginAs: (username: string) => Promise<boolean>;
   logout: () => Promise<void>;
   changePassword: (currentPass: string, newPass: string) => Promise<{ success: boolean; error?: string }>;
 
@@ -341,7 +340,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Theme
   const [theme, setThemeState] = useState<Theme>(() => {
-    return (localStorage.getItem('fixflow_theme') as Theme) || 'system';
+    const value=localStorage.getItem('fixflow_theme');return ['light','dark','system'].includes(value || '')?value as Theme:'system';
   });
 
   const [systemIsDark, setSystemIsDark] = useState<boolean>(() => {
@@ -358,10 +357,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
+  useEffect(()=>{const sync=(event:StorageEvent)=>{if(event.key==='fixflow_theme')setThemeState(['light','dark','system'].includes(event.newValue || '')?event.newValue as Theme:'system');};window.addEventListener('storage',sync);return()=>window.removeEventListener('storage',sync);},[]);
+
   const effectiveTheme: 'light' | 'dark' =
     theme === 'system' ? (systemIsDark ? 'dark' : 'light') : theme;
 
   const setTheme = (newTheme: Theme) => {
+    if(!['light','dark','system'].includes(newTheme))return;
     setThemeState(newTheme);
     localStorage.setItem('fixflow_theme', newTheme);
   };
@@ -817,6 +819,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => { active = false; window.clearInterval(interval); window.removeEventListener('focus', refreshSettings); };
   }, [currentUser?.id, getAuthHeaders]);
 
+  useEffect(()=>{
+    if(!currentUser?.id)return;let active=true;
+    const check=async()=>{try{const response=await fetch('/api/auth/me',{headers:getAuthHeaders()});if(active&&response.status===401)setCurrentUser(null);}catch{}};
+    const timer=window.setInterval(check,30000);window.addEventListener('focus',check);
+    return()=>{active=false;clearInterval(timer);window.removeEventListener('focus',check);};
+  },[currentUser?.id,getAuthHeaders]);
+
   // Fetch Audit Trail
   const refreshAuditTrail = useCallback(async () => {
     if (activeUser.role !== 'admin') return;
@@ -1203,6 +1212,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
+      if (!res.ok) {const data=await res.json();throw new Error(data.error || 'Login failed.');}
       if (res.ok) {
         const { user, token } = await res.json();
         localStorage.setItem('fixflow_auth_token', token);
@@ -1212,14 +1222,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return true;
       }
     } catch (e) {
-      console.error('Login error', e);
+      throw e instanceof Error ? e : new Error('Cannot connect to the login server.');
     }
     return false;
-  };
-
-  const loginAs = async (username: string): Promise<boolean> => {
-    const defaultPass = username === 'admin' ? 'admin123' : 'tech123';
-    return login(username, defaultPass);
   };
 
   const logout = async () => {
@@ -1351,7 +1356,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         formatDate,
         t,
         login,
-        loginAs,
         logout,
         changePassword,
         serverStatus,
