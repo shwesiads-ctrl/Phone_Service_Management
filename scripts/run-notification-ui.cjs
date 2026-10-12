@@ -11,7 +11,7 @@ const { spawnSync } = require('node:child_process');
     await esbuild.build({
       entryPoints: [resolve(process.argv[2] || 'scripts/test-notification-ui.tsx')], outfile,
       bundle: true, platform: 'node', format: 'cjs', packages: 'external',
-      plugins: [{ name: 'isolated-app-context', setup(build) {
+      plugins: process.argv.includes('--real-context') ? [] : [{ name: 'isolated-app-context', setup(build) {
         build.onResolve({ filter: /context\/AppContext$/ }, () => ({ path: 'test-context', namespace: 'fixture' }));
         build.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ contents: 'export function useApp() { return globalThis.__testApp; }', loader: 'js' }));
       } }],

@@ -1,10 +1,13 @@
+import { ForgotPasswordForm } from './ForgotPasswordForm';
+import { accountLabels } from '../i18n/accountLabels';
 import { DefaultCredentialHints } from './DefaultCredentialHints';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Shield, Wrench, Lock, User as UserIcon, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const LoginView: React.FC = () => {
-  const { login, t } = useApp();
+  const { login, t, language } = useApp();
+  const [forgotOpen, setForgotOpen] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +52,7 @@ export const LoginView: React.FC = () => {
           </p>
         </div>
 
+        {forgotOpen ? <ForgotPasswordForm language={language} onClose={() => setForgotOpen(false)} /> : <>
         {error && (
           <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2.5 animate-in fade-in">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -111,7 +115,9 @@ export const LoginView: React.FC = () => {
           </button>
         </form>
 
+        <button type="button" onClick={() => {setForgotOpen(true);setError(null);setPassword('');}} className="w-full text-sm text-blue-500">{accountLabels(language).forgot}</button>
         <DefaultCredentialHints />
+        </>}
       </div>
     </div>
   );

@@ -735,7 +735,7 @@ const initialSeed: DatabaseSchema = {
     receiptFooterNote: 'All phone repairs carry limited warranty on replaced parts and workmanship. Liquid damage diagnostics carry inspection warranty only.',
     defaultWarrantyDays: 90,
     currency: 'MMK',
-    currency_mode: 'automatic',
+    currency_mode: 'manual',
     language: 'en',
     theme: 'system',
     dateFormat: 'DD MMM YYYY',
@@ -816,6 +816,9 @@ class Database {
             },
           },
         };
+        mergedSettings.currency_mode = 'manual';
+        if (!['my','en','th','zh'].includes(mergedSettings.language)) mergedSettings.language = 'en';
+        if (!['MMK','USD','THB','CNY'].includes(mergedSettings.currency)) mergedSettings.currency = 'MMK';
         return {
           ...initialSeed,
           ...parsed,
@@ -1026,10 +1029,41 @@ class Database {
     return this.data.users;
   }
 
+  public createCashier(input: { username: string; full_name: string; password: string }): User {
+    const user: User = { id: `USR-CASH-${randomUUID()}`, username: input.username, full_name: input.full_name, password: input.password, role: 'cashier', active: true, created_at: new Date().toISOString() };
+    this.data.users.push(user); this.saveDatabase(); return user;
+  }
+  public updateCashier(id: string, updates: Partial<User>): User | null {
+    const user = this.data.users.find(u => u.id === id && u.role === 'cashier');
+    if (!user) return null;
+    Object.assign(user, updates); this.saveDatabase(); return user;
+  }
+  public deleteCashier(id: string): boolean {
+    const user = this.data.users.find(u => u.id === id && u.role === 'cashier');
+    if (!user) return false;
+    this.data.users = this.data.users.filter(u => u.id !== id);
+    this.data.notifications = (this.data.notifications || []).filter(n => n.user_id !== id);
+    this.saveDatabase(); return true;
+  }
+
   public getUserByUsername(username: string): User | undefined {
     return this.data.users.find(
       (u) => u.username.toLowerCase() === username.toLowerCase()
     );
+  }
+
+  public resetPasswordTransaction(userId: string, password: string, ip = 'local'): () => void {
+    const previous = structuredClone(this.data);
+    const user = this.data.users.find(u => u.id === userId);
+    if (!user) throw new Error('Unknown account.');
+    try {
+      user.password = password;
+      const technician = this.data.technicians.find(t => t.id === user.technician_id);
+      if (technician) technician.password = password;
+      this.data.security_audit.unshift({ id: `AUD-${String(this.nextNumber('security_audit')).padStart(4,'0')}`, user_id: user.id, username: user.username, action: 'PASSWORD_RECOVERED', target_type: 'auth', target_id: user.id, details: 'Password recovered with this PC’s key; recovery key rotated.', ip_address: ip, created_at: new Date().toISOString() });
+      this.saveDatabase();
+    } catch (error) { this.data = previous; throw error; }
+    return () => { this.data = previous; this.saveDatabase(); };
   }
 
   public updatePassword(userId: string, newPass: string): boolean {
@@ -1074,6 +1108,13 @@ class Database {
     };
     this.data.login_attempts.push(attempt);
     this.saveDatabase();
+  }
+
+  public auditTransaction(audit: Omit<SecurityAudit, 'id' | 'created_at'>): () => void {
+    const previous = structuredClone(this.data);
+    try { this.recordAudit(audit); }
+    catch (error) { this.data = previous; throw error; }
+    return () => { this.data = previous; this.saveDatabase(); };
   }
 
   public recordAudit(audit: Omit<SecurityAudit, 'id' | 'created_at'>) {
@@ -1598,7 +1639,7 @@ class Database {
         return { success: false, error: `Invalid backup collection: ${key}. Expected records with unique IDs.` };
       }
     }
-    if (backupData.users.some((user: any) => typeof user.username !== 'string' || !user.username || !['admin', 'technician'].includes(user.role))) {
+    if (backupData.users.some((user: any) => typeof user.username !== 'string' || !user.username || !['admin', 'technician', 'cashier'].includes(user.role))) {
       return { success: false, error: 'Invalid backup user account.' };
     }
     const foreignKeys = [
@@ -1818,11 +1859,13 @@ class Database {
 
   // --- Settings ---
   public getSettings(): SettingsState {
+    this.data.settings.currency_mode = 'manual';
+    if (!['my','en','th','zh'].includes(this.data.settings.language)) this.data.settings.language = 'en';
     return this.data.settings;
   }
 
   public updateSettings(newSettings: Partial<SettingsState>): SettingsState {
-    this.data.settings = { ...this.data.settings, ...newSettings };
+    this.data.settings = { ...this.data.settings, ...newSettings, currency_mode: 'manual' };
     this.saveDatabase();
     return this.data.settings;
   }

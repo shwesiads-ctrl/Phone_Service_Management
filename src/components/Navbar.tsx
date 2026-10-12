@@ -101,30 +101,11 @@ export const Navbar: React.FC<NavbarProps> = ({
     { code: 'my', label: 'မြန်မာ', flag: '🇲🇲', country: 'Myanmar' },
     { code: 'th', label: 'ไทย', flag: '🇹🇭', country: 'Thailand' },
     { code: 'zh', label: '中文 (简体)', flag: '🇨🇳', country: 'China / Singapore' },
-    { code: 'es', label: 'Español', flag: '🇪🇸', country: 'Spain / Latin America' },
-    { code: 'fr', label: 'Français', flag: '🇫🇷', country: 'France / Canada' },
-    { code: 'de', label: 'Deutsch', flag: '🇩🇪', country: 'Germany / Austria' },
-    { code: 'ja', label: '日本語', flag: '🇯🇵', country: 'Japan' },
-    { code: 'ko', label: '한국어', flag: '🇰🇷', country: 'South Korea' },
-    { code: 'ar', label: 'العربية', flag: '🇸🇦', country: 'Saudi Arabia / UAE' },
-    { code: 'ru', label: 'Русский', flag: '🇷🇺', country: 'Russia / CIS' },
-    { code: 'hi', label: 'हिन्दी', flag: '🇮🇳', country: 'India' },
-    { code: 'pt', label: 'Português', flag: '🇧🇷', country: 'Brazil / Portugal' },
-    { code: 'id', label: 'Bahasa Indonesia', flag: '🇮🇩', country: 'Indonesia' },
-    { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳', country: 'Vietnam' },
-    { code: 'tl', label: 'Filipino / Tagalog', flag: '🇵🇭', country: 'Philippines' },
-    { code: 'it', label: 'Italiano', flag: '🇮🇹', country: 'Italy' },
-    { code: 'tr', label: 'Türkçe', flag: '🇹🇷', country: 'Turkey' },
-    { code: 'ms', label: 'Bahasa Melayu', flag: '🇲🇾', country: 'Malaysia / Brunei' },
-    { code: 'bn', label: 'বাংলা', flag: '🇧🇩', country: 'Bangladesh / India' },
   ];
 
   const currentLangObj = languages.find((l) => l.code === language) || languages[1];
 
   const themeOptions: { code: Theme; label: string; icon: React.ReactNode }[] = [
-    { code: 'light', label: t('themeLight'), icon: <Sun className="w-4 h-4 text-amber-500" /> },
-    { code: 'dark', label: t('themeDark'), icon: <Moon className="w-4 h-4 text-indigo-400" /> },
-    { code: 'system', label: t('themeSystem'), icon: <Monitor className="w-4 h-4 text-slate-400" /> },
   ];
 
   const currentThemeIcon =
@@ -139,13 +120,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   const getSectionTitle = () => {
     switch (activeTab) {
       case 'dashboard':
-        return role === 'admin' ? t('adminDashboard') : t('technicianDashboard');
+        return role === 'admin' ? t('adminDashboard') : role === 'cashier' ? 'Cashier Dashboard' : t('technicianDashboard');
       case 'service':
         return role === 'technician' ? t('myServices') : t('service');
       case 'customers':
         return t('customers');
       case 'devices':
         return t('devices');
+      case 'cashiers': return 'Cashier Accounts';
       case 'technicians':
         return t('technicians');
       case 'reports':
@@ -186,7 +168,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
             }`}
           >
-            {role === 'admin' ? t('roleAdmin') : t('roleTechnician')}
+            {role === 'admin' ? t('roleAdmin') : role === 'cashier' ? 'Cashier' : t('roleTechnician')}
           </span>
         </div>
       </div>
@@ -349,7 +331,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Admin only: New Job Button */}
-        {role === 'admin' && (
+        {['admin','cashier'].includes(role) && (
           <button
             onClick={onOpenNewJobModal}
             aria-label={t('newTicket')}
@@ -472,7 +454,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {currentUser.full_name}
                 </div>
                 <div className="text-xs text-[var(--primary)] font-mono">
-                  {role === 'admin' ? 'Administrator Account' : `Technician (${currentUser.technician_id})`}
+                  {role === 'admin' ? 'Administrator Account' : role === 'cashier' ? 'Cashier Account' : `Technician (${currentUser.technician_id})`}
                 </div>
               </div>
 

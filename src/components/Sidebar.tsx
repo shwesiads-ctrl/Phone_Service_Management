@@ -1,3 +1,4 @@
+import { accountLabels } from '../i18n/accountLabels';
 import React from 'react';
 import { useApp } from '../context/AppContext';
 import {
@@ -34,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
     navigate,
     settings,
     t,
+    language,
   } = useApp();
 
   // Admin menu items
@@ -44,6 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
     { id: 'finance', path: '/finance', label: t('finance'), icon: DollarSign },
     { id: 'customers', path: '/customers', label: t('customers'), icon: Users },
     { id: 'devices', path: '/devices', label: t('devices'), icon: Smartphone },
+    { id: 'cashiers', path: '/cashiers', label: accountLabels(language).cashier, icon: DollarSign },
     { id: 'technicians', path: '/technicians', label: t('technicians'), icon: UserCog },
     { id: 'reports', path: '/reports', label: t('reports'), icon: BarChart3 },
     { id: 'settings', path: '/settings', label: t('settings'), icon: Settings },
@@ -60,7 +63,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
     { id: 'about', path: '/about', label: t('about'), icon: Info },
   ];
 
-  const menuItems = role === 'admin' ? adminMenuItems : techMenuItems;
+  const cashierMenuItems = [{ id: 'dashboard', path: '/cashier/dashboard', label: 'Cashier Dashboard', icon: DollarSign }, { id: 'service', path: '/service', label: t('service'), icon: Wrench }, { id: 'about', path: '/about', label: t('about'), icon: Info }];
+  const menuItems = role === 'admin' ? adminMenuItems : role === 'cashier' ? cashierMenuItems : techMenuItems;
 
   const handleNavClick = (item: (typeof menuItems)[0]) => {
     navigate(item.path);

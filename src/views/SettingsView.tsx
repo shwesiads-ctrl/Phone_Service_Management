@@ -1,3 +1,4 @@
+import { RecoveryKeySettings } from '../components/RecoveryKeySettings';
 import { DefaultCredentialHints } from '../components/DefaultCredentialHints';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
@@ -65,8 +66,6 @@ export const SettingsView: React.FC = () => {
     updateSettings,
     currency,
     setCurrency,
-    currencyMode,
-    setCurrencyMode,
     language,
     setLanguage,
     theme,
@@ -504,6 +503,7 @@ export const SettingsView: React.FC = () => {
       flag: '🇹🇭',
       example: '฿1,500.00',
     },
+    { code: 'CNY', name: 'Chinese Yuan', symbolDisplay: 'CNY / ¥', flag: '🇨🇳', example: '¥50.00' },
   ];
 
   // Language options
@@ -512,29 +512,10 @@ export const SettingsView: React.FC = () => {
     { code: 'my', name: 'မြန်မာ', flag: '🇲🇲', country: 'Myanmar' },
     { code: 'th', name: 'ไทย', flag: '🇹🇭', country: 'Thailand' },
     { code: 'zh', name: '中文 (简体)', flag: '🇨🇳', country: 'China / Singapore' },
-    { code: 'es', name: 'Español', flag: '🇪🇸', country: 'Spain / Latin America' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷', country: 'France / Canada' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪', country: 'Germany / Austria' },
-    { code: 'ja', name: '日本語', flag: '🇯🇵', country: 'Japan' },
-    { code: 'ko', name: '한국어', flag: '🇰🇷', country: 'South Korea' },
-    { code: 'ar', name: 'العربية', flag: '🇸🇦', country: 'Saudi Arabia / UAE' },
-    { code: 'ru', name: 'Русский', flag: '🇷🇺', country: 'Russia / CIS' },
-    { code: 'hi', name: 'हिन्दी', flag: '🇮🇳', country: 'India' },
-    { code: 'pt', name: 'Português', flag: '🇧🇷', country: 'Brazil / Portugal' },
-    { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩', country: 'Indonesia' },
-    { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳', country: 'Vietnam' },
-    { code: 'tl', name: 'Filipino / Tagalog', flag: '🇵🇭', country: 'Philippines' },
-    { code: 'it', name: 'Italiano', flag: '🇮🇹', country: 'Italy' },
-    { code: 'tr', name: 'Türkçe', flag: '🇹🇷', country: 'Turkey' },
-    { code: 'ms', name: 'Bahasa Melayu', flag: '🇲🇾', country: 'Malaysia / Brunei' },
-    { code: 'bn', name: 'বাংলা', flag: '🇧🇩', country: 'Bangladesh / India' },
   ];
 
   // Theme options
   const themeOptions: { code: Theme; label: string; icon: React.ReactNode; desc: string }[] = [
-    { code: 'light', label: t('themeLight'), icon: <Sun className="w-5 h-5 text-amber-500" />, desc: 'Crisp light surfaces for daylight work environments.' },
-    { code: 'dark', label: t('themeDark'), icon: <Moon className="w-5 h-5 text-indigo-400" />, desc: 'High-contrast dark mode for workbench screens & low light.' },
-    { code: 'system', label: t('themeSystem'), icon: <Monitor className="w-5 h-5 text-slate-400" />, desc: 'Automatically matches your computer or mobile OS setting.' },
   ];
 
   // Backup Export
@@ -2242,73 +2223,14 @@ export const SettingsView: React.FC = () => {
             <div className="space-y-5">
               <div className="border-b border-[var(--border)] pb-3">
                 <h2 className="text-base font-bold text-[var(--text)]">
-                  {t('settings_currency')} Selection & Mode
+                  {t('settings_currency')} Selection
                 </h2>
                 <p className="text-xs text-[var(--text-muted)] mt-0.5">
                   {t('currencySettingDesc')}
                 </p>
               </div>
 
-              {/* CURRENCY MODE: AUTOMATIC (SYNC WITH LANGUAGE) VS MANUAL */}
-              <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 space-y-3">
-                <label className="block text-xs font-bold text-[var(--text)]">
-                  Currency Synchronization Mode
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrencyMode('automatic');
-                      setSaveToast(true);
-                      setTimeout(() => setSaveToast(false), 2000);
-                    }}
-                    className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      currencyMode === 'automatic'
-                        ? 'border-[var(--primary)] bg-[var(--primary)]/10 ring-1 ring-[var(--primary)]'
-                        : 'border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[var(--text)]">
-                        {t('currencyModeAuto')}
-                      </span>
-                      {currencyMode === 'automatic' && (
-                        <Check className="w-4 h-4 text-[var(--primary)]" />
-                      )}
-                    </div>
-                    <p className="text-[11px] text-[var(--text-muted)] mt-1">
-                      Myanmar → MMK (Ks) · English → USD ($) · Thai → THB (฿).
-                      Immediately updates forms and payments when language changes.
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrencyMode('manual');
-                      setSaveToast(true);
-                      setTimeout(() => setSaveToast(false), 2000);
-                    }}
-                    className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      currencyMode === 'manual'
-                        ? 'border-[var(--primary)] bg-[var(--primary)]/10 ring-1 ring-[var(--primary)]'
-                        : 'border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[var(--text)]">
-                        {t('currencyModeManual')}
-                      </span>
-                      {currencyMode === 'manual' && (
-                        <Check className="w-4 h-4 text-[var(--primary)]" />
-                      )}
-                    </div>
-                    <p className="text-[11px] text-[var(--text-muted)] mt-1">
-                      Lock to fixed currency regardless of interface language.
-                    </p>
-                  </button>
-                </div>
-              </div>
+              <p className="text-sm text-[var(--text-muted)]">{language === 'my' ? 'ငွေကြေးကို စိတ်ကြိုက်ရွေးပါ။ Language ပြောင်းလဲခြင်းက ငွေကြေးကို မပြောင်းပါ။' : 'Choose your currency. Changing language never changes currency.'}</p>
 
               {/* CURRENCY CARDS */}
               <div>
@@ -3002,12 +2924,13 @@ export const SettingsView: React.FC = () => {
           {/* 11. SECURITY */}
           {activeSection === 'security' && (
             <div className="space-y-4">
+              <RecoveryKeySettings />
               <div className="border-b border-[var(--border)] pb-3 mb-4">
                 <h2 className="text-base font-bold text-[var(--text)]">
                   {t('settings_security')} & Role Governance
                 </h2>
                 <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                  Role-based access boundaries for Admin and Technicians
+                  Role-based access boundaries for Admin, Cashiers and Technicians
                 </p>
               </div>
 
@@ -3019,6 +2942,9 @@ export const SettingsView: React.FC = () => {
                   <ul className="list-disc pl-4 space-y-1 text-[var(--text-muted)]">
                     <li>
                       <strong>Administrator:</strong> Unrestricted access to Dashboard, All Services, Customers, Devices, Technicians, Financial Reports, and Settings.
+                    </li>
+                    <li>
+                      <strong>Cashier:</strong> Service intake, payment collection and receipts. No staff, settings, backup, repair editing or deletion permissions.
                     </li>
                     <li>
                       <strong>Technician:</strong> Streamlined access restricted to Dashboard, My Services (assigned queue), Customer info, Devices, and About.

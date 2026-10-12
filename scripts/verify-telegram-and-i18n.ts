@@ -3,14 +3,14 @@ import { formatLocalizedDate } from '../src/utils/formatters.ts';
 
 async function main() {
   console.log('========================================================');
-  console.log('1. VERIFYING 20 GLOBAL LANGUAGES & TRANSLATIONS');
+  console.log('1. VERIFYING 4 SUPPORTED LANGUAGES & TRANSLATIONS');
   console.log('========================================================');
 
   const supportedCodes = Object.keys(translations);
   console.log(`Loaded ${supportedCodes.length} locales: ${supportedCodes.join(', ')}`);
 
-  if (supportedCodes.length !== 20) {
-    throw new Error(`Expected exactly 20 locales, but found ${supportedCodes.length}`);
+  if (supportedCodes.length !== 4) {
+    throw new Error(`Expected exactly 4 locales, but found ${supportedCodes.length}`);
   }
 
   const enKeys = Object.keys(translations.en);
@@ -43,7 +43,7 @@ async function main() {
       throw new Error(`Date formatting failed for language: ${lang}`);
     }
   }
-  console.log('✓ Localized date formatting verified across all 20 languages');
+  console.log('✓ Localized date formatting verified across all 4 languages');
 
   console.log('\n========================================================');
   console.log('2. VERIFYING TELEGRAM BOT API ENDPOINTS');

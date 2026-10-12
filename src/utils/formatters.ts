@@ -11,6 +11,8 @@ export function getCurrencySymbol(currency: Currency): string {
       return '$';
     case 'THB':
       return '฿';
+    case 'CNY':
+      return '¥';
     default:
       return currency;
   }
@@ -27,26 +29,10 @@ export function getCurrencySample(currency: Currency): string {
       return '$50.00';
     case 'THB':
       return '฿1,500.00';
+    case 'CNY':
+      return '¥50.00';
     default:
       return `${currency} 50`;
-  }
-}
-
-/**
- * Get default currency mapped to language in automatic currency mode:
- * Myanmar -> MMK
- * English -> USD
- * Thai    -> THB
- */
-export function getDefaultCurrencyForLanguage(language: Language): Currency {
-  switch (language) {
-    case 'my':
-      return 'MMK';
-    case 'th':
-      return 'THB';
-    case 'en':
-    default:
-      return 'USD';
   }
 }
 
@@ -83,6 +69,7 @@ export function formatCurrency(amount: number, currency: Currency): string {
       });
       return `฿${formatted}`;
     }
+    case 'CNY': return `¥${safeAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     default:
       return `${currency} ${safeAmount.toLocaleString('en-US')}`;
   }
@@ -135,6 +122,7 @@ export function formatLocalizedDate(
       return `${day} ${thaiMonths[date.getMonth()]} ${year}`;
     }
 
+    case 'zh': return `${year}年${month}月${day}日`;
     case 'en':
     default: {
       // English format: 08 Oct 2026

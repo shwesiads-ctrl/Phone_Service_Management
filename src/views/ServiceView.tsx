@@ -127,7 +127,7 @@ export const ServiceView: React.FC<ServiceViewProps> = ({
           </p>
         </div>
 
-        {role === 'admin' && (
+        {['admin','cashier'].includes(role) && (
           <button
             onClick={onNewJob}
             className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-bold text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-lg shadow-sm transition-colors cursor-pointer self-start sm:self-auto"

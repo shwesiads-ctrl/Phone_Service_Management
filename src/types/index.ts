@@ -1,32 +1,12 @@
-export type Role = 'admin' | 'technician' | 'guest';
+export type Role = 'admin' | 'technician' | 'cashier' | 'guest';
 
 export type Theme = 'light' | 'dark' | 'system';
 
-export type Language =
-  | 'en'
-  | 'my'
-  | 'th'
-  | 'zh'
-  | 'es'
-  | 'fr'
-  | 'de'
-  | 'ja'
-  | 'ko'
-  | 'ar'
-  | 'ru'
-  | 'hi'
-  | 'pt'
-  | 'id'
-  | 'vi'
-  | 'tl'
-  | 'it'
-  | 'tr'
-  | 'ms'
-  | 'bn';
+export type Language = 'my' | 'en' | 'th' | 'zh';
 
-export type Currency = 'MMK' | 'USD' | 'THB';
+export type Currency = 'MMK' | 'USD' | 'THB' | 'CNY';
 
-export type CurrencyMode = 'automatic' | 'manual';
+export type CurrencyMode = 'manual';
 
 export type PaymentProfile = 'thailand' | 'myanmar' | 'global';
 
@@ -47,6 +27,8 @@ export type TicketPriority = 'normal' | 'urgent' | 'express';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid';
 
 export interface User {
+  password?: string;
+  active?: boolean;
   id: string;
   username: string;
   full_name: string;

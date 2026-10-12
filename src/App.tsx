@@ -1,3 +1,5 @@
+import { CashierAccountsView } from './views/CashierAccountsView';
+import { CashierJobModal } from './modals/CashierJobModal';
 import { useCloseConfirmation } from './hooks/useCloseConfirmation';
 /**
  * @license
@@ -54,6 +56,11 @@ const AuthenticatedLayout: React.FC = () => {
 
   // Render view based on route & role permissions
   const renderActiveView = () => {
+    if (role === 'cashier') {
+      if (activeTab === 'about') return <AboutView />;
+      if (!['dashboard','service'].includes(activeTab)) return <div className="p-6">Cashier access: intake, payments and receipts.</div>;
+      return <div className="space-y-4"><h1 className="text-2xl font-bold">Cashier · Service Intake & Payments</h1><ServiceView onOpenJob={handleOpenJob} onNewJob={() => setNewJobModalOpen(true)} onPrintReceipt={handlePrintReceipt} /></div>;
+    }
     // 1. Explicit Route Checks
     if (currentPath === '/admin/dashboard') {
       if (role !== 'admin') {
@@ -116,6 +123,7 @@ const AuthenticatedLayout: React.FC = () => {
       case 'devices':
         return <DevicesView />;
 
+      case 'cashiers': return role === 'admin' ? <CashierAccountsView /> : <div>Administrator access required.</div>;
       case 'technicians':
         if (role !== 'admin') {
           return <TechnicianDeskView onOpenJob={handleOpenJob} />;
@@ -179,7 +187,8 @@ const AuthenticatedLayout: React.FC = () => {
       </div>
 
       {/* Modals */}
-      {selectedJob && (
+      {selectedJob && role === 'cashier' && <CashierJobModal job={jobs.find(j => j.id === selectedJob.id) || selectedJob} onClose={() => setSelectedJob(null)} onPrint={job => { setSelectedJob(null); handlePrintReceipt(job); }} />}
+      {selectedJob && role !== 'cashier' && (
         <JobDetailModal
           job={selectedJob}
           onClose={() => setSelectedJob(null)}

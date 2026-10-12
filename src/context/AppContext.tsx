@@ -9,7 +9,6 @@ import {
   BackupMetadata,
   Language,
   Currency,
-  CurrencyMode,
   PaymentProfile,
   PaymentMethodConfig,
   Role,
@@ -47,8 +46,6 @@ interface AppContextType {
 
   currency: Currency;
   setCurrency: (cur: Currency) => void;
-  currencyMode: CurrencyMode;
-  setCurrencyMode: (mode: CurrencyMode) => void;
   getCurrencySymbol: () => string;
 
   activePaymentProfile: PaymentProfile;
@@ -222,7 +219,7 @@ const defaultSettings: SettingsState = {
   receiptFooterNote: 'All phone repairs carry limited warranty on replaced parts and workmanship.',
   defaultWarrantyDays: 90,
   currency: 'MMK',
-  currency_mode: 'automatic',
+  currency_mode: 'manual',
   language: 'en',
   theme: 'system',
   dateFormat: 'DD MMM YYYY',
@@ -285,6 +282,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else if (target === '/technician/dashboard' || (target === 'dashboard' && activeUser.role === 'technician')) {
       targetPath = '/technician/dashboard';
       targetTab = 'dashboard';
+    } else if (target === '/cashier/dashboard' || (target === 'dashboard' && activeUser.role === 'cashier')) {
+      targetPath = '/cashier/dashboard'; targetTab = 'dashboard';
     } else if (target.startsWith('/')) {
       targetTab = target.replace(/^\//, '');
     } else {
@@ -306,8 +305,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else if (pathname === '/technician/dashboard') {
       setActiveTab('dashboard');
       setCurrentPath('/technician/dashboard');
+    } else if (pathname === '/cashier/dashboard') {
+      setActiveTab('dashboard'); setCurrentPath('/cashier/dashboard');
     } else if (pathname === '/' || pathname === '') {
-      const defaultRoute = userRole === 'admin' ? '/admin/dashboard' : '/technician/dashboard';
+      const defaultRoute = userRole === 'admin' ? '/admin/dashboard' : userRole === 'cashier' ? '/cashier/dashboard' : '/technician/dashboard';
       setActiveTab('dashboard');
       setCurrentPath(defaultRoute);
       if (typeof window !== 'undefined') {
@@ -377,14 +378,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Language
   const [language, setLanguageState] = useState<Language>(() => {
-    return (localStorage.getItem('fixflow_lang') as Language) || 'en';
+    const saved = localStorage.getItem('fixflow_lang');
+    return ['my','en','th','zh'].includes(saved || '') ? saved as Language : 'en';
   });
 
   // Settings
   const [settings, setSettings] = useState<SettingsState>(defaultSettings);
 
   const currency: Currency = settings.currency || 'MMK';
-  const currencyMode: CurrencyMode = settings.currency_mode || 'automatic';
 
   // Helper for auth headers
   const getAuthHeaders = useCallback((): Record<string, string> => {
@@ -406,40 +407,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSettings(data);
   };
 
-  /**
-   * Language Switcher with Currency Auto-Sync
-   * If Currency Mode = Automatic:
-   * Myanmar -> MMK / Ks
-   * English -> USD / $
-   * Thai -> THB / ฿
-   * Immediate change across UI with no page refresh!
-   */
+  // Interface language and accounting currency are independent.
   const setLanguage = (newLang: Language) => {
     setLanguageState(newLang);
     localStorage.setItem('fixflow_lang', newLang);
-
-    if (currencyMode === 'automatic' && currentUser?.role === 'admin') {
-      let targetCurrency: Currency = 'USD';
-      if (newLang === 'my') targetCurrency = 'MMK';
-      else if (newLang === 'th') targetCurrency = 'THB';
-      else if (newLang === 'en') targetCurrency = 'USD';
-
-      updateSettings({ currency: targetCurrency }).catch(err => alert(err.message));
-    }
   };
-
   const setCurrency = (newCurrency: Currency) => {
-    updateSettings({ currency: newCurrency }).catch(err => alert(err.message));
-  };
-
-  const setCurrencyMode = (newMode: CurrencyMode) => {
-    let newCurrency = currency;
-    if (newMode === 'automatic') {
-      if (language === 'my') newCurrency = 'MMK';
-      else if (language === 'th') newCurrency = 'THB';
-      else if (language === 'en') newCurrency = 'USD';
-    }
-    updateSettings({ currency_mode: newMode, currency: newCurrency }).catch(err => alert(err.message));
+    updateSettings({ currency: newCurrency, currency_mode: 'manual' }).catch(err => alert(err.message));
   };
 
   const getCurrencySymbol = () => {
@@ -1226,7 +1200,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const { user, token } = await res.json();
         localStorage.setItem('fixflow_auth_token', token);
         setCurrentUser(user);
-        const targetRoute = user.role === 'admin' ? '/admin/dashboard' : '/technician/dashboard';
+        const targetRoute = user.role === 'admin' ? '/admin/dashboard' : user.role === 'cashier' ? '/cashier/dashboard' : '/technician/dashboard';
         navigate(targetRoute);
         return true;
       }
@@ -1299,8 +1273,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setLanguage,
         currency,
         setCurrency,
-        currencyMode,
-        setCurrencyMode,
         getCurrencySymbol,
         activePaymentProfile,
         setPaymentProfile,

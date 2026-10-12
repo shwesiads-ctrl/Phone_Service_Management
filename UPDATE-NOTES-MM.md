@@ -18,3 +18,13 @@ GitHub ထုတ်ဝေသည့် copy တွင် Telegram bot token မ�
 Customers စာမျက်နှာတွင် ဖျက်ရန် button သို့မဟုတ် Delete Selected ကိုနှိပ်ပါ။ Device၊ repair job၊ parts၊ payment၊ linked income နှင့် notification အရေအတွက်များကို ပြမည်။ Checkbox ဖြင့် အတည်ပြုပြီး ချိတ်ထားသော Data အပါအဝင် ဖျက်မည် ကိုနှိပ်ပါ။ အရင် data/backups/ တွင် full safety backup သိမ်းသည်။ အခြား customer၊ user၊ expense၊ settlement history နှင့် audit logs ကို ထိန်းထားသည်။
 
 အရင် linked-customer error ကို ဒီ confirmation flow ဖြင့် ဖြေရှင်းထားသည်။ ကိုယ်တိုင် delete လုပ်မှသာ data ဖျက်သည်။ Update တင်ခြင်းက သင့်လက်ရှိ data ကို အလိုအလျောက် မဖျက်ပါ။
+
+## Language၊ Currency၊ Cashier နှင့် Password Recovery
+
+- Language: မြန်မာ၊ English၊ Thai၊ Chinese လေးမျိုးပဲ ကျန်သည်။
+- Currency: Ks/MMK၊ $/USD၊ ฿/THB၊ ¥/CNY (တရုတ်ယွမ်) လေးမျိုးကို Settings → Currency တွင် စိတ်ကြိုက်ရွေးပါ။ Language နှင့် auto ချိတ်ထားခြင်းကို ဖယ်ထားသည်။ ယခင် transactions ၏ currency နှင့် amount မပြောင်းပါ။
+- Admin sidebar → Cashier Accounts တွင် လက်ခံဝန်ထမ်းအကောင့် ထည့်နိုင်သည်။ Cashier က service လက်ခံခြင်း၊ payment လက်ခံခြင်း၊ receipt ထုတ်ခြင်း လုပ်နိုင်သည်။ Staff/Settings/Data ဖျက်ခြင်း မလုပ်နိုင်ပါ။
+- Server PC တစ်လုံးအတွက် recovery key တစ်ခုကို ပထမဆုံး run ချိန် auto ထုတ်သည်။ App ပြန်ဖွင့်ရုံဖြင့် မပြောင်းပါ။ Settings → Security တွင် လက်ရှိ Admin password ဖြည့်ပြီး Backup Key Download လုပ်ကာ သီးသန့်သိမ်းပါ။
+- Login → Forgot Password တွင် Username၊ လက်ရှိ Recovery Key၊ Password အသစ်နှစ်ကြိမ် ဖြည့်ပါ။ Recovery အောင်မြင်ပြီးတိုင်း key အဟောင်းကို ပယ်ပြီး backup key အသစ် ထုတ်ပေးသည်။ Automatic download ပိတ်ထားသော browser တွင် Download Backup Key ခလုတ်ကို နှိပ်ပါ။
+- Key backup သည် account password များကို ပြန်သတ်မှတ်နိုင်သော admin recovery credential ဖြစ်သည်။ GitHub/ZIP ထဲတွင် သင့် PC အတွက် live key မပါပါ။ ကိုယ်ပိုင် PC မှာ run လုပ်ချိန်မှ ထုတ်ပေးမည်။
+- Update လုပ်ရာတွင် လက်ရှိ data/ folder အပြည့်အစုံနှင့် data/.security/ ကို ထိန်းထားပါ။ အခြား PC တွင် recovery key အသစ်ဖြစ်မည်။ Database restore က recovery key အဟောင်းကို ပြန်မသက်ဝင်စေပါ။

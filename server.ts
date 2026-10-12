@@ -1,3 +1,4 @@
+import { RecoveryKeyStore } from './src/server/recovery.ts';
 import { hashPassword, verifyPassword } from './src/server/passwords.ts';
 import { telegramRequest, sendRawTelegramMessage, escapeTelegramHtml as tgHtml } from './src/server/telegram.ts';
 import express, { Request, Response, NextFunction } from 'express';
@@ -15,6 +16,7 @@ interface AuthRequest extends Request {
   user?: User;
 }
 
+const recoveryKeys = new RecoveryKeyStore(path.resolve(process.env.FIXFLOW_DATA_DIR || 'data', '.security'));
 const app = express();
 const port = Number(process.env.PORT || 3000);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT');
@@ -44,7 +46,7 @@ const authenticate = (req: AuthRequest, _res: Response, next: NextFunction) => {
   if (session) {
     const user = db.getUsers().find(u => u.id === session.userId);
     const tech = user?.technician_id ? db.getTechnicianById(user.technician_id) : undefined;
-    if (user && session.expiresAt > Date.now() && session.credential === credentialFor(user) &&
+    if (user && user.active !== false && session.expiresAt > Date.now() && session.credential === credentialFor(user) &&
         (user.role !== 'technician' || tech?.status === 'active')) {
       req.user = user;
     } else {
@@ -70,14 +72,35 @@ app.use((req, res, next) => {
   next();
 });
 
+// Accept only the four supported currencies and languages on mutation requests.
+app.use((req, res, next) => {
+  for (const field of ['currency', 'currency_code']) {
+    if (req.body?.[field] !== undefined && !['MMK','USD','THB','CNY'].includes(req.body[field])) return res.status(400).json({ error: 'Choose MMK, USD, THB or CNY.' });
+  }
+  if (req.path === '/api/settings' && req.method === 'PUT') {
+    if (req.body.language !== undefined && !['my','en','th','zh'].includes(req.body.language)) return res.status(400).json({ error: 'Choose Myanmar, English, Thai or Chinese.' });
+    req.body.currency_mode = 'manual';
+  }
+  next();
+});
+
 app.use((req: AuthRequest, res: Response, next: NextFunction) => {
   authenticate(req, res, () => {
-    const publicPaths = ['/api/health', '/api/auth/login', '/api/auth/default-credentials', '/api/system/network-info'];
+    const publicPaths = ['/api/health', '/api/auth/login', '/api/auth/recover-password', '/api/auth/default-credentials', '/api/system/network-info'];
     if (publicPaths.includes(req.path) || (req.method === 'GET' && req.path === '/api/license')) {
       return next();
     }
     if (!req.user && req.path.startsWith('/api/')) {
       return res.status(401).json({ error: 'Unauthorized: Authentication required.' });
+    }
+    if (req.user?.role === 'cashier' && req.path.startsWith('/api/')) {
+      const readPaths = ['/api/auth/me', '/api/jobs', '/api/technicians', '/api/customers', '/api/devices', '/api/payments', '/api/settings', '/api/notifications'];
+      const readAllowed = req.method === 'GET' && (readPaths.includes(req.path) || /^\/api\/jobs\/[^/]+$/.test(req.path));
+      const writeAllowed = (req.method === 'POST' && ['/api/jobs', '/api/payments', '/api/customers', '/api/devices', '/api/auth/logout', '/api/auth/change-password'].includes(req.path)) ||
+        (req.method === 'PUT' && req.path === '/api/auth/profile') ||
+        (['PUT','DELETE'].includes(req.method) && /^\/api\/notifications(?:\/.*)?$/.test(req.path)) ||
+        (req.method === 'POST' && /^\/api\/payments\/[^/]+\/receipt-printed$/.test(req.path));
+      if (!readAllowed && !writeAllowed) return res.status(403).json({ error: 'Cashier access is limited to intake, payment collection and receipts.' });
     }
     next();
   });
@@ -125,6 +148,51 @@ async function dispatchTelegramAlert(
 // 1. AUTHENTICATION API
 // ==========================================
 
+const recoveryAttempts = new Map<string, { count: number; until: number }>();
+app.post('/api/auth/recover-password', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const ip = req.ip || 'unknown';
+  let attempts = recoveryAttempts.get(ip);
+  if (!attempts || attempts.until < Date.now()) {
+    attempts = { count: 0, until: Date.now() + 15 * 60 * 1000 }; recoveryAttempts.set(ip, attempts);
+  }
+  if (attempts.count >= 5) return res.status(429).json({ error: 'Too many recovery attempts. Try again in 15 minutes.' });
+  const { username, recovery_key, new_password } = req.body;
+  const requested = typeof username === 'string' && username.trim().length <= 32 ? username.trim() : '';
+  const user = requested ? db.getUserByUsername(requested === 'tech1' ? 'kyawzin' : requested) : undefined;
+  const technician = user?.technician_id ? db.getTechnicianById(user.technician_id) : undefined;
+  if (!user || user.active === false || (user.role === 'technician' && technician?.status !== 'active') || !recoveryKeys.verify(recovery_key)) {
+    attempts.count++; return res.status(400).json({ error: 'Account or recovery key is invalid for this PC.' });
+  }
+  if (typeof new_password !== 'string' || new_password.length < 8 || new_password.length > 128) return res.status(400).json({ error: 'New password must contain 8–128 characters.' });
+  try {
+    const recovery = recoveryKeys.rotate(() => db.resetPasswordTransaction(user.id, hashPassword(new_password), ip));
+    for (const [token, session] of sessions) if (session.userId === user.id) sessions.delete(token);
+    recoveryAttempts.delete(ip);
+    return res.json({ success: true, recovery });
+  } catch { return res.status(500).json({ error: 'Recovery could not be saved. Check database and local recovery-key storage access.' }); }
+});
+const checkRecoveryAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Administrator access required.' });
+  const stored = req.user.password;
+  const valid = stored ? verifyPassword(req.body.current_password, stored) : req.body.current_password === 'admin123';
+  if (!valid) return res.status(403).json({ error: 'Enter the current administrator password.' });
+  next();
+};
+app.get('/api/auth/recovery/status', (req: AuthRequest, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Administrator access required.' });
+  return res.json(recoveryKeys.status());
+});
+app.post('/api/auth/recovery/backup', checkRecoveryAdmin, (_req, res) => res.json(recoveryKeys.backup()));
+app.post('/api/auth/recovery/rotate', checkRecoveryAdmin, (req: AuthRequest, res) => {
+  try {
+    const backup = recoveryKeys.rotate(() => db.auditTransaction({ user_id: req.user!.id, username: req.user!.username, action: 'RECOVERY_KEY_ROTATED', target_type: 'auth', target_id: req.user!.id, details: 'Administrator generated a replacement recovery backup key.', ip_address: req.ip || '127.0.0.1' }));
+    return res.json(backup);
+  } catch { return res.status(500).json({ error: 'Recovery key could not be saved.' }); }
+});
+
 app.get('/api/auth/default-credentials', (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   const credentials = ['admin', 'kyawzin', 'demo_tech'].flatMap(username => {
@@ -153,6 +221,7 @@ app.post('/api/auth/login', (req: AuthRequest, res: Response) => {
     return res.status(401).json({ error: 'Invalid username or credentials' });
   }
 
+  if (user.active === false) return res.status(403).json({ error: 'Account is inactive.' });
   if (user.role === 'technician' && db.getTechnicianById(user.technician_id || '')?.status !== 'active') {
     return res.status(403).json({ error: 'Technician account is inactive.' });
   }
@@ -615,7 +684,7 @@ app.get('/api/jobs/:id', (req: AuthRequest, res: Response) => {
 
 app.post('/api/jobs', (req: AuthRequest, res: Response) => {
   // Only Admin can create and assign service jobs
-  if (req.user?.role !== 'admin') {
+  if (!req.user || !['admin','cashier'].includes(req.user.role)) {
     return res.status(403).json({
       error: 'Forbidden: Only administrators can create and assign service jobs.',
     });
@@ -1115,7 +1184,7 @@ app.get('/api/payments', (req: AuthRequest, res: Response) => {
 
 app.post('/api/payments', (req: AuthRequest, res: Response) => {
   // CRITICAL SECURITY RULE: Technicians CANNOT create payments
-  if (req.user?.role !== 'admin') {
+  if (!req.user || !['admin','cashier'].includes(req.user.role)) {
     return res.status(403).json({ error: 'Forbidden: Payment management is restricted to Admin.' });
   }
 
@@ -1145,7 +1214,7 @@ app.post('/api/payments', (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'Valid payment amount is required.' });
   }
 
-  const receiver = received_by || req.user?.full_name || req.user?.username || 'Admin';
+  const receiver = (req.user?.role === 'cashier' ? req.user.full_name : received_by) || req.user?.full_name || req.user?.username || 'Admin';
   const currency = currency_code || db.getSettings().currency || 'MMK';
   const finalNote = payment_note || notes || '';
 
@@ -1285,7 +1354,7 @@ app.delete('/api/payments/:id', (req: AuthRequest, res: Response) => {
 
 // Print Payment Receipt audit (Admin only, 403 for technician)
 app.post('/api/payments/:id/receipt-printed', (req: AuthRequest, res: Response) => {
-  if (req.user?.role !== 'admin') {
+  if (!req.user || !['admin','cashier'].includes(req.user.role)) {
     return res.status(403).json({ error: 'Forbidden: Only Admin can print official payment receipts.' });
   }
 
@@ -1649,8 +1718,43 @@ app.post('/api/customers/delete-confirmed', requireAdmin, validateCustomerDeleti
   }
 });
 
+const requireIntakeUser = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user || !['admin','cashier'].includes(req.user.role)) return res.status(403).json({ error: 'Admin or cashier access required.' });
+  next();
+};
+app.get('/api/cashiers', requireAdmin, (_req, res) => res.json(db.getUsers().filter(u => u.role === 'cashier')));
+app.post('/api/cashiers', requireAdmin, (req: AuthRequest, res) => {
+  const { username, full_name, password } = req.body;
+  if (typeof username !== 'string' || !/^[A-Za-z0-9_.-]{3,32}$/.test(username) || typeof full_name !== 'string' || !full_name.trim() || full_name.length > 100 || typeof password !== 'string' || password.length < 8 || password.length > 128) return res.status(400).json({ error: 'Enter a name, unique username (3–32 characters), and password (8–128 characters).' });
+  if (username === 'tech1' || db.getUserByUsername(username)) return res.status(409).json({ error: 'Username is already in use.' });
+  const cashier = db.createCashier({ username, full_name: full_name.trim(), password: hashPassword(password) });
+  db.recordAudit({ user_id: req.user!.id, username: req.user!.username, action: 'CASHIER_CREATED', target_type: 'auth', target_id: cashier.id, details: 'Administrator created a cashier account.', ip_address: req.ip || '127.0.0.1' });
+  return res.status(201).json(cashier);
+});
+app.put('/api/cashiers/:id', requireAdmin, (req: AuthRequest, res) => {
+  const updates: Partial<User> = {};
+  if (req.body.active !== undefined) {
+    if (typeof req.body.active !== 'boolean') return res.status(400).json({ error: 'Active must be true or false.' });
+    updates.active = req.body.active;
+  }
+  if (req.body.password !== undefined) {
+    if (typeof req.body.password !== 'string' || req.body.password.length < 8 || req.body.password.length > 128) return res.status(400).json({ error: 'Password must contain 8–128 characters.' });
+    updates.password = hashPassword(req.body.password);
+  }
+  const user = db.updateCashier(req.params.id, updates);
+  if (!user) return res.status(404).json({ error: 'Cashier not found.' });
+  for (const [token, session] of sessions) if (session.userId === user.id) sessions.delete(token);
+  db.recordAudit({ user_id: req.user!.id, username: req.user!.username, action: 'CASHIER_UPDATED', target_type: 'auth', target_id: user.id, details: 'Administrator updated cashier access/password.', ip_address: req.ip || '127.0.0.1' });
+  return res.json(user);
+});
+app.delete('/api/cashiers/:id', requireAdmin, (req: AuthRequest, res) => {
+  if (!db.deleteCashier(req.params.id)) return res.status(404).json({ error: 'Cashier not found.' });
+  db.recordAudit({ user_id: req.user!.id, username: req.user!.username, action: 'CASHIER_DELETED', target_type: 'auth', target_id: req.params.id, details: 'Administrator removed a cashier account; payment history retained.', ip_address: req.ip || '127.0.0.1' });
+  return res.json({ success: true });
+});
+
 app.get('/api/customers', (_req, res) => res.json(db.getCustomers()));
-app.post('/api/customers', requireAdmin, (req, res) => {
+app.post('/api/customers', requireIntakeUser, (req, res) => {
   if (typeof req.body.name !== 'string' || !req.body.name.trim() || typeof req.body.phone !== 'string' || !req.body.phone.trim()) {
     return res.status(400).json({ error: 'Customer name and phone are required.' });
   }
@@ -1686,7 +1790,7 @@ const validateDevice = (req: Request, res: Response, next: NextFunction) => {
   }
   next();
 };
-app.post('/api/devices', requireAdmin, validateDevice, (req, res) => res.status(201).json(db.createDevice(req.body)));
+app.post('/api/devices', requireIntakeUser, validateDevice, (req, res) => res.status(201).json(db.createDevice(req.body)));
 app.put('/api/devices/:id', requireAdmin, validateDevice, (req, res) => {
   const updated = db.updateDevice(req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: 'Device not found.' });

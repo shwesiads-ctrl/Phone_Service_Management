@@ -572,7 +572,7 @@ export const UserGuideView: React.FC = () => {
                   <span>15. Language & Currency Synchronization</span>
                 </h2>
                 <p className="text-xs text-[var(--text-muted)] mt-1">
-                  Full localization for Myanmar, English, and Thai
+                  Myanmar, English, Thai and Chinese
                 </p>
               </div>
 
@@ -583,9 +583,10 @@ export const UserGuideView: React.FC = () => {
                 <li>🇲🇲 မြန်မာ (Myanmar Unicode standard)</li>
                 <li>🇬🇧 English (International / US)</li>
                 <li>🇹🇭 ไทย (Thai Unicode standard)</li>
+                <li>🇨🇳 中文 (Simplified Chinese)</li>
               </ul>
               <p className="text-xs text-[var(--text-muted)] mt-2">
-                When Currency Mode is set to <em>Automatic</em>, changing language instantly syncs the workshop currency (Myanmar → MMK, English → USD, Thai → THB).
+                Choose Ks (MMK), US dollars (USD), baht (THB), or yuan (CNY) in Settings → Currency. Language changes never change your selected currency. Existing transactions keep their recorded currency.
               </p>
             </div>
           )}

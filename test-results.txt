@@ -1,6 +1,6 @@
 
 > react-example@1.0.0 test
-> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx
+> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx && node --import tsx scripts/test-cashier-recovery.ts && node --import tsx scripts/test-recovery-store.ts && node scripts/run-notification-ui.cjs scripts/test-account-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-manual-currency-ui.tsx --real-context
 
 
 > react-example@1.0.0 build
@@ -8,14 +8,14 @@
 
 vite v8.3.4 building client environment for production...
 transforming...
-✓ 1745 modules transformed.
+✓ 1735 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/index.html                   2.25 kB │ gzip:   0.94 kB
-dist/assets/index-CW3iatc7.css   82.81 kB │ gzip:  13.00 kB
-dist/assets/index-C9I93-3r.js   976.04 kB │ gzip: 211.67 kB
+dist/assets/index-CBSwqk0X.css   82.85 kB │ gzip:  13.00 kB
+dist/assets/index-B9Rmzn0h.js   859.95 kB │ gzip: 192.04 kB
 
-✓ built in 301ms
+✓ built in 350ms
 [plugin builtin:vite-reporter] 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
@@ -332,10 +332,88 @@ PASS: Bulk confirmed delete succeeds atomically
 PASS: Original source database unchanged
 CUSTOMER DELETION HTTP SUMMARY: 33 PASSED
 PASS: Customer deletion previews linked counts, requires acknowledgement, Cancel does not delete, confirmation sends selected IDs and revision, failed preview blocks deletion, Myanmar labels and bulk selection work.
+PASS: Legacy automatic settings migrate to manual
+PASS: Removed stored language falls back to English
+PASS: Yuan can be selected and automatic mode is disabled
+PASS: Changing language retains selected currency
+PASS: Removed language rejected
+PASS: Unsupported currency rejected
+PASS: Cashier creation requires authentication
+PASS: Technician cannot create cashier
+PASS: Short cashier password rejected
+PASS: Admin creates cashier with fixed role and no exposed password
+PASS: Duplicate cashier username rejected
+PASS: Cashier login succeeds
+PASS: Cashier can read /api/jobs
+PASS: Cashier can read /api/customers
+PASS: Cashier can read /api/devices
+PASS: Cashier can read /api/technicians
+PASS: Cashier can read /api/payments
+PASS: Cashier creates intake customer
+PASS: Cashier creates intake device
+PASS: Cashier creates an assigned CNY service job
+PASS: Cashier payment stores actual cashier identity
+PASS: Cashier prints receipt audit
+PASS: Cashier cannot PUT /api/settings
+PASS: Cashier cannot GET /api/cashiers
+PASS: Cashier cannot POST /api/backup
+PASS: Cashier cannot POST /api/finance/income
+PASS: Cashier cannot PUT /api/jobs/JOB-034
+PASS: Cashier cannot DELETE /api/jobs/JOB-034
+PASS: Cashier cannot DELETE /api/payments/PAY-202610-0033
+PASS: Cashier cannot GET /api/auth/recovery/status
+PASS: Cashier cannot POST /api/auth/recovery/backup
+PASS: Cashier may change own password
+PASS: Admin disables cashier
+PASS: Disabled cashier session rejected
+PASS: Disabled cashier cannot log in
+PASS: Reactivated cashier signs in
+PASS: Cashier survives backup restoration
+PASS: Recovery metadata requires authentication
+PASS: PC gets one generated key without metadata exposing it
+PASS: Recovery backup requires current admin password
+PASS: Admin downloads valid PC backup key
+PASS: Key persists unchanged across restart
+PASS: Invalid recovery key cannot reset password
+PASS: Short new password rejected without consuming key
+PASS: Recovery key commit failure returns failure
+PASS: Failed key commit restores old password
+PASS: Failed key commit does not rotate active key
+PASS: Forgot Password recovers admin and rotates backup key
+PASS: Recovered account sessions revoked
+PASS: Old recovery key cannot be reused
+PASS: Old password no longer works
+PASS: Recovered password signs in
+PASS: New backup key stored on server
+PASS: Recovered password hides default hint
+PASS: PC key recovers cashier account and rotates again
+PASS: Recovered cashier signs in
+PASS: Administrator can generate replacement backup
+PASS: Invalid recovery attempts are rate limited
+PASS: Failed recovery never rotates key
+PASS: Admin can delete cashier account
+PASS: Deleting cashier retains payment history
+PASS: Original source database remains unchanged
+CASHIER & RECOVERY HTTP SUMMARY: 62 PASSED
+PASS: Generated recovery key has 256-bit random format
+PASS: Generated key verifies
+PASS: Invalid types and lengths rejected
+PASS: Status never exposes key or verifier
+PASS: Local recovery file is owner-only
+PASS: Same PC keeps same key and installation across restart
+PASS: Copied key rejected on a different PC
+PASS: Rotation invalidates old key
+PASS: Rotation keeps PC identity and increments generation
+PASS: Newest generation persists
+PASS: Password write failure cannot consume recovery key
+PASS: Failed password transaction leaves key file unchanged
+RECOVERY STORE SUMMARY: 12 PASSED
+PASS: Forgot Password opens, mismatch/errors handled, recovery backup auto-downloads with manual retry, admin backup requires password, rotation confirms, cashier key controls hidden, cashier add/deactivate/delete UI works, four-language labels available.
+PASS: Exactly four languages, removed-language fallback, language changes never write or change currency, user currency selection persists, Yuan formats correctly.
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.0
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
 npm notice To update run: npm install -g npm@12.2.0
 npm notice
 
-Final visible delete button: TypeScript, UI interaction, production UI build and desktop server bundle passed.
+Final validation: TypeScript PASS; desktop server bundle PASS. Counted suites: 346 passed, plus UI interaction checks.

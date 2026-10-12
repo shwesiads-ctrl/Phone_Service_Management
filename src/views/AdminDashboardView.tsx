@@ -1,3 +1,4 @@
+import { getCurrencySymbol } from '../utils/formatters';
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { ServiceJob, ServiceStatus, Technician } from '../types';
@@ -207,7 +208,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   };
 
   const todayDisplay = new Date().toLocaleDateString(
-    language === 'th' ? 'th-TH' : language === 'my' ? 'my-MM' : 'en-US',
+    language === 'th' ? 'th-TH' : language === 'my' ? 'my-MM' : language === 'zh' ? 'zh-CN' : 'en-US',
     {
       weekday: 'short',
       year: 'numeric',
@@ -217,10 +218,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   );
 
   const langDisplay =
-    language === 'th' ? '🇹🇭 ไทย (Thai)' : language === 'my' ? '🇲🇲 မြန်မာ (Myanmar)' : '🇬🇧 English';
+    language === 'th' ? '🇹🇭 ไทย (Thai)' : language === 'my' ? '🇲🇲 မြန်မာ (Myanmar)' : language === 'zh' ? '🇨🇳 中文 (Chinese)' : '🇬🇧 English';
 
   const currencyDisplay = `${settings.currency || 'MMK'} / ${
-    settings.currency === 'THB' ? '฿' : settings.currency === 'USD' ? '$' : 'Ks'
+    getCurrencySymbol(settings.currency || 'MMK')
   }`;
 
   return (
