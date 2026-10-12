@@ -1,3 +1,5 @@
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/Pagination';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Device } from '../types';
@@ -110,6 +112,8 @@ export const DevicesView: React.FC = () => {
     );
   });
 
+  const page = usePagination(filteredDevices, search);
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Header bar */}
@@ -157,7 +161,7 @@ export const DevicesView: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-[var(--surface-2)] text-[var(--text-muted)] text-xs border-b border-[var(--border)]">
-                <tr>
+                <tr><th className="px-4 py-3">#</th>
                   <th className="px-4 py-3 font-semibold">{t('device')}</th>
                   <th className="px-4 py-3 font-semibold">{t('imei')}</th>
                   <th className="px-4 py-3 font-semibold">{t('customer')}</th>
@@ -166,10 +170,10 @@ export const DevicesView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)] text-[var(--text)]">
-                {filteredDevices.map((dev) => {
+                {page.items.map((dev, rowIndex) => {
                   const cust = customers.find((c) => c.id === dev.customer_id);
                   return (
-                    <tr key={dev.id} className="hover:bg-[var(--surface-2)]/40 transition-colors">
+                    <tr key={dev.id} className="hover:bg-[var(--surface-2)]/40 transition-colors"><td className="px-4 py-3 font-mono text-[var(--text-muted)]">{page.offset + rowIndex + 1}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           {getCategoryIcon(dev.category)}
@@ -227,6 +231,7 @@ export const DevicesView: React.FC = () => {
                 })}
               </tbody>
             </table>
+<Pagination {...page} />
           </div>
         )}
       </div>

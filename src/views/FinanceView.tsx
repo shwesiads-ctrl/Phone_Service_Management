@@ -1,3 +1,5 @@
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/Pagination';
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { IncomeRecord, ExpenseRecord, Currency } from '../types';
@@ -183,6 +185,11 @@ export const FinanceView: React.FC = () => {
     });
   }, [expenseRecords, dateFrom, dateTo, selectedCategory, selectedPaymentMethod, searchQuery]);
 
+  const paginationKey = JSON.stringify([dateFrom, dateTo, selectedTech, selectedPaymentMethod, selectedCategory, searchQuery]);
+  const combinedRecords = [...filteredIncome.map(i => ({ ...i, txType: 'income' as const })), ...filteredExpense.map(e => ({ ...e, txType: 'expense' as const }))].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const combinedPage = usePagination(combinedRecords, paginationKey);
+  const incomePage = usePagination(filteredIncome, paginationKey);
+  const expensePage = usePagination(filteredExpense, paginationKey);
   // Financial Calculations
   const totalIncome = filteredIncome.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
   const totalExpense = filteredExpense.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
@@ -559,7 +566,7 @@ export const FinanceView: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-[var(--surface-2)]/60 text-[var(--text-muted)] uppercase text-[10px] font-bold border-b border-[var(--border)]">
-                <tr>
+                <tr><th className="px-4 py-3">#</th>
                   <th className="py-2.5 px-4">Type</th>
                   <th className="py-2.5 px-4">Date</th>
                   <th className="py-2.5 px-4">Reference</th>
@@ -572,18 +579,13 @@ export const FinanceView: React.FC = () => {
               <tbody className="divide-y divide-[var(--border)] font-mono text-xs">
                 {filteredIncome.length === 0 && filteredExpense.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-[var(--text-muted)] font-sans">
+                    <td colSpan={8} className="py-8 text-center text-[var(--text-muted)] font-sans">
                       No financial records found for current criteria.
                     </td>
                   </tr>
                 ) : (
-                  [
-                    ...filteredIncome.map((i) => ({ ...i, txType: 'income' as const })),
-                    ...filteredExpense.map((e) => ({ ...e, txType: 'expense' as const })),
-                  ]
-                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                    .map((tx) => (
-                      <tr key={tx.id} className="hover:bg-[var(--surface-2)]/30">
+combinedPage.items.map((tx, rowIndex) => (
+                      <tr key={tx.id} className="hover:bg-[var(--surface-2)]/30"><td className="px-4 py-3 font-mono text-[var(--text-muted)]">{combinedPage.offset + rowIndex + 1}</td>
                         <td className="py-3 px-4">
                           {tx.txType === 'income' ? (
                             <span className="px-2 py-0.5 rounded font-bold text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-sans">
@@ -627,6 +629,7 @@ export const FinanceView: React.FC = () => {
                 )}
               </tbody>
             </table>
+<Pagination {...combinedPage} />
           </div>
         </div>
       )}
@@ -646,7 +649,7 @@ export const FinanceView: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-[var(--surface-2)]/60 text-[var(--text-muted)] uppercase text-[10px] font-bold border-b border-[var(--border)]">
-                <tr>
+                <tr><th className="px-4 py-3">#</th>
                   <th className="py-2.5 px-4">Date</th>
                   <th className="py-2.5 px-4">Reference</th>
                   <th className="py-2.5 px-4">Service No</th>
@@ -661,15 +664,15 @@ export const FinanceView: React.FC = () => {
               <tbody className="divide-y divide-[var(--border)] font-mono text-xs">
                 {filteredIncome.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-8 text-center text-[var(--text-muted)] font-sans">
+                    <td colSpan={10} className="py-8 text-center text-[var(--text-muted)] font-sans">
                       No income records found.
                     </td>
                   </tr>
                 ) : (
-                  filteredIncome.map((inc) => {
+                  incomePage.items.map((inc, rowIndex) => {
                     const tech = technicians.find((t) => t.id === inc.technician_id);
                     return (
-                      <tr key={inc.id} className="hover:bg-[var(--surface-2)]/30">
+                      <tr key={inc.id} className="hover:bg-[var(--surface-2)]/30"><td className="px-4 py-3 font-mono text-[var(--text-muted)]">{incomePage.offset + rowIndex + 1}</td>
                         <td className="py-3 px-4">{formatDate(inc.date)}</td>
                         <td className="py-3 px-4 font-bold text-emerald-600 dark:text-emerald-400">
                           {inc.reference}
@@ -709,6 +712,7 @@ export const FinanceView: React.FC = () => {
                 )}
               </tbody>
             </table>
+<Pagination {...incomePage} />
           </div>
         </div>
       )}
@@ -728,7 +732,7 @@ export const FinanceView: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-[var(--surface-2)]/60 text-[var(--text-muted)] uppercase text-[10px] font-bold border-b border-[var(--border)]">
-                <tr>
+                <tr><th className="px-4 py-3">#</th>
                   <th className="py-2.5 px-4">Date</th>
                   <th className="py-2.5 px-4">Reference</th>
                   <th className="py-2.5 px-4">Category</th>
@@ -741,13 +745,13 @@ export const FinanceView: React.FC = () => {
               <tbody className="divide-y divide-[var(--border)] font-mono text-xs">
                 {filteredExpense.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-[var(--text-muted)] font-sans">
+                    <td colSpan={8} className="py-8 text-center text-[var(--text-muted)] font-sans">
                       No expense records found.
                     </td>
                   </tr>
                 ) : (
-                  filteredExpense.map((exp) => (
-                    <tr key={exp.id} className="hover:bg-[var(--surface-2)]/30">
+                  expensePage.items.map((exp, rowIndex) => (
+                    <tr key={exp.id} className="hover:bg-[var(--surface-2)]/30"><td className="px-4 py-3 font-mono text-[var(--text-muted)]">{expensePage.offset + rowIndex + 1}</td>
                       <td className="py-3 px-4">{formatDate(exp.date)}</td>
                       <td className="py-3 px-4 font-bold text-rose-600 dark:text-rose-400">
                         {exp.reference}
@@ -784,6 +788,7 @@ export const FinanceView: React.FC = () => {
                 )}
               </tbody>
             </table>
+<Pagination {...expensePage} />
           </div>
         </div>
       )}

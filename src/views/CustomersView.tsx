@@ -1,3 +1,5 @@
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/Pagination';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Customer, ServiceJob, CustomerDeletionPreview } from '../types';
@@ -137,11 +139,12 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
     );
   });
 
+  const page = usePagination(filteredCustomers, search);
   const toggleSelectAll = () => {
-    if (selectedCustomerIds.length === filteredCustomers.length) {
-      setSelectedCustomerIds([]);
+    if (page.items.every(c => selectedCustomerIds.includes(c.id))) {
+      setSelectedCustomerIds(previous => previous.filter(id => !page.items.some(c => c.id === id)));
     } else {
-      setSelectedCustomerIds(filteredCustomers.map((c) => c.id));
+      setSelectedCustomerIds(previous => [...new Set([...previous, ...page.items.map(c => c.id)])]);
     }
   };
 
@@ -208,7 +211,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
           <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[var(--text)] px-3 py-2 bg-[var(--surface-2)] rounded-lg border border-[var(--border)]">
             <input
               type="checkbox"
-              checked={filteredCustomers.length > 0 && selectedCustomerIds.length === filteredCustomers.length}
+              aria-label="Select current page" checked={page.items.length > 0 && page.items.every(c => selectedCustomerIds.includes(c.id))}
               onChange={toggleSelectAll}
               className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
             />
@@ -228,11 +231,11 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-[var(--surface-2)] text-[var(--text-muted)] text-xs border-b border-[var(--border)]">
-                <tr>
+                <tr><th className="px-4 py-3">#</th>
                   <th className="w-10 px-4 py-3">
                     <input
                       type="checkbox"
-                      checked={filteredCustomers.length > 0 && selectedCustomerIds.length === filteredCustomers.length}
+                      aria-label="Select current page" checked={page.items.length > 0 && page.items.every(c => selectedCustomerIds.includes(c.id))}
                       onChange={toggleSelectAll}
                       className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
                     />
@@ -246,11 +249,11 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)] text-[var(--text)]">
-                {filteredCustomers.map((cust) => {
+                {page.items.map((cust, rowIndex) => {
                   const custJobCount = jobs.filter((j) => j.customer_id === cust.id).length;
                   const isSelected = selectedCustomerIds.includes(cust.id);
                   return (
-                    <tr key={cust.id} className={`hover:bg-[var(--surface-2)]/40 transition-colors ${isSelected ? 'bg-[var(--primary)]/5' : ''}`}>
+                    <tr key={cust.id} className={`hover:bg-[var(--surface-2)]/40 transition-colors ${isSelected ? 'bg-[var(--primary)]/5' : ''}`}><td className="px-4 py-3 font-mono text-[var(--text-muted)]">{page.offset + rowIndex + 1}</td>
                       <td className="w-10 px-4 py-3">
                         <input
                           type="checkbox"
@@ -310,6 +313,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
                 })}
               </tbody>
             </table>
+<Pagination {...page} />
           </div>
         )}
       </div>

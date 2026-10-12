@@ -1,3 +1,5 @@
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/Pagination';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
@@ -99,6 +101,9 @@ export const ReportsView: React.FC = () => {
     return true;
   });
 
+  const workloadPage = usePagination(technicianReports, JSON.stringify([selectedTechId, statusFilter, dateFrom, dateTo]));
+  const paymentPage = usePagination(filteredPayments, JSON.stringify([payMethodFilter, payTechFilter, paySearchQuery]));
+  const auditPage = usePagination(auditTrail);
   const totalRevenueCollected = filteredPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
   const handlePrint = () => {
@@ -247,7 +252,7 @@ export const ReportsView: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="bg-[var(--surface-2)]/60 text-[var(--text-muted)] uppercase text-[10px] sm:text-xs font-bold border-b border-[var(--border)]">
-                  <tr>
+                  <tr><th className="px-4 py-3">#</th>
                     <th className="py-3 px-4">Technician</th>
                     <th className="py-3 px-3 text-center">Total Jobs</th>
                     <th className="py-3 px-3 text-center">Diagnosing</th>
@@ -259,8 +264,8 @@ export const ReportsView: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
-                  {technicianReports.map(({ tech, totalJobs, diagnosing, repairing, waiting_parts, ready, completed, totalServiceCharges }) => (
-                    <tr key={tech.id} className="hover:bg-[var(--surface-2)]/30 transition-colors">
+                  {workloadPage.items.map(({ tech, totalJobs, diagnosing, repairing, waiting_parts, ready, completed, totalServiceCharges }, rowIndex) => (
+                    <tr key={tech.id} className="hover:bg-[var(--surface-2)]/30 transition-colors"><td className="px-4 py-3 font-mono">{workloadPage.offset + rowIndex + 1}</td>
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-[var(--text)]">{tech.full_name}</div>
                         <div className="text-[11px] text-[var(--text-muted)] font-mono">
@@ -290,6 +295,7 @@ export const ReportsView: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+<Pagination {...workloadPage} />
             </div>
           </div>
         </div>
@@ -398,7 +404,7 @@ export const ReportsView: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="bg-[var(--surface-2)]/60 text-[var(--text-muted)] uppercase text-[10px] sm:text-xs font-bold border-b border-[var(--border)]">
-                  <tr>
+                  <tr><th className="px-4 py-3">#</th>
                     <th className="py-3 px-4">Date</th>
                     <th className="py-3 px-3">Service No</th>
                     <th className="py-3 px-4">Customer</th>
@@ -410,8 +416,8 @@ export const ReportsView: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
-                  {filteredPayments.map((pay) => (
-                    <tr key={pay.id} className="hover:bg-[var(--surface-2)]/30 transition-colors">
+                  {paymentPage.items.map((pay, rowIndex) => (
+                    <tr key={pay.id} className="hover:bg-[var(--surface-2)]/30 transition-colors"><td className="px-4 py-3 font-mono">{paymentPage.offset + rowIndex + 1}</td>
                       <td className="py-3.5 px-4 font-mono text-xs whitespace-nowrap">
                         {formatDate(pay.paid_at)}
                       </td>
@@ -458,13 +464,14 @@ export const ReportsView: React.FC = () => {
                   ))}
                   {filteredPayments.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="py-8 text-center text-xs text-[var(--text-muted)]">
+                      <td colSpan={9} className="py-8 text-center text-xs text-[var(--text-muted)]">
                         No payments found matching the selected filters.
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+<Pagination {...paymentPage} />
             </div>
           </div>
         </div>
@@ -483,7 +490,7 @@ export const ReportsView: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-[var(--surface-2)]/60 text-[var(--text-muted)] uppercase text-[10px] font-bold border-b border-[var(--border)]">
-                <tr>
+                <tr><th className="px-4 py-3">#</th>
                   <th className="py-3 px-4">Timestamp</th>
                   <th className="py-3 px-3">User</th>
                   <th className="py-3 px-3">Action</th>
@@ -493,8 +500,8 @@ export const ReportsView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)] font-mono">
-                {auditTrail.map((log) => (
-                  <tr key={log.id} className="hover:bg-[var(--surface-2)]/30">
+                {auditPage.items.map((log, rowIndex) => (
+                  <tr key={log.id} className="hover:bg-[var(--surface-2)]/30"><td className="px-4 py-3 font-mono text-[var(--text-muted)]">{auditPage.offset + rowIndex + 1}</td>
                     <td className="py-3 px-4 text-[var(--text-muted)] whitespace-nowrap">
                       {formatDate(log.created_at)}
                     </td>
@@ -511,6 +518,7 @@ export const ReportsView: React.FC = () => {
                 ))}
               </tbody>
             </table>
+<Pagination {...auditPage} />
           </div>
         </div>
       )}

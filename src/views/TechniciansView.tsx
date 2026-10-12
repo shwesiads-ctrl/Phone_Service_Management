@@ -1,3 +1,5 @@
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/Pagination';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Technician } from '../types';
@@ -73,11 +75,12 @@ export const TechniciansView: React.FC = () => {
     }
   };
 
+  const page = usePagination(technicians);
   const toggleSelectAll = () => {
-    if (selectedTechIds.length === technicians.length) {
-      setSelectedTechIds([]);
+    if (page.items.length > 0 && page.items.every(t => selectedTechIds.includes(t.id))) {
+      setSelectedTechIds(previous => previous.filter(id => !page.items.some(t => t.id === id)));
     } else {
-      setSelectedTechIds(technicians.map((t) => t.id));
+      setSelectedTechIds(previous => [...new Set([...previous, ...page.items.map(t => t.id)])]);
     }
   };
 
@@ -263,11 +266,11 @@ export const TechniciansView: React.FC = () => {
           <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[var(--text)]">
             <input
               type="checkbox"
-              checked={technicians.length > 0 && selectedTechIds.length === technicians.length}
+              checked={technicians.length > 0 && page.items.length > 0 && page.items.every(t => selectedTechIds.includes(t.id))}
               onChange={toggleSelectAll}
               className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
             />
-            <span>Select All ({technicians.length})</span>
+            <span>Select current page ({page.items.length})</span>
           </label>
           {selectedTechIds.length > 0 && (
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
@@ -296,14 +299,15 @@ export const TechniciansView: React.FC = () => {
       </div>
 
       {/* Technician Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {technicians.map((tech) => {
+      <div className="flex flex-col gap-3" role="list">
+        {page.items.map((tech, rowIndex) => {
           const isActive = tech.status === 'active';
           const isSelected = selectedTechIds.includes(tech.id);
           return (
             <div
               key={tech.id}
-              className={`p-5 rounded-xl bg-[var(--surface)] border transition-all flex flex-col justify-between space-y-4 shadow-xs relative ${
+              role="listitem"
+              className={`p-3 rounded-xl bg-[var(--surface)] border transition-all flex flex-col justify-between space-y-4 shadow-xs relative ${
                 isSelected
                   ? 'border-[var(--primary)] ring-2 ring-[var(--primary)]/20 bg-[var(--primary)]/5'
                   : isActive
@@ -311,9 +315,9 @@ export const TechniciansView: React.FC = () => {
                   : 'border-dashed border-rose-500/40 opacity-80'
               }`}
             >
-              <div>
+              <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4">
                 {/* Header: Checkbox, ID, Avatar & Status */}
-                <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] pb-3">
+                <div className="flex items-start justify-between gap-3"><span className="text-xs font-mono">#{page.offset + rowIndex + 1}</span>
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
@@ -356,7 +360,7 @@ export const TechniciansView: React.FC = () => {
                 </div>
 
                 {/* Details */}
-                <div className="mt-3 space-y-2 text-xs text-[var(--text-muted)]">
+                <div className="space-y-2 text-xs text-[var(--text-muted)]">
                   <div className="flex items-center gap-2">
                     <Phone className="w-3.5 h-3.5 shrink-0 text-slate-400" />
                     <span className="font-mono text-[var(--text)]">{tech.phone || 'No phone'}</span>
@@ -461,6 +465,7 @@ export const TechniciansView: React.FC = () => {
         })}
       </div>
 
+      <Pagination {...page} />
       {/* Register / Edit Technician Modal */}
       {registerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">

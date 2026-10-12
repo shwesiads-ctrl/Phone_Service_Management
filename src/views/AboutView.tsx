@@ -1,90 +1,24 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Cpu, ShieldCheck, Globe, Coins, Moon, CheckCircle2 } from 'lucide-react';
+import { Cpu } from 'lucide-react';
 
 export const AboutView: React.FC = () => {
-  const { t, settings } = useApp();
-
-  return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-16">
-      {/* Brand Header */}
-      <div className="p-6 sm:p-8 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
-        <div className="flex items-center gap-3.5 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-[var(--primary)] flex items-center justify-center text-white font-bold text-lg shadow-sm">
-            <Cpu className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-[var(--text)] tracking-tight">
-              FixFlow Repair & Service Manager
-            </h1>
-            <p className="text-xs text-[var(--text-muted)] font-mono">
-              Release Build v2.6.4 · Professional Workshop Suite
-            </p>
-          </div>
-        </div>
-
-        <p className="text-sm text-[var(--text-muted)] mt-2 leading-relaxed">
-          {t('aboutDescription')}
-        </p>
-      </div>
-
-      {/* Highlights Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Multilingual Localization */}
-        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2">
-          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text)]">
-            <Globe className="w-4 h-4 text-blue-500" />
-            <span>Regional Unicode Localization</span>
-          </div>
-          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-            Full native Unicode support for Myanmar (မြန်မာ), English, and Thai (ไทย). All forms, statuses, receipts, and system labels adapt dynamically.
-          </p>
-        </div>
-
-        {/* Currency System */}
-        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2">
-          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text)]">
-            <Coins className="w-4 h-4 text-emerald-500" />
-            <span>Standardized Multi-Currency Display</span>
-          </div>
-          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-            Standard accounting formatter supporting Myanmar Kyat (Ks), US Dollar ($), and Thai Baht (฿) with clean decimal discipline and tabular alignment.
-          </p>
-        </div>
-
-        {/* Dark & Light Theme */}
-        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2">
-          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text)]">
-            <Moon className="w-4 h-4 text-indigo-500" />
-            <span>Anti-Glare Theme Engine</span>
-          </div>
-          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-            Complete Light, Dark, and System modes with zero white-flash on reload and consistent custom property color tokens.
-          </p>
-        </div>
-
-        {/* Role Separation */}
-        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2">
-          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text)]">
-            <ShieldCheck className="w-4 h-4 text-purple-500" />
-            <span>Role-Based Workflow Governance</span>
-          </div>
-          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-            Admin role oversees revenue and technicians, while bench technicians focus cleanly on assigned hardware diagnostics under "My Services".
-          </p>
-        </div>
-      </div>
-
-      {/* Workshop Registration Info */}
-      <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text-muted)] space-y-2">
-        <div className="font-semibold text-sm text-[var(--text)]">Active Bay Profile</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-mono">
-          <div>Workshop: {settings.shopName}</div>
-          <div>Phone: {settings.phone}</div>
-          <div>Email: {settings.email}</div>
-          <div>Address: {settings.address}</div>
-        </div>
-      </div>
+  const { settings, language } = useApp();
+  const my = language === 'my';
+  const sections = [
+    [my ? 'ပြုပြင်ရေးလုပ်ငန်း စီမံခန့်ခွဲမှု' : 'Repair workshop management', my ? 'Customer နှင့် Device စာရင်း၊ Service Job လက်ခံခြင်း၊ Technician တာဝန်ပေးခြင်း၊ စစ်ဆေး/ပြုပြင်မှတ်တမ်း၊ အသုံးပြုသည့်ပစ္စည်းနှင့် အာမခံကို တစ်နေရာတည်းတွင် စီမံနိုင်ပါသည်။ စာရင်းရှည်များတွင် page နံပါတ်၊ search နှင့် filter သုံးပြီး ရှာဖွေနိုင်ပါသည်။' : 'Manage customers, devices, service intake, technician assignments, diagnostics, repair history, parts used and warranty details. Numbered pages, search and filters keep long lists manageable.'],
+    [my ? 'အကောင့်နှင့် လုပ်ပိုင်ခွင့်' : 'Accounts and responsibilities', my ? 'Admin က ဆိုင်၊ ဝန်ထမ်း၊ ငွေစာရင်းနှင့် setting များကို စီမံနိုင်သည်။ Technician က မိမိတာဝန်ကျအလုပ်များကို ဆောင်ရွက်နိုင်သည်။ Cashier က အလုပ်လက်ခံခြင်း၊ ငွေလက်ခံခြင်းနှင့် receipt ထုတ်ခြင်းကို ဆောင်ရွက်နိုင်သည်။ Cashier profile နှင့် ဓာတ်ပုံပါ ID Card ထုတ်နိုင်ပါသည်။' : 'Administrators manage the workshop, staff, finances and settings. Technicians work on assigned repairs. Cashiers handle service intake, collect payments and issue receipts. Cashier profiles support photos and printable staff ID cards.'],
+    [my ? 'ငွေပေးချေမှုနှင့် ငွေစာရင်း' : 'Payments and accounting', my ? 'Myanmar၊ Thailand၊ China နှင့် Global payment channel များကို ဆိုင်၏အကောင့်အချက်အလက်ဖြင့် ပြင်ဆင်နိုင်သည်။ Payment QR ကို upload လုပ်နိုင်သည်။ ငွေလက်ခံပြီးကြောင်းကို ဝန်ထမ်းက စစ်ဆေးမှတ်တမ်းတင်ရမည်။ Income၊ Expense၊ payment history နှင့် workload report များကို ကြည့်ရှုနိုင်ပါသည်။' : 'Configure Myanmar, Thailand, China and global payment channels using your workshop’s account details and uploaded payment QR images. Staff verify and record received payments. Review income, expenses, payment history and technician workload reports.'],
+    [my ? 'ဘာသာစကားနှင့် ငွေကြေး' : 'Languages and currencies', my ? 'မြန်မာ၊ English၊ Thai နှင့် Chinese ကို ရွေးနိုင်သည်။ ငွေကြေးမှာ Ks (MMK)၊ $ (USD)၊ ฿ (THB) နှင့် ¥ (CNY) ဖြစ်ပြီး စိတ်ကြိုက်ရွေးချယ်နိုင်သည်။ ဘာသာစကားပြောင်းလဲခြင်းကြောင့် ငွေကြေး အလိုအလျောက် မပြောင်းပါ။' : 'Choose Myanmar, English, Thai or Chinese. Select Ks (MMK), $ (USD), ฿ (THB) or ¥ (CNY) independently of language. Currency selection changes the display; it does not perform an exchange-rate conversion.'],
+    [my ? 'Backup နှင့် Password Recovery' : 'Backups and password recovery', my ? 'Settings မှ database backup ကို သိမ်းဆည်းပြီး restore လုပ်နိုင်သည်။ Server PC အတွက် Recovery Key ကို သီးခြား backup သိမ်းထားပါ။ Forgot Password တွင် Recovery Key ဖြင့် password အသစ်သတ်မှတ်နိုင်ပြီး recovery အောင်မြင်တိုင်း key အသစ်ပြောင်းပါသည်။ Key အသစ်ကို ထပ်မံသိမ်းဆည်းရန် လိုအပ်သည်။' : 'Save and restore database backups from Settings. Store the server PC’s password recovery key separately. Forgot Password accepts that key to reset an account password. Every successful recovery rotates the key; save the newly issued backup key.'],
+    [my ? 'အသုံးပြုပုံ' : 'Running FixFlow', my ? 'Browser မှ local server သို့မဟုတ် LAN မှတစ်ဆင့် အသုံးပြုနိုင်ပြီး Electron desktop အဖြစ်လည်း ဖွင့်နိုင်သည်။ ဆိုင်ဒေတာကို server PC တွင် သိမ်းဆည်းသည်။ Update လုပ်ချိန်တွင် မူလ data/ နှင့် .security/ ကို ထိန်းသိမ်းပါ။ Light၊ Dark နှင့် System theme များကို ရွေးနိုင်သည်။' : 'Use FixFlow in a browser through the local server or LAN, or run the Electron desktop app. Workshop data is stored on the server PC. Preserve your existing data/ directory and its .security/ recovery files when updating. Light, Dark and System themes are available.'],
+  ];
+  return <div className="max-w-4xl mx-auto space-y-5 pb-16">
+    <div className="p-6 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
+      <div className="flex items-center gap-3"><Cpu className="w-9 h-9 text-[var(--primary)]" /><div><h1 className="text-2xl font-bold">FixFlow Repair & Service Manager</h1><p className="text-xs text-[var(--text-muted)]">Version 2.8.0 · Local & LAN Workshop Management</p></div></div>
+      <p className="mt-4 text-sm text-[var(--text-muted)]">{my ? 'ဖုန်းနှင့် စက်ပစ္စည်း ပြုပြင်ရေးဆိုင်များအတွက် အလုပ်လက်ခံခြင်းမှ ငွေလက်ခံခြင်းအထိ နေ့စဉ်လုပ်ငန်းများကို စီမံရန် အသုံးပြုနိုင်သည့် စနစ်။' : 'A workshop management system for phone and device repair businesses, from service intake and repair tracking to payments and reporting.'}</p>
     </div>
-  );
+    {sections.map(([title, description]) => <section key={title} className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)]"><h2 className="font-bold mb-2">{title}</h2><p className="text-sm leading-relaxed text-[var(--text-muted)]">{description}</p></section>)}
+    <section className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)]"><h2 className="font-bold mb-3">{my ? 'ဆိုင်အချက်အလက်' : 'Workshop information'}</h2><dl className="grid sm:grid-cols-2 gap-3 text-sm">{[[my ? 'ဆိုင်အမည်' : 'Workshop', settings.shopName], ['Phone', settings.phone], ['Email', settings.email], ['Address', settings.address]].map(([label, value]) => <div key={label}><dt className="text-[var(--text-muted)] text-xs">{label}</dt><dd className="break-words">{value || '—'}</dd></div>)}</dl><p className="mt-4 text-xs text-[var(--text-muted)]">React · TypeScript · Express · Electron</p></section>
+  </div>;
 };

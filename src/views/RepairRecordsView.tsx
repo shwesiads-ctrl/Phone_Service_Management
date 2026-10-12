@@ -1,3 +1,5 @@
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/Pagination';
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { ServiceJob, ServiceStatus } from '../types';
@@ -171,6 +173,7 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
     setPrintReportType(type);
   };
 
+  const page = usePagination(filteredJobs, JSON.stringify([searchQuery, selectedTechId, selectedStatus, dateFrom, dateTo]));
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Header */}
@@ -406,7 +409,7 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
             <thead className="bg-[var(--surface-2)]/60 text-[var(--text-muted)] uppercase text-[10px] sm:text-xs font-bold border-b border-[var(--border)]">
-              <tr>
+              <tr><th className="px-4 py-3">#</th>
                 <th className="py-3 px-4">Service Number</th>
                 <th className="py-3 px-4">Customer</th>
                 <th className="py-3 px-4">Device & IMEI</th>
@@ -423,20 +426,20 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
             <tbody className="divide-y divide-[var(--border)]">
               {filteredJobs.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-12 text-center text-[var(--text-muted)]">
+                  <td colSpan={12} className="py-12 text-center text-[var(--text-muted)]">
                     <FileText className="w-8 h-8 mx-auto opacity-30 mb-2" />
                     <p className="font-semibold text-sm">No service repair records match criteria.</p>
                   </td>
                 </tr>
               ) : (
-                filteredJobs.map((job) => {
+                page.items.map((job, rowIndex) => {
                   const assignedTech = technicians.find((t) => t.id === job.technician_id) || job.technician;
                   const partsCount = (job.parts_used || []).length;
                   return (
                     <tr
                       key={job.id}
                       className="hover:bg-[var(--surface-2)]/40 transition-colors"
-                    >
+                    ><td className="px-4 py-3 font-mono text-[var(--text-muted)]">{page.offset + rowIndex + 1}</td>
                       {/* Service Number */}
                       <td className="py-3.5 px-4 font-mono font-bold text-[var(--primary)] whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
@@ -564,6 +567,7 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
               )}
             </tbody>
           </table>
+<Pagination {...page} />
         </div>
       </div>
 

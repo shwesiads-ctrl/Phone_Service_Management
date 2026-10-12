@@ -1,6 +1,6 @@
 
 > react-example@1.0.0 test
-> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx && node --import tsx scripts/test-cashier-recovery.ts && node --import tsx scripts/test-recovery-store.ts && node scripts/run-notification-ui.cjs scripts/test-account-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-manual-currency-ui.tsx --real-context && node --import tsx scripts/test-china-profiles.ts && node scripts/run-notification-ui.cjs scripts/test-china-dashboard-ui.tsx
+> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx && node --import tsx scripts/test-cashier-recovery.ts && node --import tsx scripts/test-recovery-store.ts && node scripts/run-notification-ui.cjs scripts/test-account-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-manual-currency-ui.tsx --real-context && node --import tsx scripts/test-china-profiles.ts && node scripts/run-notification-ui.cjs scripts/test-china-dashboard-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-pagination-ui.tsx
 
 
 > react-example@1.0.0 build
@@ -8,14 +8,14 @@
 
 vite v8.3.4 building client environment for production...
 transforming...
-✓ 1739 modules transformed.
+✓ 1741 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/index.html                   2.25 kB │ gzip:   0.94 kB
-dist/assets/index-BXtD7nyl.css   84.64 kB │ gzip:  13.12 kB
-dist/assets/index-DUmPvWWo.js   878.06 kB │ gzip: 196.96 kB
+dist/assets/index-CXoV0eqa.css   84.74 kB │ gzip:  13.15 kB
+dist/assets/index-B5K5NQHK.js   887.49 kB │ gzip: 200.28 kB
 
-✓ built in 303ms
+✓ built in 312ms
 [plugin builtin:vite-reporter] 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
@@ -460,10 +460,29 @@ PASS: Dashboard opens distinct jobs route
 PASS: Payment queue opens selected job
 PASS: Recent collection prints its job receipt
 CHINA & DASHBOARD UI SUMMARY: 22 PASSED
+PASS: 20,000 records render only 20 rows and bounded page buttons
+PASS: Last page shows continuous serials 19981–20000
+PASS: Previous page navigates correctly
+PASS: Middle page has first/last and ellipses
+PASS: Filter change returns to first page
+PASS: Deletion clamps last page
+PASS: New records do not restore stale removed page
+PASS: Page size resets first page and shows up to 50
+PASS: Empty list has safe range and disabled next
+PASS: Printing includes all filtered records and serials start at one
+PASS: After print restores selected page
+PASS: Customers render one page and aligned columns
+PASS: Customers second page numbering continues at 21
+PASS: Bulk selection selects 20 visible customers
+PASS: Workload report paginates and keeps header aligned
+PASS: Workload last page contains five technicians
+Pagination UI checks passed.
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.0
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
 npm notice To update run: npm install -g npm@12.2.0
 npm notice
 
-Final checks: 394 counted tests PASS; TypeScript PASS; production UI build PASS; desktop server bundle PASS. Native printer hardware was not exercised.
+Additional validation: npm run lint passed; npm run desktop:build-server passed.
+Pagination UI: 16 checks passed, including 20,000 records / 1,000 pages, clamping, filters, print and integration.
+Physical printer and Windows installer execution were not exercised in this Linux environment.

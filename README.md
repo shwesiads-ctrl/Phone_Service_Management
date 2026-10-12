@@ -92,3 +92,9 @@ The configured merchant QR appears when a cashier selects that method on a servi
 The cashier dashboard is a separate overview: today's shop intake, that cashier's collections grouped by currency, payment queue, ready-for-pickup count, and recent receipt actions. **Service Jobs** remains the full jobs table. Payments store the cashier's persistent user ID, so profile/name changes preserve attribution.
 
 In **Cashier Accounts**, choose **Edit Profile** to save name, phone, email, address and an uploaded portrait (PNG/JPEG/WebP, up to 2 MB). Choose **Generate ID Card** to preview, download a self-contained SVG card or print it at 85.6 × 54 mm. The card includes the photo, staff ID/QR, role, shop branding and contact details. Cashiers can edit their own profile and access **My ID Card** from their dashboard or user profile. The card QR carries the persistent staff ID; card exports contain profile/display information.
+
+### Long lists and About
+
+Repair history, income/expenses, customers, devices, technicians, and workload/payment/audit reports now use numbered pages. The default is 20 records per page; choose 50 or 100, use previous/next, or jump directly to a page. Search and filter changes return to page 1. Row numbers continue across pages, and deleted records automatically clamp the current page. Customer/technician select-all applies to the current page; previously selected records remain selected and the bulk-action count includes them.
+
+Financial totals continue to use every matching record. Printing includes all matching records and restores the selected page afterward. About describes the current roles, payment channels, language/currency settings, backups, password recovery and workshop contact details.

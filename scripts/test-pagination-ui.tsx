@@ -1,0 +1,38 @@
+import React, { act } from 'react';
+import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
+import { usePagination } from '../src/hooks/usePagination';
+import { Pagination } from '../src/components/Pagination';
+import { ReportsView } from '../src/views/ReportsView';
+import { CustomersView } from '../src/views/CustomersView';
+(async () => {
+ const dom = new JSDOM('<div id="root"></div>', {url:'http://localhost'});
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,HTMLElement:dom.window.HTMLElement,IS_REACT_ACT_ENVIRONMENT:true});
+ (globalThis as any).__testApp={language:'en',t:(k:string)=>k,customers:[],jobs:[],technicians:[],formatDate:(v:string)=>v};
+ const {createRoot}=require('react-dom/client'); const root=createRoot(document.getElementById('root')!);
+ let rows=Array.from({length:20000},(_,i)=>i+1),key='';let current:any;
+ function Harness(){current=usePagination(rows,key);return <><output>{current.items.join(',')}</output><Pagination {...current}/></>;}
+ const render=async()=>act(async()=>root.render(<Harness/>));
+ const check=(name:string,value:any)=>{assert.ok(value,name);console.log('PASS: '+name);};
+ const click=async(label:string)=>act(async()=>document.querySelector(`[aria-label="${label}"]`)!.dispatchEvent(new dom.window.MouseEvent('click',{bubbles:true})));
+ await render();check('20,000 records render only 20 rows and bounded page buttons',current.items.length===20&&document.querySelectorAll('button').length<=10);
+ await click('Page 1000');check('Last page shows continuous serials 19981–20000',current.offset===19980&&current.items[19]===20000);
+ await click('Previous page');check('Previous page navigates correctly',current.page===999);
+ await act(async()=>current.setPage(500));check('Middle page has first/last and ellipses',document.querySelector('[aria-label="Page 1"]')&&document.querySelector('[aria-label="Page 1000"]')&&document.body.textContent!.includes('…'));
+ key='filtered';rows=[1,2,3];await render();check('Filter change returns to first page',current.page===1&&current.items.length===3);
+ rows=Array.from({length:45},(_,i)=>i);await render();await act(async()=>current.setPage(3));rows=rows.slice(0,21);await render();check('Deletion clamps last page',current.page===2&&current.items.length===1);
+ rows=Array.from({length:45},(_,i)=>i);await render();check('New records do not restore stale removed page',current.page===2);
+ await act(async()=>current.setPageSize(50));check('Page size resets first page and shows up to 50',current.page===1&&current.items.length===45);
+ rows=[];await render();check('Empty list has safe range and disabled next',current.page===1&&document.body.textContent!.includes('0–0 / 0')&&(document.querySelector('[aria-label="Next page"]') as HTMLButtonElement).disabled);
+ rows=Array.from({length:65},(_,i)=>i);await render();await act(async()=>current.setPageSize(20));await act(async()=>current.setPage(2));
+ await act(async()=>window.dispatchEvent(new dom.window.Event('beforeprint')));check('Printing includes all filtered records and serials start at one',current.items.length===65&&current.offset===0);
+ await act(async()=>window.dispatchEvent(new dom.window.Event('afterprint')));check('After print restores selected page',current.items.length===20&&current.offset===20);
+ const app=(globalThis as any).__testApp;app.customers=Array.from({length:45},(_,i)=>({id:String(i),name:'Customer '+i,phone:'09',created_at:'2026-10-12'}));
+ await act(async()=>root.render(<CustomersView onOpenJob={()=>{}}/>));check('Customers render one page and aligned columns',document.querySelectorAll('tbody tr').length===20&&document.querySelectorAll('thead th').length===document.querySelector('tbody tr')!.children.length);
+ await click('Next page');check('Customers second page numbering continues at 21',document.querySelector('tbody tr td:first-child')!.textContent==='21');
+ const select=document.querySelector('[aria-label="Select current page"]')!;await act(async()=>select.dispatchEvent(new dom.window.MouseEvent('click',{bubbles:true})));check('Bulk selection selects 20 visible customers',document.body.textContent!.includes('(20)'));
+ app.payments=[];app.auditTrail=[];app.formatCurrency=(v:number)=>String(v);app.currency='MMK';app.technicians=Array.from({length:45},(_,i)=>({id:String(i),full_name:'Technician '+i,username:'tech'+i}));
+ await act(async()=>root.render(<ReportsView/>));check('Workload report paginates and keeps header aligned',document.querySelectorAll('tbody tr').length===20&&document.querySelectorAll('thead th').length===document.querySelector('tbody tr')!.children.length);
+ await click('Page 3');check('Workload last page contains five technicians',document.querySelectorAll('tbody tr').length===5&&document.querySelector('tbody tr td')!.textContent==='41');
+ await act(async()=>root.unmount());console.log('Pagination UI checks passed.');
+})().catch(e=>{console.error(e);process.exitCode=1;});
