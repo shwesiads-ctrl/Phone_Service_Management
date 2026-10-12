@@ -1,3 +1,4 @@
+import { imageValidationError } from './src/utils/imageUpload.ts';
 import { RecoveryKeyStore } from './src/server/recovery.ts';
 import { hashPassword, verifyPassword } from './src/server/passwords.ts';
 import { telegramRequest, sendRawTelegramMessage, escapeTelegramHtml as tgHtml } from './src/server/telegram.ts';
@@ -342,10 +343,13 @@ app.put('/api/auth/profile', (req: AuthRequest, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  const { full_name, username, email, phone, profile_photo } = req.body;
+  const { full_name, username, email, phone, address, profile_photo } = req.body;
+  const invalidPhoto = imageValidationError(profile_photo);
+  if (invalidPhoto) return res.status(400).json({ error: invalidPhoto });
   if (typeof username !== 'string' || !username.trim() || typeof full_name !== 'string' || !full_name.trim()) {
     return res.status(400).json({ error: 'Full name and username are required.' });
   }
+  for (const field of ['phone','email','address'] as const) if (req.body[field] !== undefined && (typeof req.body[field] !== 'string' || req.body[field].length > (field === 'address' ? 1000 : 100))) return res.status(400).json({ error: 'Enter valid profile contact details.' });
   const duplicate = db.getUserByUsername(username.trim());
   if (duplicate && duplicate.id !== req.user.id) return res.status(409).json({ error: 'Username is already in use.' });
   const updated = db.updateProfile(req.user.id, {
@@ -353,6 +357,7 @@ app.put('/api/auth/profile', (req: AuthRequest, res: Response) => {
     username: username.trim(),
     ...(email !== undefined ? { email } : {}),
     ...(phone !== undefined ? { phone } : {}),
+    ...(address !== undefined ? { address } : {}),
     ...(profile_photo !== undefined ? { profile_photo } : {}),
   });
   if (!updated) {
@@ -1219,6 +1224,7 @@ app.post('/api/payments', (req: AuthRequest, res: Response) => {
   const finalNote = payment_note || notes || '';
 
   const newPayment = db.createPayment({
+    ...(req.user.role === 'cashier' ? { cashier_id: req.user.id } : {}),
     service_job_id,
     payment_method: payment_method || 'Cash',
     amount: amountNum,
@@ -1733,6 +1739,18 @@ app.post('/api/cashiers', requireAdmin, (req: AuthRequest, res) => {
 });
 app.put('/api/cashiers/:id', requireAdmin, (req: AuthRequest, res) => {
   const updates: Partial<User> = {};
+  for (const field of ['full_name','phone','email','address'] as const) {
+    if (req.body[field] !== undefined) {
+      if (typeof req.body[field] !== 'string' || req.body[field].length > (field === 'address' ? 1000 : 100) || (field === 'full_name' && !req.body[field].trim())) return res.status(400).json({ error: 'Enter valid cashier profile details.' });
+      updates[field] = req.body[field].trim();
+    }
+  }
+  if (req.body.profile_photo !== undefined) {
+    const invalidPhoto = imageValidationError(req.body.profile_photo);
+    if (invalidPhoto) return res.status(400).json({ error: invalidPhoto });
+    updates.profile_photo = req.body.profile_photo;
+  }
+
   if (req.body.active !== undefined) {
     if (typeof req.body.active !== 'boolean') return res.status(400).json({ error: 'Active must be true or false.' });
     updates.active = req.body.active;
@@ -1743,7 +1761,7 @@ app.put('/api/cashiers/:id', requireAdmin, (req: AuthRequest, res) => {
   }
   const user = db.updateCashier(req.params.id, updates);
   if (!user) return res.status(404).json({ error: 'Cashier not found.' });
-  for (const [token, session] of sessions) if (session.userId === user.id) sessions.delete(token);
+  if (updates.active !== undefined || updates.password !== undefined) for (const [token, session] of sessions) if (session.userId === user.id) sessions.delete(token);
   db.recordAudit({ user_id: req.user!.id, username: req.user!.username, action: 'CASHIER_UPDATED', target_type: 'auth', target_id: user.id, details: 'Administrator updated cashier access/password.', ip_address: req.ip || '127.0.0.1' });
   return res.json(user);
 });
@@ -1813,6 +1831,17 @@ app.get('/api/settings', (req: AuthRequest, res) => {
 app.put('/api/settings', (req: AuthRequest, res: Response) => {
   if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden: Only administrators can update system settings.' });
+  }
+  if (req.body.paymentSettings) {
+    for (const profile of ['thailand','myanmar','china','global']) {
+      const methods = req.body.paymentSettings[profile]?.methods;
+      if (methods !== undefined && !Array.isArray(methods)) return res.status(400).json({ error: 'Invalid payment channel list.' });
+      for (const method of methods || []) {
+        if (!method || typeof method.id !== 'string') return res.status(400).json({ error: 'Invalid payment channel.' });
+        const invalid = imageValidationError(method.qr_code);
+        if (invalid) return res.status(400).json({ error: invalid });
+      }
+    }
   }
   const updated = db.updateSettings(req.body);
   return res.json(updated);

@@ -808,6 +808,12 @@ class Database {
                 return existing ? { ...defaultMethod, ...removeDemoPaymentDetails('myanmar', existing) } : defaultMethod;
               }),
             },
+            china: {
+              methods: defaultPaymentSettings.china.methods.map(defaultMethod => {
+                const existing = parsed.settings?.paymentSettings?.china?.methods?.find((m: any) => m.id === defaultMethod.id);
+                return existing ? { ...defaultMethod, ...existing } : { ...defaultMethod };
+              }),
+            },
             global: {
               methods: defaultPaymentSettings.global.methods.map((defaultMethod: PaymentMethodConfig) => {
                 const existing = parsed.settings?.paymentSettings?.global?.methods?.find((m: any) => m.id === defaultMethod.id);
@@ -1083,6 +1089,9 @@ class Database {
   public updateProfile(userId: string, updates: Partial<User>): User | null {
     const user = this.data.users.find((u) => u.id === userId);
     if (!user) return null;
+    if (user.role === 'cashier' && updates.username && updates.username !== user.username) {
+      for (const payment of this.data.service_payments) if (!payment.cashier_id && payment.created_by === user.username) payment.cashier_id = user.id;
+    }
     Object.assign(user, updates);
     if (user.technician_id) {
       const tech = this.data.technicians.find((t) => t.id === user.technician_id);
@@ -1859,12 +1868,24 @@ class Database {
 
   // --- Settings ---
   public getSettings(): SettingsState {
+    if (!this.data.settings.paymentSettings?.china) this.data.settings.paymentSettings = { ...defaultPaymentSettings, ...this.data.settings.paymentSettings, china: structuredClone(defaultPaymentSettings.china) };
     this.data.settings.currency_mode = 'manual';
     if (!['my','en','th','zh'].includes(this.data.settings.language)) this.data.settings.language = 'en';
     return this.data.settings;
   }
 
   public updateSettings(newSettings: Partial<SettingsState>): SettingsState {
+    if (newSettings.paymentSettings) {
+      const previous = this.getSettings().paymentSettings || defaultPaymentSettings;
+      const supplied = newSettings.paymentSettings;
+      const merged = { ...previous, ...supplied };
+      for (const profile of ['thailand','myanmar','china','global'] as const) {
+        const methods = new Map((previous[profile]?.methods || defaultPaymentSettings[profile].methods).map(method => [method.id, method]));
+        for (const method of supplied[profile]?.methods || []) methods.set(method.id, { ...methods.get(method.id), ...method });
+        merged[profile] = { methods: [...methods.values()] };
+      }
+      newSettings = { ...newSettings, paymentSettings: merged };
+    }
     this.data.settings = { ...this.data.settings, ...newSettings, currency_mode: 'manual' };
     this.saveDatabase();
     return this.data.settings;

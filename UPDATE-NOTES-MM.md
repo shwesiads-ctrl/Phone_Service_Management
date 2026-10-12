@@ -28,3 +28,11 @@ Customers စာမျက်နှာတွင် ဖျက်ရန် button �
 - Login → Forgot Password တွင် Username၊ လက်ရှိ Recovery Key၊ Password အသစ်နှစ်ကြိမ် ဖြည့်ပါ။ Recovery အောင်မြင်ပြီးတိုင်း key အဟောင်းကို ပယ်ပြီး backup key အသစ် ထုတ်ပေးသည်။ Automatic download ပိတ်ထားသော browser တွင် Download Backup Key ခလုတ်ကို နှိပ်ပါ။
 - Key backup သည် account password များကို ပြန်သတ်မှတ်နိုင်သော admin recovery credential ဖြစ်သည်။ GitHub/ZIP ထဲတွင် သင့် PC အတွက် live key မပါပါ။ ကိုယ်ပိုင် PC မှာ run လုပ်ချိန်မှ ထုတ်ပေးမည်။
 - Update လုပ်ရာတွင် လက်ရှိ data/ folder အပြည့်အစုံနှင့် data/.security/ ကို ထိန်းထားပါ။ အခြား PC တွင် recovery key အသစ်ဖြစ်မည်။ Database restore က recovery key အဟောင်းကို ပြန်မသက်ဝင်စေပါ။
+
+## China Payment၊ QR Upload၊ Cashier Dashboard နှင့် Photo ID Card
+
+- Settings → Payments → China တွင် Alipay၊ WeChat Pay၊ UnionPay၊ Bank Transfer နှင့် Cash ထည့်ထားသည်။ ကိုယ်ပိုင် merchant account ဖြည့်ပြီး channel ကို enable လုပ်ပါ။ Use China Payment Profile ကို ရွေးနိုင်သည်။ Currency ကို သီးခြား စိတ်ကြိုက်ရွေးထားနိုင်သည်။
+- Payment channel → Configure / Upload QR တွင် PNG/JPEG/WebP QR ပုံကို upload၊ preview၊ remove/replace လုပ်နိုင်သည်။ အများဆုံး 2 MB ဖြစ်သည်။ Cashier payment လက်ခံချိန် ရွေးထားသော channel ၏ QR ပုံကို ပြမည်။ Bank/wallet reference ဖြည့်ပြီး အမှန်တကယ် ငွေလက်ခံရရှိကြောင်း ကိုယ်တိုင် အတည်ပြုပါ။
+- Cashier Dashboard ကို Service Jobs စာမျက်နှာမှ သီးခြားခွဲထားသည်။ မိမိလက်ခံသော payment totals ကို currency ခွဲပြပြီး payment queue၊ receipt နှင့် service intake shortcut များ ပါသည်။
+- Cashier Accounts → Edit Profile တွင် ဆက်သွယ်ရန်အချက်အလက်နှင့် profile photo သိမ်းနိုင်သည်။ Generate ID Card တွင် ပုံပါသော ID Card ကို download သို့မဟုတ် print လုပ်နိုင်သည်။ Card size သည် 85.6 × 54 mm ဖြစ်သည်။
+- Cashier များသည် Dashboard → My Profile / My ID Card တွင် ကိုယ်ပိုင် profile နှင့် card ကို အသုံးပြုနိုင်သည်။ Update လုပ်ရာတွင် လက်ရှိ data/ folder နှင့် .security/ recovery key folder ကို ထိန်းထားပါ။

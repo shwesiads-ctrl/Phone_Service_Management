@@ -80,3 +80,15 @@ Before you need recovery, sign in as an administrator, open **Settings → Secur
 On the login screen choose **Forgot Password**, enter the account username, the current PC recovery key, and the new password twice. Successful recovery invalidates the previous password, revokes that account's sessions and rotates the PC recovery key. The form downloads the replacement backup and provides a manual download button. The replacement key works for future recovery; the old key cannot be reused. Administrators can also explicitly generate a replacement key in Security settings. Failed recovery does not consume a key, and invalid attempts are rate limited.
 
 Database backups/restores do not replace the PC's `.security` key file, so restoring an old database cannot revive an old recovery key. When updating this app on the same PC, retain the complete existing `data/` folder, including `.security/`. When moving to a new PC, use the known administrator password to sign in and download that PC's newly generated key.
+
+## China payments and QR uploads
+
+**Settings → Payments → China** includes Alipay, WeChat Pay, UnionPay, Chinese bank transfer and cash. China non-cash methods start disabled with blank beneficiary details. Configure your merchant account and choose **Configure / Upload QR** to upload a bank/merchant-issued PNG, JPEG or WebP image (maximum 2 MB). The image previews before saving, can be removed/replaced, and is retained in database backups. Existing image URLs remain supported. **Use China Payment Profile** selects these channels independently of the manual currency setting; choose CNY in Currency settings when needed. Chinese language selects China channels when payment-profile mode follows language.
+
+The configured merchant QR appears when a cashier selects that method on a service job. Record the bank/wallet reference and verify actual receipt before collecting payment. These are merchant configuration and manual confirmation features; no bank settlement API is connected.
+
+## Cashier dashboard, profiles and photo ID cards
+
+The cashier dashboard is a separate overview: today's shop intake, that cashier's collections grouped by currency, payment queue, ready-for-pickup count, and recent receipt actions. **Service Jobs** remains the full jobs table. Payments store the cashier's persistent user ID, so profile/name changes preserve attribution.
+
+In **Cashier Accounts**, choose **Edit Profile** to save name, phone, email, address and an uploaded portrait (PNG/JPEG/WebP, up to 2 MB). Choose **Generate ID Card** to preview, download a self-contained SVG card or print it at 85.6 × 54 mm. The card includes the photo, staff ID/QR, role, shop branding and contact details. Cashiers can edit their own profile and access **My ID Card** from their dashboard or user profile. The card QR carries the persistent staff ID; card exports contain profile/display information.

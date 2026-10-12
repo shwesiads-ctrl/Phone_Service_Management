@@ -1915,11 +1915,11 @@ export const SettingsView: React.FC = () => {
                     {t('paymentProfile')}
                   </span>
                   <span className="text-[11px] text-[var(--text-muted)]">
-                    Active Profile: <strong className="text-[var(--primary)] uppercase">{activePaymentProfile}</strong> (Auto-syncs with active language)
+                    Active Profile: <strong className="text-[var(--primary)] uppercase">{activePaymentProfile}</strong> ({settings.paymentSettings?.mode === 'manual' ? 'Manually selected' : 'Follows language'})
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1 bg-[var(--surface)] p-1 rounded-lg border border-[var(--border)]">
+                <div className="flex flex-wrap items-center gap-1 bg-[var(--surface)] p-1 rounded-lg border border-[var(--border)]">
                   <button
                     type="button"
                     onClick={() => setSelectedProfileTab('thailand')}
@@ -1946,6 +1946,8 @@ export const SettingsView: React.FC = () => {
                     <span>{t('myanmarPayments')}</span>
                   </button>
 
+                  <button type="button" onClick={()=>setSelectedProfileTab('china')} className={`px-3 py-1.5 text-xs font-bold rounded-md ${selectedProfileTab==='china'?'bg-[var(--primary)] text-white':'text-[var(--text-muted)]'}`}>🇨🇳 China</button>
+
                   <button
                     type="button"
                     onClick={() => setSelectedProfileTab('global')}
@@ -1960,6 +1962,18 @@ export const SettingsView: React.FC = () => {
                   </button>
                 </div>
               </div>
+
+              {selectedProfileTab === 'china' && <section className="space-y-3" aria-labelledby="china-payment-title">
+                <h3 id="china-payment-title" className="font-bold">🇨🇳 China Payment Channels · CNY / ¥</h3>
+                <p className="text-xs text-[var(--text-muted)]">Alipay, WeChat Pay, UnionPay, Chinese bank transfer and cash. Upload your actual merchant/bank QR.</p>
+                <button type="button" onClick={() => setPaymentProfile('china').catch(e=>alert(e.message))} className="px-3 py-2 rounded-lg bg-[var(--primary)] text-white">Use China Payment Profile</button>
+                {(settings.paymentSettings?.china?.methods || []).map(method => <div key={method.id} className="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-[var(--border)]">
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={method.enabled} onChange={e=>updatePaymentMethodConfig('china',method.id,{enabled:e.target.checked}).catch(error=>alert(error.message))} />{method.name}</label>
+                  <span className="flex-1 text-xs text-[var(--text-muted)]">{method.account_name || method.instructions}</span>
+                  {method.qr_code && <span className="text-xs text-emerald-500">QR configured</span>}
+                  <button type="button" onClick={()=>setEditingMethod(method)} className="px-3 py-2 rounded-lg border border-[var(--border)]">Configure / Upload QR</button>
+                </div>)}
+              </section>}
 
               {/* THAILAND PAYMENT METHODS LIST */}
               {selectedProfileTab === 'thailand' && (

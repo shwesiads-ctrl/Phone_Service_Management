@@ -434,7 +434,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ? 'thailand'
       : language === 'my'
       ? 'myanmar'
-      : 'global';
+      : language === 'zh' ? 'china' : 'global';
 
   const setPaymentProfile = async (profile: PaymentProfile) => {
     const current = settings.paymentSettings || defaultSettings.paymentSettings!;
@@ -447,16 +447,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const availablePaymentMethods: PaymentMethodConfig[] = (() => {
-    const pSettings = settings.paymentSettings || defaultSettings.paymentSettings!;
-    if (activePaymentProfile === 'thailand') {
-      return (pSettings.thailand?.methods || []).filter((m) => m.enabled);
-    } else if (activePaymentProfile === 'myanmar') {
-      return (pSettings.myanmar?.methods || []).filter((m) => m.enabled);
-    } else {
-      return (pSettings.global?.methods || []).filter((m) => m.enabled);
-    }
-  })();
+  const availablePaymentMethods: PaymentMethodConfig[] = (settings.paymentSettings || defaultSettings.paymentSettings!)[activePaymentProfile]?.methods.filter(m=>m.enabled) || [];
 
   const updatePaymentMethodConfig = async (
     profile: PaymentProfile,
@@ -464,7 +455,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     updates: Partial<PaymentMethodConfig>
   ) => {
     const current = settings.paymentSettings || defaultSettings.paymentSettings!;
-    const profileKey = profile as 'thailand' | 'myanmar' | 'global';
+    const profileKey = profile as PaymentProfile;
     const updatedMethods = (current[profileKey]?.methods || []).map((m) =>
       m.id === methodId ? { ...m, ...updates } : m
     );

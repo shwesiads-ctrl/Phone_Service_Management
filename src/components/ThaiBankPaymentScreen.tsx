@@ -100,6 +100,10 @@ export const ThaiBankPaymentScreen: React.FC<ThaiBankPaymentScreenProps> = ({
     defaultBankName = 'TrueMoney Wallet';
   }
 
+  if (methodConfig.id === 'alipay') { brandColor='#1677ff';brandHeaderBg='from-blue-500 to-blue-700';brandBadge='Alipay';brandCategory='China Wallet';defaultBankName='支付宝 / Alipay'; }
+  if (methodConfig.id === 'wechat_pay') { brandColor='#07c160';brandHeaderBg='from-emerald-500 to-green-700';brandBadge='WeChat Pay';brandCategory='China Wallet';defaultBankName='微信支付 / WeChat Pay'; }
+  if (methodConfig.id === 'unionpay') { brandColor='#d71920';brandHeaderBg='from-red-600 to-blue-800';brandBadge='UnionPay';brandCategory='China Banking';defaultBankName='银联 / UnionPay'; }
+
   // Generate QR Code data URL
   useEffect(() => {
     if (methodConfig.qr_code && /^(data:image\/(png|jpeg|webp);base64,|https?:\/\/)/i.test(methodConfig.qr_code)) {

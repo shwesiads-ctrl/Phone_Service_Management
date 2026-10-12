@@ -1,6 +1,6 @@
 
 > react-example@1.0.0 test
-> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx && node --import tsx scripts/test-cashier-recovery.ts && node --import tsx scripts/test-recovery-store.ts && node scripts/run-notification-ui.cjs scripts/test-account-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-manual-currency-ui.tsx --real-context
+> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx && node --import tsx scripts/test-cashier-recovery.ts && node --import tsx scripts/test-recovery-store.ts && node scripts/run-notification-ui.cjs scripts/test-account-ui.tsx && node scripts/run-notification-ui.cjs scripts/test-manual-currency-ui.tsx --real-context && node --import tsx scripts/test-china-profiles.ts && node scripts/run-notification-ui.cjs scripts/test-china-dashboard-ui.tsx
 
 
 > react-example@1.0.0 build
@@ -8,14 +8,14 @@
 
 vite v8.3.4 building client environment for production...
 transforming...
-✓ 1735 modules transformed.
+✓ 1739 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/index.html                   2.25 kB │ gzip:   0.94 kB
-dist/assets/index-CBSwqk0X.css   82.85 kB │ gzip:  13.00 kB
-dist/assets/index-B9Rmzn0h.js   859.95 kB │ gzip: 192.04 kB
+dist/assets/index-BXtD7nyl.css   84.64 kB │ gzip:  13.12 kB
+dist/assets/index-DUmPvWWo.js   878.06 kB │ gzip: 196.96 kB
 
-✓ built in 350ms
+✓ built in 303ms
 [plugin builtin:vite-reporter] 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
@@ -410,10 +410,60 @@ PASS: Failed password transaction leaves key file unchanged
 RECOVERY STORE SUMMARY: 12 PASSED
 PASS: Forgot Password opens, mismatch/errors handled, recovery backup auto-downloads with manual retry, admin backup requires password, rotation confirms, cashier key controls hidden, cashier add/deactivate/delete UI works, four-language labels available.
 PASS: Exactly four languages, removed-language fallback, language changes never write or change currency, user currency selection persists, Yuan formats correctly.
+PASS: Legacy data gets China payment profile
+PASS: China supports Alipay, WeChat Pay, UnionPay and bank transfer
+PASS: China channels have no invented beneficiaries
+PASS: China non-cash channels are disabled by default
+PASS: China merchant QR can be saved
+PASS: Partial China update retains other profiles
+PASS: Partial China update retains other China channels
+PASS: Invalid QR format rejected
+PASS: Invalid QR format rejected
+PASS: Invalid QR format rejected
+PASS: Oversized QR rejected
+PASS: Admin can update cashier contact and photo
+PASS: Cashier profile cannot change role or identity
+PASS: Profile update preserves cashier session
+PASS: Updated profile visible to cashier
+PASS: Non-image profile photo rejected
+PASS: Cashier cannot edit staff profiles
+PASS: Cashier cannot edit merchant QR
+PASS: Cashier can edit own profile and photo
+PASS: Own profile cannot escalate permissions
+PASS: China channel accepts manually confirmed CNY payment
+PASS: Payment stores stable trusted cashier identity
+PASS: Merchant QR persists across restart
+PASS: Profile photo persists across restart
+PASS: Stable cashier identity persists on payment
+PASS: Original source database remains unchanged
+CHINA & CASHIER PROFILE HTTP SUMMARY: 26 PASSED
+PASS: Valid PNG image accepted
+PASS: SVG, mismatched and oversized images rejected
+PASS: File upload produces portable image data
+PASS: Uploaded bank QR previews
+PASS: QR save uses uploaded image and retains channel
+PASS: Uploaded QR can be removed
+PASS: Unsupported upload shows error
+PASS: Cashier profile editor opens
+PASS: Cashier portrait previews
+PASS: Saving profile includes portrait and identity
+PASS: ID card preview includes saved cashier
+PASS: ID card is downloadable
+PASS: Generated ID card embeds portrait, staff ID and QR
+PASS: Card escapes profile markup and excludes password
+PASS: ID printing uses card dimensions and print frame
+PASS: Print frame cleans up
+PASS: Dashboard is an overview rather than Service Jobs table
+PASS: Collections separate currencies and exclude other staff/old days
+PASS: Dashboard starts new intake
+PASS: Dashboard opens distinct jobs route
+PASS: Payment queue opens selected job
+PASS: Recent collection prints its job receipt
+CHINA & DASHBOARD UI SUMMARY: 22 PASSED
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.0
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
 npm notice To update run: npm install -g npm@12.2.0
 npm notice
 
-Final validation: TypeScript PASS; desktop server bundle PASS. Counted suites: 346 passed, plus UI interaction checks.
+Final checks: 394 counted tests PASS; TypeScript PASS; production UI build PASS; desktop server bundle PASS. Native printer hardware was not exercised.

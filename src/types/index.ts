@@ -8,7 +8,7 @@ export type Currency = 'MMK' | 'USD' | 'THB' | 'CNY';
 
 export type CurrencyMode = 'manual';
 
-export type PaymentProfile = 'thailand' | 'myanmar' | 'global';
+export type PaymentProfile = 'thailand' | 'myanmar' | 'china' | 'global';
 
 export type DateFormat = 'DD-MM-YYYY' | 'DD MMM YYYY' | 'YYYY-MM-DD';
 
@@ -27,6 +27,7 @@ export type TicketPriority = 'normal' | 'urgent' | 'express';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid';
 
 export interface User {
+  address?: string;
   password?: string;
   active?: boolean;
   id: string;
@@ -124,6 +125,7 @@ export interface ServiceJob {
 }
 
 export interface ServicePayment {
+  cashier_id?: string;
   id: string; // e.g. "PAY-202610-0001"
   service_job_id: string;
   service_number?: string;
@@ -261,6 +263,7 @@ export interface PaymentProfileSettings {
   global: {
     methods: PaymentMethodConfig[];
   };
+  china: { methods: PaymentMethodConfig[]; };
 }
 
 export type LicensePlan = 'FREE' | 'PAID';

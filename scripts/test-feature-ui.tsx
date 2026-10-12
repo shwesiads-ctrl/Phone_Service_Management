@@ -29,7 +29,7 @@ import { defaultPaymentSettings, removeDemoPaymentDetails } from '../src/utils/p
   await act(async () => root.render(<CloseTest enabled={false} />));
   event = new dom.window.Event('beforeunload', { cancelable: true });
   window.dispatchEvent(event); assert.ok(!event.defaultPrevented);
-  for (const profile of ['thailand', 'myanmar', 'global'] as const) {
+  for (const profile of ['thailand', 'myanmar', 'china', 'global'] as const) {
     for (const method of defaultPaymentSettings[profile].methods) {
       assert.ok(!method.account_name && !method.account_number && !method.bank_name);
       assert.equal(method.enabled, method.id === 'cash');

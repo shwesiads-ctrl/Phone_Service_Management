@@ -1,3 +1,4 @@
+import { CashierDashboardView } from './views/CashierDashboardView';
 import { CashierAccountsView } from './views/CashierAccountsView';
 import { CashierJobModal } from './modals/CashierJobModal';
 import { useCloseConfirmation } from './hooks/useCloseConfirmation';
@@ -59,7 +60,7 @@ const AuthenticatedLayout: React.FC = () => {
     if (role === 'cashier') {
       if (activeTab === 'about') return <AboutView />;
       if (!['dashboard','service'].includes(activeTab)) return <div className="p-6">Cashier access: intake, payments and receipts.</div>;
-      return <div className="space-y-4"><h1 className="text-2xl font-bold">Cashier · Service Intake & Payments</h1><ServiceView onOpenJob={handleOpenJob} onNewJob={() => setNewJobModalOpen(true)} onPrintReceipt={handlePrintReceipt} /></div>;
+      return activeTab === 'dashboard' ? <CashierDashboardView onNewJob={() => setNewJobModalOpen(true)} onOpenJob={handleOpenJob} onPrintReceipt={handlePrintReceipt} /> : <ServiceView onOpenJob={handleOpenJob} onNewJob={() => setNewJobModalOpen(true)} onPrintReceipt={handlePrintReceipt} />;
     }
     // 1. Explicit Route Checks
     if (currentPath === '/admin/dashboard') {

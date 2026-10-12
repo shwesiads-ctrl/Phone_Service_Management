@@ -116,6 +116,15 @@ export const defaultPaymentSettings: PaymentProfileSettings = {
       },
     ],
   },
+  china: {
+    methods: [
+      { id: 'cash', name: 'Cash / 现金', enabled: true, instructions: 'Cash payment at the counter.' },
+      { id: 'alipay', name: 'Alipay / 支付宝', enabled: false, instructions: 'Configure your verified Alipay account and merchant-issued QR.' },
+      { id: 'wechat_pay', name: 'WeChat Pay / 微信支付', enabled: false, instructions: 'Configure your verified WeChat Pay account and merchant-issued QR.' },
+      { id: 'unionpay', name: 'UnionPay / 银联', enabled: false, instructions: 'Configure your verified UnionPay merchant account and bank-issued QR.' },
+      { id: 'bank_transfer', name: 'Bank Transfer / 银行转账', enabled: false, instructions: 'Configure your verified Chinese bank account.' },
+    ],
+  },
   global: {
     methods: [
       {

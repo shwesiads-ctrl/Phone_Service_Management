@@ -1,3 +1,5 @@
+import { readUploadedImage } from '../utils/imageUpload';
+import { CashierCardModal } from '../components/CashierCardModal';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { X, Shield, Wrench, User as UserIcon, Mail, Phone, Calendar, Edit3, Camera, Save } from 'lucide-react';
@@ -10,6 +12,7 @@ interface ProfileModalProps {
 export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose, onChangePasswordClick }) => {
   const { currentUser, role, setCurrentUser, getAuthHeaders } = useApp();
 
+  const [cardOpen, setCardOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState(currentUser?.full_name || '');
   const [username, setUsername] = useState(currentUser?.username || '');
@@ -19,19 +22,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose, onChangePas
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Photo must be smaller than 2MB.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setProfilePhoto(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file=e.target.files?.[0];if(!file)return;
+    setError(null);setLoading(true);
+    try{setProfilePhoto(await readUploadedImage(file));}catch(error:any){setError(error.message);}finally{setLoading(false);}
+    e.target.value='';
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -70,6 +65,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose, onChangePas
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+      {currentUser.role === 'cashier' && <button type="button" onClick={()=>setCardOpen(true)} className="fixed bottom-6 right-6 z-[70] px-4 py-2 rounded-lg bg-blue-600 text-white">My ID Card</button>}
+      {cardOpen && <CashierCardModal user={currentUser} onClose={()=>setCardOpen(false)}/>}
       <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-2)]/60">
@@ -184,7 +181,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose, onChangePas
                   )}
                   <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer text-white">
                     <Camera className="w-5 h-5" />
-                    <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                    <input type="file" accept="image/png,image/jpeg,image/webp" onChange={handlePhotoUpload} className="hidden" />
                   </label>
                 </div>
                 <span className="text-[11px] text-[var(--text-muted)]">Click avatar to upload profile photo</span>

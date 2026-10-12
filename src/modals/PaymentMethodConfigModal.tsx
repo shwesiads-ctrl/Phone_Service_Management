@@ -1,3 +1,4 @@
+import { readUploadedImage, imageValidationError } from '../utils/imageUpload';
 import React, { useState } from 'react';
 import { X, Save, Shield, QrCode as QrIcon, Check, Landmark } from 'lucide-react';
 import { PaymentMethodConfig, PaymentProfile } from '../types';
@@ -26,12 +27,16 @@ export const PaymentMethodConfigModal: React.FC<PaymentMethodConfigModalProps> =
   const [accountNumber, setAccountNumber] = useState(method.account_number || '');
   const [instructions, setInstructions] = useState(method.instructions || '');
   const [qrCode, setQrCode] = useState(method.qr_code || '');
+  const [uploading,setUploading]=useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (uploading) return;
     setSaveError('');
+    const invalid = imageValidationError(qrCode.trim());
+    if (invalid) { setSaveError(invalid); return; }
     setSaving(true);
     try {
       await onSave({
@@ -119,7 +124,7 @@ export const PaymentMethodConfigModal: React.FC<PaymentMethodConfigModalProps> =
 
             <div>
               <label className="block text-xs font-semibold text-[var(--text)] mb-1">
-                Display Title (TH)
+                Display Title ({profile === 'china' ? 'CN' : profile === 'myanmar' ? 'MY' : 'TH'})
               </label>
               <input
                 type="text"
@@ -139,7 +144,7 @@ export const PaymentMethodConfigModal: React.FC<PaymentMethodConfigModalProps> =
               type="text"
               value={bankName}
               onChange={(e) => setBankName(e.target.value)}
-              placeholder="e.g. Kasikornbank (KBank) / Siam Commercial Bank (SCB)"
+              placeholder={profile === 'china' ? 'e.g. Alipay / WeChat Pay / ICBC' : 'Bank or wallet provider'}
               className="w-full px-3 py-2 text-xs bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)]"
             />
           </div>
@@ -148,7 +153,7 @@ export const PaymentMethodConfigModal: React.FC<PaymentMethodConfigModalProps> =
             {/* Account Name */}
             <div>
               <label className="block text-xs font-semibold text-[var(--text)] mb-1">
-                {t('accountName')} (บัญชีผู้รับ / ชื่อบัญชี)
+                {t('accountName')} {profile === 'china' ? '(收款人姓名)' : profile === 'thailand' ? '(บัญชีผู้รับ / ชื่อบัญชี)' : ''}
               </label>
               <input
                 type="text"
@@ -162,7 +167,7 @@ export const PaymentMethodConfigModal: React.FC<PaymentMethodConfigModalProps> =
             {/* Account Number */}
             <div>
               <label className="block text-xs font-semibold text-[var(--text)] mb-1">
-                {t('accountNumber')} (เลขที่บัญชี)
+                {t('accountNumber')} {profile === 'china' ? '(收款账号)' : profile === 'thailand' ? '(เลขที่บัญชี)' : ''}
               </label>
               <input
                 type="text"
@@ -200,6 +205,11 @@ export const PaymentMethodConfigModal: React.FC<PaymentMethodConfigModalProps> =
               placeholder="Bank-issued QR image URL or data:image/png;base64,..."
               className="w-full px-3 py-2 text-xs bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] font-mono text-[11px]"
             />
+            <label className="block text-xs font-semibold mt-3">Upload Payment QR Image
+              <input type="file" accept="image/png,image/jpeg,image/webp" disabled={saving || uploading} onChange={async e=>{const file=e.target.files?.[0];if(!file)return;setSaveError('');setUploading(true);try{setQrCode(await readUploadedImage(file));}catch(error:any){setSaveError(error.message);}finally{setUploading(false);}e.target.value='';}} className="block w-full mt-2" />
+            </label>
+            <p className="text-xs text-[var(--text-muted)]">PNG, JPEG or WebP · maximum 2 MB</p>
+            {qrCode && !imageValidationError(qrCode) && <div className="mt-3 space-y-2"><img src={qrCode} alt="Payment QR preview" className="w-40 h-40 object-contain rounded-lg bg-white p-2" /><button type="button" onClick={()=>setQrCode('')} className="text-xs text-rose-500">Remove QR Image</button></div>}
             <p className="text-[10px] text-[var(--text-muted)] mt-1">
               Use the QR image issued by your bank or wallet. Check the recipient and amount in the banking app before confirming payment.
             </p>
@@ -217,7 +227,7 @@ export const PaymentMethodConfigModal: React.FC<PaymentMethodConfigModalProps> =
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || uploading}
               className="px-5 py-2 text-xs font-bold text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-lg shadow-sm cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
