@@ -12,6 +12,7 @@ const sourcePath = resolve('data/db.json');
 const original = readFileSync(sourcePath);
 const fixture = JSON.parse(original.toString());
 fixture.settings.telegramBot = { ...fixture.settings.telegramBot, enabled: false, bot_token: '' };
+fixture.users.push({id:'USR-CASH-legacy-4921fa32',username:'legacy_cashier',full_name:'Legacy Counter',role:'cashier',active:true,created_at:'2026-10-01'});
 const directory = mkdtempSync(join(tmpdir(), 'fixflow-test-'));
 const dbPath = join(directory, 'db.json');
 writeFileSync(dbPath, JSON.stringify(fixture));
@@ -69,11 +70,14 @@ try {
   for(const qr of ['data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=','data:image/png;base64,aGVsbG8=','javascript:alert(1)'])check('Invalid QR format rejected',(await api('/api/settings','PUT',{paymentSettings:{china:{methods:[{id:'alipay',qr_code:qr}]}}},admin)).status===400);
   const big='data:image/png;base64,'+'A'.repeat(3*1024*1024);
   check('Oversized QR rejected',(await api('/api/settings','PUT',{paymentSettings:{china:{methods:[{id:'alipay',qr_code:big}]}}},admin)).status===400);
+  const legacy=(await api('/api/cashiers','GET',undefined,admin)).data.find((u:any)=>u.username==='legacy_cashier');
+  check('Existing long cashier ID migrates to a short display code',legacy.id==='USR-CASH-legacy-4921fa32' && /^CASH-\d{4,}$/.test(legacy.staff_code));
   const cashier=(await api('/api/cashiers','POST',{username:'profile_cashier',full_name:'Cashier Original',password:'CashierPassword123!'},admin)).data;
   let token=(await api('/api/auth/login','POST',{username:cashier.username,password:'CashierPassword123!'})).data.token;
-  const profile=await api(`/api/cashiers/${cashier.id}`,'PUT',{full_name:'Cashier Portrait',phone:'090001',email:'cashier@example.test',address:'Front desk',profile_photo:image,role:'admin',id:'FORGED'},admin);
+  const profile=await api(`/api/cashiers/${cashier.id}`,'PUT',{full_name:'Cashier Portrait',phone:'090001',email:'cashier@example.test',address:'Front desk',profile_photo:image,role:'admin',id:'FORGED',staff_code:'CASH-9999'},admin);
   check('Admin can update cashier contact and photo',profile.status===200&&profile.data.profile_photo===image&&profile.data.email==='cashier@example.test');
   check('Cashier profile cannot change role or identity',profile.data.role==='cashier'&&profile.data.id===cashier.id);
+  check('Profile update cannot replace short staff code',profile.data.staff_code===cashier.staff_code);
   check('Profile update preserves cashier session',(await api('/api/auth/me','GET',undefined,token)).status===200);
   check('Updated profile visible to cashier',(await api('/api/auth/me','GET',undefined,token)).data.user.full_name==='Cashier Portrait');
   check('Non-image profile photo rejected',(await api(`/api/cashiers/${cashier.id}`,'PUT',{profile_photo:'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4='},admin)).status===400);
@@ -93,6 +97,8 @@ try {
   check('Merchant QR persists across restart',(await api('/api/settings','GET',undefined,admin)).data.paymentSettings.china.methods.find((m:any)=>m.id==='alipay').qr_code===image);
   check('Profile photo persists across restart',(await api('/api/auth/me','GET',undefined,token)).data.user.profile_photo===image);
   check('Stable cashier identity persists on payment',(await api('/api/payments','GET',undefined,token)).data.some((p:any)=>p.id===payment.data.id&&p.cashier_id===cashier.id));
+  check('Short staff code persists after restart',(await api('/api/auth/me','GET',undefined,token)).data.user.staff_code===cashier.staff_code);
+  check('Migrated legacy display code remains stable',(await api('/api/cashiers','GET',undefined,admin)).data.find((u:any)=>u.id===legacy.id).staff_code===legacy.staff_code);
   check('Original source database remains unchanged',readFileSync(sourcePath).equals(original));
   console.log(`CHINA & CASHIER PROFILE HTTP SUMMARY: ${passed} PASSED`);
 } finally {await stop();rmSync(directory,{recursive:true,force:true});}

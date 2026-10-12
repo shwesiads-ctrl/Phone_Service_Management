@@ -174,13 +174,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Zone 2: Global Search Bar */}
-      <div className="flex-1 max-w-md hidden md:block">
+      <div className="flex-1 min-w-0 max-w-md">
         <div className="relative">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => { setSearchQuery(e.target.value); if (e.target.value.trim() && activeTab !== 'service') navigate('/service'); }}
+            aria-label="Search all service jobs"
+            onKeyDown={e => { if (e.key === 'Enter') navigate('/service'); if (e.key === 'Escape') setSearchQuery(''); }}
             placeholder={t('searchPlaceholder')}
             className="w-full pl-9 pr-4 py-1.5 text-xs sm:text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
           />

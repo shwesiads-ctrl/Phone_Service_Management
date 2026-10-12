@@ -20,7 +20,7 @@ Open http://localhost:3000. Other devices on the same LAN use the host computer'
 
 For development, use `npm run dev`. Use `PORT` to override port 3000. PHP forwarding inherits `PORT` when started by the Node server.
 
-Existing accounts and passwords are preserved. Accounts without a saved custom password still use the existing defaults: `admin` / `admin123`, or a technician username / `tech123`. The `tech1` alias resolves to `kyawzin`. After installing this revision, sign in again: old user-ID-based sessions are no longer accepted. Sessions expire after 12 hours and on server restart.
+Existing accounts and passwords are preserved. Default credential hints have been removed from the interface and public API. After installing this revision, sign in again: old user-ID-based sessions are no longer accepted. Sessions expire after 12 hours and on server restart.
 
 ## Verify
 
@@ -49,9 +49,9 @@ The supplied database already contains repeated technician usernames from earlie
 
 ## Account, demo and close controls
 
-Default login hints are obtained from the server. An account's hint disappears once its password is changed or reset, including on other LAN clients and after server restart. No custom passwords are returned by the hint endpoint.
+Default password information is removed from Login, Settings and registration hints. The compatibility endpoint returns an empty list; existing account passwords are preserved.
 
-In **Technician Management**, administrators can use **Add Demo User** to create `demo_tech` (initial password `tech123`). Repeated adds reuse the same demo account. **Delete Demo Users** asks for confirmation and deletes only accounts created with the demo marker; regular users, customers and financial records are retained. Reassign any repair jobs belonging to demo accounts before deleting them. Existing sample technicians are treated as regular accounts to avoid accidental deletion.
+In **Technician Management**, administrators can use **Add Demo User** to create `demo_tech`. Repeated adds reuse the same demo account. **Delete Demo Users** asks for confirmation and deletes only accounts created with the demo marker; regular users, customers and financial records are retained. Reassign any repair jobs belonging to demo accounts before deleting them. Existing sample technicians are treated as regular accounts to avoid accidental deletion.
 
 The desktop app asks before closing; Cancel is the default. Signed-in browser sessions request the browser's standard leave-page confirmation, which can also appear on refresh/navigation. Browsers control its wording and may suppress it before the user interacts with the page.
 
@@ -98,3 +98,17 @@ In **Cashier Accounts**, choose **Edit Profile** to save name, phone, email, add
 Repair history, income/expenses, customers, devices, technicians, and workload/payment/audit reports now use numbered pages. The default is 20 records per page; choose 50 or 100, use previous/next, or jump directly to a page. Search and filter changes return to page 1. Row numbers continue across pages, and deleted records automatically clamp the current page. Customer/technician select-all applies to the current page; previously selected records remain selected and the bulk-action count includes them.
 
 Financial totals continue to use every matching record. Printing includes all matching records and restores the selected page afterward. About describes the current roles, payment channels, language/currency settings, backups, password recovery and workshop contact details.
+
+### Cashier search, receipts and workshop identity
+
+The header search now opens Service Jobs and shares its search query with the jobs list. Search matches service number, customer name/phone, device and IMEI; surrounding whitespace is ignored. Cashier Service Jobs use the same numbered pagination as other lists.
+
+Receipts show the recorded payment receiver for each payment and the staff member who accepted intake. Intake deposits now record the actual cashier identity instead of a fixed administrator name. Save JPEG downloads a high-resolution `.jpg` of the complete A4 or 80mm receipt. Printing uses a separate receipt document, with shop branding/contact details and recorded totals. Deleted payments are omitted.
+
+Shop Settings now opens first, validates contact/tax/logo fields, previews the receipt/card contact details, and reports save success or failure. Logo uploads accept PNG, JPEG and WebP up to 2 MB. LAN clients refresh workshop settings every 30 seconds while visible and when refocused. Unsaved shop edits are preserved.
+
+Cashier accounts receive intake/status notifications and their own payment notifications. Other cashiers receive intake/status notices but not another cashier's payment notification. Inactive cashiers receive no new events; read/dismiss operations remain recipient-specific.
+
+Existing cashier accounts automatically receive a persistent short display code such as `CASH-0001`. Profile, account list and ID cards show this code; internal record IDs and QR identifiers retain their original values. Cards now show workshop name, phone, email and address.
+
+`npm run test:cashier:browser` runs real headless Chromium checks using fixture data, including actual JPEG downloads and image dimensions. Set `CHROMIUM_PATH` if Chromium is not located at `/usr/bin/chromium`. The standard `npm test` suite uses isolated HTTP/component fixtures and does not require Chromium.

@@ -143,7 +143,7 @@ export const TechniciansView: React.FC = () => {
     setEditingTech(null);
     setFullName('');
     setUsername('');
-    setPassword('tech123');
+    setPassword('');
     setPhone('');
     setEmail('');
     setAddress('');

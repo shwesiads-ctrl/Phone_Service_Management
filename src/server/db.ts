@@ -776,6 +776,7 @@ class Database {
   constructor() {
     this.ensureDirectory();
     this.data = this.loadDatabase();
+    if (this.ensureCashierCodes()) this.saveDatabase();
   }
 
   private ensureDirectory() {
@@ -908,6 +909,10 @@ class Database {
     return this.data.users.filter(user => user.role === 'admin').map(user => user.id);
   }
 
+  private cashierRecipients(): string[] {
+    return this.data.users.filter(user => user.role === 'cashier' && user.active !== false).map(user => user.id);
+  }
+
   private technicianRecipients(technicianId: string): string[] {
     return this.data.users.filter(user => user.role === 'technician' && user.technician_id === technicianId).map(user => user.id);
   }
@@ -1035,8 +1040,30 @@ class Database {
     return this.data.users;
   }
 
+  private nextCashierCode(): string {
+    this.data.id_counters ??= {};
+    const maximum = this.data.users.reduce((value, user) => {
+      const number = typeof user.staff_code === 'string' ? Number(user.staff_code.match(/^CASH-(\d+)$/)?.[1] || 0) : 0;
+      return Math.max(value, Number.isSafeInteger(number) ? number : 0);
+    }, this.data.id_counters.cashier_codes || 0);
+    this.data.id_counters.cashier_codes = maximum + 1;
+    return `CASH-${String(maximum + 1).padStart(4, '0')}`;
+  }
+  private ensureCashierCodes(): boolean {
+    const seen = new Set<string>();
+    let changed = false;
+    for (const user of this.data.users) {
+      if (user.role !== 'cashier') continue;
+      if (typeof user.staff_code !== 'string' || !/^CASH-\d{4,}$/.test(user.staff_code) || !Number.isSafeInteger(Number(user.staff_code.slice(5))) || seen.has(user.staff_code)) {
+        user.staff_code = this.nextCashierCode(); changed = true;
+      }
+      seen.add(user.staff_code!);
+    }
+    return changed;
+  }
+
   public createCashier(input: { username: string; full_name: string; password: string }): User {
-    const user: User = { id: `USR-CASH-${randomUUID()}`, username: input.username, full_name: input.full_name, password: input.password, role: 'cashier', active: true, created_at: new Date().toISOString() };
+    const user: User = { staff_code: this.nextCashierCode(), id: `USR-CASH-${randomUUID()}`, username: input.username, full_name: input.full_name, password: input.password, role: 'cashier', active: true, created_at: new Date().toISOString() };
     this.data.users.push(user); this.saveDatabase(); return user;
   }
   public updateCashier(id: string, updates: Partial<User>): User | null {
@@ -1177,7 +1204,9 @@ class Database {
         amount: newJob.amount_paid,
         currency_code: newJob.currency_code || this.data.settings.currency || 'MMK',
         paid_at: new Date().toISOString(),
-        received_by: 'Admin',
+        received_by: newJob.intake_received_by || 'Admin',
+        created_by: newJob.intake_username,
+        cashier_id: newJob.intake_cashier_id,
         notes: 'Initial intake advance deposit',
       });
     }
@@ -1193,10 +1222,10 @@ class Database {
       });
     }
 
-    this.addNotification('new_job', newJob, this.adminRecipients());
+    this.addNotification('new_job', newJob, [...this.adminRecipients(), ...this.cashierRecipients()]);
     this.addNotification('assigned_job', newJob, this.technicianRecipients(newJob.technician_id));
     if (newJob.amount_paid > 0) {
-      this.addNotification('payment_received', newJob, this.adminRecipients(), {
+      this.addNotification('payment_received', newJob, [...this.adminRecipients(), ...(newJob.intake_cashier_id ? [newJob.intake_cashier_id] : [])], {
         amount: newJob.amount_paid, currency_code: newJob.currency_code || this.data.settings.currency,
       });
     }
@@ -1245,7 +1274,7 @@ class Database {
     }
     if (updatedJob.status_id !== previousJob.status_id) {
       this.addNotification('status_change', updatedJob,
-        [...this.adminRecipients(), ...this.technicianRecipients(updatedJob.technician_id)],
+        [...this.adminRecipients(), ...this.technicianRecipients(updatedJob.technician_id), ...this.cashierRecipients()],
         { status_id: updatedJob.status_id, previous_status: previousJob.status_id });
     }
     this.saveDatabase();
@@ -1355,7 +1384,7 @@ class Database {
     // Recalculate parent service job payments
     this.recalcJobPayments(payment.service_job_id);
     const notificationJob = this.data.service_jobs.find(job => job.id === payment.service_job_id);
-    if (notificationJob) this.addNotification('payment_received', notificationJob, this.adminRecipients(), {
+    if (notificationJob) this.addNotification('payment_received', notificationJob, [...this.adminRecipients(), ...(newPayment.cashier_id ? [newPayment.cashier_id] : [])], {
       amount: newPayment.amount, currency_code: newPayment.currency_code,
     });
 
@@ -1719,6 +1748,7 @@ class Database {
         settings: backupData.settings || initialSeed.settings,
       };
 
+      this.ensureCashierCodes();
       this.saveDatabase();
       return { success: true };
     } catch (err: any) {

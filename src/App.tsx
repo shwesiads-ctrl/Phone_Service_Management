@@ -209,7 +209,7 @@ const AuthenticatedLayout: React.FC = () => {
 
       {printJob && (
         <PrintTicketModal
-          job={printJob}
+          job={jobs.find(job => job.id === printJob.id) || printJob}
           onClose={() => setPrintJob(null)}
         />
       )}

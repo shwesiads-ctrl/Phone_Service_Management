@@ -55,7 +55,7 @@ async function stop() {
 }
 try {
   await start();
-  check('Default hints available before login', (await api('/api/auth/default-credentials')).data.credentials.some((c: any) => c.username === 'admin'));
+  check('Public API never exposes default passwords', (await api('/api/auth/default-credentials')).data.credentials.length === 0);
   const admin = (await api('/api/auth/login', 'POST', { username: 'admin', password: 'admin123' })).data.token;
   const tech = (await api('/api/auth/login', 'POST', { username: 'kyawzin', password: 'tech123' })).data.token;
   check('Unauthenticated demo creation blocked', (await api('/api/demo-users', 'POST')).status === 401);
@@ -66,7 +66,7 @@ try {
   check('Admin can add marked demo user', demo.status === 201 && demo.data.is_demo && demo.data.username === 'demo_tech');
   check('Repeated add returns same demo account', (await api('/api/demo-users', 'POST', {}, admin)).data.id === demo.data.id);
   const demoLogin = await api('/api/auth/login', 'POST', { username: 'demo_tech', password: 'tech123' });
-  check('Demo user can sign in with displayed default', demoLogin.status === 200);
+  check('Demo account authentication still works', demoLogin.status === 200);
   const file = JSON.parse(readFileSync(dbPath, 'utf8'));
   file.service_jobs[0].technician_id = demo.data.id;
   writeFileSync(dbPath, JSON.stringify(file));
@@ -86,7 +86,7 @@ try {
   check('Deleted demo session cannot authenticate', (await api('/api/auth/me', 'GET', undefined, demoToken)).status === 401);
   check('Changing admin password succeeds', (await api('/api/auth/change-password', 'POST', { current_password: 'admin123', new_password: 'NewSecret123!' }, adminSession)).status === 200);
   check('Admin hint disappears immediately', !(await api('/api/auth/default-credentials')).data.credentials.some((c: any) => c.username === 'admin'));
-  check('Unchanged technician hint stays visible', (await api('/api/auth/default-credentials')).data.credentials.some((c: any) => c.username === 'kyawzin'));
+  check('Unchanged accounts do not expose credential hints', (await api('/api/auth/default-credentials')).data.credentials.length === 0);
   const technician = fixture.users.find((u: any) => u.username === 'kyawzin');
   check('Admin password reset succeeds', (await api(`/api/technicians/${technician.technician_id}/password`, 'PUT', { new_password: 'NewTechSecret123!' }, adminSession)).status === 200);
   check('Technician hint disappears after reset', !(await api('/api/auth/default-credentials')).data.credentials.some((c: any) => c.username === 'kyawzin'));

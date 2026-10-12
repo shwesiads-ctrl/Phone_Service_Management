@@ -1,3 +1,4 @@
+import { staffCode } from './staffCode';
 import QRCode from 'qrcode';
 import type { User, SettingsState } from '../types';
 import { imageValidationError } from './imageUpload';
@@ -22,10 +23,14 @@ export async function generateCashierCard(user: User, settings: SettingsState): 
   <text x="242" y="260" font-size="18" fill="#475569">@${escape(user.username)}</text>
   <text x="242" y="296" font-size="16" fill="#475569">Phone: ${escape(trim(user.phone || '—',35))}</text>
   <text x="242" y="329" font-size="15" fill="#475569">${escape(trim(user.email || '',42))}</text>
-  <text x="242" y="366" font-size="12" fill="#64748b">Staff ID: ${escape(user.id)}</text>
+  <text x="242" y="366" font-size="12" fill="#64748b">Staff ID: ${escape(staffCode(user))}</text>
   <text x="242" y="397" font-size="13" fill="#64748b">Issued: ${escape(new Date().toLocaleDateString())}</text>
   <image href="${qr}" x="665" y="343" width="140" height="140"/>
-  <rect y="488" width="856" height="52" fill="#14213b"/><text x="36" y="520" font-size="14" fill="#cbd5e1">${escape(trim(settings.phone || 'FixFlow',38))}</text>
+  <text x="36" y="389" font-size="12" fill="#64748b">WORKSHOP CONTACT</text>
+  <text x="36" y="414" font-size="13" fill="#475569">${escape(trim(settings.phone || '—',30))}</text>
+  <text x="36" y="439" font-size="12" fill="#475569"${Array.from(settings.email || '').length>43?' textLength="590" lengthAdjust="spacingAndGlyphs"':''}>${escape(trim(settings.email || '',75))}</text>
+  <rect y="488" width="856" height="52" fill="#14213b"/>
+  <text x="36" y="518" font-size="12" fill="#cbd5e1"${Array.from(settings.address || '').length>70?' textLength="660" lengthAdjust="spacingAndGlyphs"':''}>${escape(trim(settings.address || 'Workshop address not configured',100))}</text>
   <text x="810" y="520" text-anchor="end" font-size="15" font-weight="bold" fill="${active?'#34d399':'#fda4af'}">${active?'ACTIVE':'INACTIVE'}</text></g></svg>`;
 }
 export function downloadCashierCard(svg: string, username: string) {

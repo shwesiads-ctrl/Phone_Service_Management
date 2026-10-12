@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { JSDOM } from 'jsdom';
 import assert from 'node:assert/strict';
 import { TechniciansView } from '../src/views/TechniciansView';
-import { DefaultCredentialHints } from '../src/components/DefaultCredentialHints';
+import { LoginView } from '../src/components/LoginView';
 import { useCloseConfirmation } from '../src/hooks/useCloseConfirmation';
 import { defaultPaymentSettings, removeDemoPaymentDetails } from '../src/utils/paymentDefaults';
 (async () => {
@@ -11,16 +11,9 @@ import { defaultPaymentSettings, removeDemoPaymentDetails } from '../src/utils/p
   Object.defineProperty(globalThis, 'navigator', { value: dom.window.navigator, configurable: true });
   const { createRoot } = require('react-dom/client');
   const root = createRoot(document.getElementById('root')!);
-  let hints = [{ username: 'admin', password: 'admin123' }, { username: 'kyawzin', password: 'tech123' }];
-  globalThis.fetch = async () => new Response(JSON.stringify({ credentials: hints }));
-  await act(async () => root.render(<DefaultCredentialHints />));
-  assert.ok(document.body.textContent?.includes('admin123'));
-  hints = hints.filter(h => h.username !== 'admin');
-  await act(async () => window.dispatchEvent(new dom.window.Event('fixflow-password-changed')));
-  assert.ok(!document.body.textContent?.includes('admin123'));
-  assert.ok(document.body.textContent?.includes('tech123'));
-  hints = [];
-  await act(async () => window.dispatchEvent(new dom.window.Event('focus')));
+  (globalThis as any).__testApp = {language:'en',t:(key:string)=>key,login:async()=>false};
+  await act(async () => root.render(<LoginView />));
+  assert.ok(!document.body.textContent?.includes('admin123') && !document.body.textContent?.includes('tech123'));
   assert.ok(!document.querySelector('[aria-label="Default login credentials"]'));
   function CloseTest({ enabled }: { enabled: boolean }) { useCloseConfirmation(enabled); return null; }
   await act(async () => root.render(<CloseTest enabled={true} />));

@@ -1,5 +1,5 @@
+import { ShopSettings } from '../components/ShopSettings';
 import { RecoveryKeySettings } from '../components/RecoveryKeySettings';
-import { DefaultCredentialHints } from '../components/DefaultCredentialHints';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Currency, DateFormat, Language, Theme, PaymentMethodConfig, PaymentProfile } from '../types';
@@ -98,7 +98,7 @@ export const SettingsView: React.FC = () => {
     deleteTechnician,
   } = useApp();
 
-  const [activeSection, setActiveSection] = useState<string>('telegram');
+  const [activeSection, setActiveSection] = useState<string>('general');
   const [saveToast, setSaveToast] = useState(false);
 
   // License State and Feedback
@@ -355,18 +355,14 @@ export const SettingsView: React.FC = () => {
   const [previewMethod, setPreviewMethod] = useState<PaymentMethodConfig | null>(null);
 
   // Form states initialized from settings
-  const [shopName, setShopName] = useState(settings.shopName);
-  const [phone, setPhone] = useState(settings.phone);
-  const [email, setEmail] = useState(settings.email);
-  const [address, setAddress] = useState(settings.address);
   const [receiptFooterNote, setReceiptFooterNote] = useState(settings.receiptFooterNote);
   const [defaultWarrantyDays, setDefaultWarrantyDays] = useState(settings.defaultWarrantyDays);
   const [dateFormat, setDateFormat] = useState<DateFormat>(settings.dateFormat);
   const [paperSize, setPaperSize] = useState<'A4' | '80mm'>(settings.paperSize);
-  const [shopLogo, setShopLogo] = useState(settings.shopLogo || '');
-  const [taxPercentage, setTaxPercentage] = useState(settings.taxPercentage || 7);
-  const [taxEnabled, setTaxEnabled] = useState(settings.taxEnabled ?? true);
-  const [taxId, setTaxId] = useState(settings.taxId || 'TAX-9982710');
+  useEffect(() => {
+    setDefaultWarrantyDays(settings.defaultWarrantyDays); setDateFormat(settings.dateFormat);
+    setPaperSize(settings.paperSize); setReceiptFooterNote(settings.receiptFooterNote);
+  }, [settings.defaultWarrantyDays, settings.dateFormat, settings.paperSize, settings.receiptFooterNote]);
 
   const [techModalOpen, setTechModalOpen] = useState(false);
   const [newTechFullName, setNewTechFullName] = useState('');
@@ -386,21 +382,6 @@ export const SettingsView: React.FC = () => {
       const reader = new FileReader();
       reader.onload = (event) => {
         setNewTechPhoto(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Logo image must be smaller than 2MB.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setShopLogo(event.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -442,20 +423,9 @@ export const SettingsView: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-    await updateSettings({
-      shopName,
-      phone,
-      email,
-      address,
-      receiptFooterNote,
-      defaultWarrantyDays: Number(defaultWarrantyDays),
-      dateFormat,
-      paperSize,
-      shopLogo,
-      taxPercentage: Number(taxPercentage),
-      taxEnabled,
-      taxId,
-    });
+    await updateSettings(activeSection === 'service' ? {
+      defaultWarrantyDays: Number(defaultWarrantyDays), dateFormat,
+    } : { paperSize, receiptFooterNote });
     setSaveToast(true);
     setTimeout(() => setSaveToast(false), 2500);
     } catch (err: any) {
@@ -992,7 +962,6 @@ export const SettingsView: React.FC = () => {
                       Runs the main FixFlow application and database. Used for full admin management, financial reports, settings, and printer integration.
                     </p>
                     <div className="text-[11px] font-mono text-[var(--text)] font-semibold">
-                      <DefaultCredentialHints username="admin" />
                     </div>
                   </div>
 
@@ -1005,7 +974,6 @@ export const SettingsView: React.FC = () => {
                       Placed at repair desks. Technicians log into their individual account to view assigned jobs, update diagnoses, record parts used, and mark repairs ready.
                     </p>
                     <div className="text-[11px] font-mono text-[var(--text)] font-semibold">
-                      <DefaultCredentialHints username="kyawzin" />
                     </div>
                   </div>
 
@@ -1431,159 +1399,7 @@ export const SettingsView: React.FC = () => {
           )}
 
           {/* 1. GENERAL */}
-          {activeSection === 'general' && (
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="border-b border-[var(--border)] pb-3 mb-4">
-                <h2 className="text-base font-bold text-[var(--text)]">
-                  {t('settings_general')} Settings
-                </h2>
-                <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                  Workshop company info printed on job sheets and invoices
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[var(--text)] mb-1">
-                    {t('shopName')} *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={shopName}
-                    onChange={(e) => setShopName(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[var(--text)] mb-1">
-                    {t('shopPhone')} *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[var(--text)] mb-1">
-                  {t('shopEmail')}
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[var(--text)] mb-1">
-                  {t('shopAddress')}
-                </label>
-                <textarea
-                  rows={2}
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[var(--text)] mb-1">
-                  Workshop Logo (Branding)
-                </label>
-                <div className="flex items-center gap-4">
-                  {shopLogo ? (
-                    <div className="relative w-16 h-16 rounded-xl border border-[var(--border)] overflow-hidden bg-[var(--surface-2)] flex items-center justify-center">
-                      <img src={shopLogo} alt="Shop Logo" className="w-full h-full object-contain" />
-                    </div>
-                  ) : (
-                    <div className="w-16 h-16 rounded-xl border border-dashed border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] text-xs">
-                      No Logo
-                    </div>
-                  )}
-                  <div className="space-y-1.5">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="block w-full text-xs text-[var(--text-muted)] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[var(--primary)] file:text-white hover:file:bg-[var(--primary-hover)] cursor-pointer"
-                    />
-                    {shopLogo && (
-                      <button
-                        type="button"
-                        onClick={() => setShopLogo('')}
-                        className="text-xs text-rose-600 hover:underline cursor-pointer"
-                      >
-                        Remove Logo
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-[var(--text)] block">Tax / VAT Configuration</span>
-                    <span className="text-[11px] text-[var(--text-muted)]">Calculate and apply tax on repair invoices and service receipts</span>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={taxEnabled}
-                      onChange={(e) => setTaxEnabled(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--primary)]"></div>
-                  </label>
-                </div>
-
-                {taxEnabled && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[var(--border)]">
-                    <div>
-                      <label className="block text-xs font-semibold text-[var(--text)] mb-1">Tax Rate Percentage (%)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="100"
-                        value={taxPercentage}
-                        onChange={(e) => setTaxPercentage(Number(e.target.value))}
-                        className="w-full px-3 py-2 text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] font-mono"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-[var(--text)] mb-1">Tax ID / VAT Number</label>
-                      <input
-                        type="text"
-                        value={taxId}
-                        onChange={(e) => setTaxId(e.target.value)}
-                        placeholder="e.g. TAX-9982710"
-                        className="w-full px-3 py-2 text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] font-mono"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="pt-3 border-t border-[var(--border)] flex justify-end">
-                <button
-                  type="submit"
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-lg shadow-sm cursor-pointer"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>{t('save')}</span>
-                </button>
-              </div>
-            </form>
-          )}
+          {activeSection === 'general' && <ShopSettings />}
 
           {/* 2. SERVICE */}
           {activeSection === 'service' && (

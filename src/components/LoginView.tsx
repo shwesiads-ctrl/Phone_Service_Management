@@ -1,6 +1,5 @@
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 import { accountLabels } from '../i18n/accountLabels';
-import { DefaultCredentialHints } from './DefaultCredentialHints';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Shield, Wrench, Lock, User as UserIcon, AlertCircle, ArrowRight } from 'lucide-react';
@@ -74,7 +73,7 @@ export const LoginView: React.FC = () => {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. admin or kyawzin"
+                placeholder="Enter your username"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all font-medium"
               />
             </div>
@@ -116,7 +115,6 @@ export const LoginView: React.FC = () => {
         </form>
 
         <button type="button" onClick={() => {setForgotOpen(true);setError(null);setPassword('');}} className="w-full text-sm text-blue-500">{accountLabels(language).forgot}</button>
-        <DefaultCredentialHints />
         </>}
       </div>
     </div>

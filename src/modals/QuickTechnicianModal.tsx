@@ -159,9 +159,6 @@ export const QuickTechnicianModal: React.FC<QuickTechnicianModalProps> = ({
             </div>
           </div>
 
-          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-300">
-            Initial default password will be generated as <strong>tech123</strong>. Technician can reset it later.
-          </div>
 
           <div className="pt-2 flex items-center justify-end gap-2 border-t border-[var(--border)]">
             <button

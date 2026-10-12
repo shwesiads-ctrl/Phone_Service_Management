@@ -9,6 +9,7 @@ export function CashierCardModal({user,onClose}:{user:User;onClose:()=>void}) {
     <h2 id="cashier-card-title" className="text-xl font-bold">{language==='my'?'Cashier ID Card ထုတ်ရန်':'Cashier ID Card'}</h2>
     {error && <p role="alert" className="text-rose-500">{error}</p>}
     {svg?<img src={'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)} alt="Cashier ID card preview" className="w-full rounded-xl"/>:<p role="status">Generating card…</p>}
+    <div className="rounded-lg p-3 bg-[var(--surface-2)] text-xs space-y-1 break-words"><p className="font-bold">{settings.shopName}</p><p>{settings.address || (language==='my'?'Shop Settings တွင် ဆိုင်လိပ်စာဖြည့်ပါ။':'Add the workshop address in Shop Settings.')}</p><p>{settings.phone} {settings.email ? ` · ${settings.email}` : ''}</p></div>
     <p className="text-xs text-[var(--text-muted)]">85.6 × 54 mm · {user.full_name}</p>
     <div className="flex flex-wrap gap-3"><button disabled={!svg} onClick={()=>downloadCashierCard(svg,user.username)} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Download ID Card</button><button disabled={!svg} onClick={()=>{try{printCashierCard(svg);}catch(e:any){setError(e.message);}}} className="px-4 py-2 border border-[var(--border)] rounded-lg">Print ID Card</button><button onClick={onClose} className="px-4 py-2 border border-[var(--border)] rounded-lg">Close</button></div>
   </div></div>;

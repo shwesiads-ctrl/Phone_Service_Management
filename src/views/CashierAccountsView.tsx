@@ -1,3 +1,4 @@
+import { staffCode } from '../utils/staffCode';
 import { readUploadedImage } from '../utils/imageUpload';
 import { CashierCardModal } from '../components/CashierCardModal';
 import { accountLabels } from '../i18n/accountLabels';
@@ -31,7 +32,7 @@ export function CashierAccountsView() {
       <button disabled={busy} className="px-4 py-2 rounded bg-blue-600 text-white">{language === 'my' ? 'Cashier အကောင့်ထည့်ရန်' : 'Add Cashier Account'}</button>
     </form>
     {cashiers.map(user => <div key={user.id} className="flex flex-wrap gap-3 items-center p-4 rounded-xl border border-[var(--border)]">
-      <span className="flex-1">{user.full_name} (@{user.username}) · {user.active !== false ? 'Active' : 'Inactive'}</span>
+      <span className="flex-1"><b className="font-mono text-xs">{staffCode(user)}</b><br/>{user.full_name} (@{user.username}) · {user.active !== false ? 'Active' : 'Inactive'}</span>
       <button disabled={busy} onClick={()=>setProfile({...user})}>Edit Profile</button>
       <button disabled={busy} onClick={()=>setCardUser(user)}>Generate ID Card</button>
       <button disabled={busy} onClick={() => mutate(`/api/cashiers/${user.id}`,'PUT',{active:user.active===false})}>{user.active === false ? 'Activate' : 'Deactivate'}</button>

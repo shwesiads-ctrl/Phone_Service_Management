@@ -27,6 +27,7 @@ export type TicketPriority = 'normal' | 'urgent' | 'express';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid';
 
 export interface User {
+  staff_code?: string;
   address?: string;
   password?: string;
   active?: boolean;
@@ -89,6 +90,9 @@ export interface ServiceJobPart {
 }
 
 export interface ServiceJob {
+  intake_received_by?: string;
+  intake_cashier_id?: string;
+  intake_username?: string;
   id: string;
   service_number: string; // e.g. "SRV-202610-0001"
   customer_id: string; // FK -> customers.id

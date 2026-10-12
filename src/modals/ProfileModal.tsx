@@ -1,3 +1,4 @@
+import { staffCode } from '../utils/staffCode';
 import { readUploadedImage } from '../utils/imageUpload';
 import { CashierCardModal } from '../components/CashierCardModal';
 import React, { useState } from 'react';
@@ -76,7 +77,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ onClose, onChangePas
             </div>
             <div>
               <h3 className="font-bold text-sm text-[var(--text)]">User Profile</h3>
-              <p className="text-[11px] text-[var(--text-muted)] font-mono">ID: {currentUser.id}</p>
+              <p className="text-[11px] text-[var(--text-muted)] font-mono">ID: {staffCode(currentUser)}</p>
             </div>
           </div>
           <button

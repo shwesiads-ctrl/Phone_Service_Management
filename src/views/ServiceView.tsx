@@ -1,3 +1,5 @@
+import { Pagination } from '../components/Pagination';
+import { usePagination } from '../hooks/usePagination';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { ServiceJob, ServiceStatus } from '../types';
@@ -30,6 +32,8 @@ export const ServiceView: React.FC<ServiceViewProps> = ({
   onPrintReceipt,
 }) => {
   const {
+    searchQuery: search,
+    setSearchQuery: setSearch,
     role,
     jobs,
     technicians,
@@ -40,7 +44,6 @@ export const ServiceView: React.FC<ServiceViewProps> = ({
     t,
   } = useApp();
 
-  const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [techFilter, setTechFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState('');
@@ -68,7 +71,7 @@ export const ServiceView: React.FC<ServiceViewProps> = ({
 
     // Search query
     if (search.trim()) {
-      const q = search.toLowerCase();
+      const q = search.trim().toLowerCase();
       const matchSrv = job.service_number.toLowerCase().includes(q);
       const matchCust = (job.customer?.name || '').toLowerCase().includes(q);
       const matchPhone = (job.customer?.phone || '').toLowerCase().includes(q);
@@ -79,6 +82,8 @@ export const ServiceView: React.FC<ServiceViewProps> = ({
 
     return true;
   });
+
+  const page = usePagination(filteredJobs, JSON.stringify([search, statusFilter, techFilter, dateFrom, dateTo, currentUser?.id]));
 
   const getStatusBadge = (status: ServiceStatus) => {
     switch (status) {
@@ -148,7 +153,7 @@ export const ServiceView: React.FC<ServiceViewProps> = ({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search Service Number, Customer, Phone, IMEI..."
+              aria-label="Search service jobs" placeholder="Search Service Number, Customer, Phone, IMEI..."
               className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
           </div>
@@ -242,6 +247,7 @@ export const ServiceView: React.FC<ServiceViewProps> = ({
             <table className="w-full text-left text-sm">
               <thead className="bg-[var(--surface-2)] text-[var(--text-muted)] text-xs border-b border-[var(--border)]">
                 <tr>
+                  <th className="px-4 py-3">#</th>
                   <th className="px-4 py-3 font-semibold">{t('serviceNumber')}</th>
                   <th className="px-4 py-3 font-semibold">{t('device')}</th>
                   <th className="px-4 py-3 font-semibold">{t('customer')}</th>
@@ -253,7 +259,7 @@ export const ServiceView: React.FC<ServiceViewProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)] text-[var(--text)]">
-                {filteredJobs.map((job) => {
+                {page.items.map((job, rowIndex) => {
                   const tech =
                     job.technician ||
                     technicians.find((t) => t.id === job.technician_id);
@@ -264,6 +270,7 @@ export const ServiceView: React.FC<ServiceViewProps> = ({
                       key={job.id}
                       className="hover:bg-[var(--surface-2)]/40 transition-colors"
                     >
+                      <td className="px-4 py-3 font-mono text-[var(--text-muted)]">{page.offset + rowIndex + 1}</td>
                       {/* Service No */}
                       <td className="px-4 py-3 font-mono font-bold text-xs text-[var(--primary)] whitespace-nowrap">
                         {job.service_number}
@@ -374,6 +381,7 @@ export const ServiceView: React.FC<ServiceViewProps> = ({
             </table>
           </div>
         )}
+        <Pagination {...page} />
       </div>
     </div>
   );

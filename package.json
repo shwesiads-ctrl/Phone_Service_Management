@@ -15,7 +15,8 @@
     "test:notifications:ui": "node scripts/run-notification-ui.cjs",
     "desktop:build-server": "esbuild server.ts --bundle --platform=node --format=cjs --packages=external --outfile=server.cjs",
     "desktop": "npm run build && npm run desktop:build-server && electron .",
-    "dist:win": "npm run build && npm run desktop:build-server && electron-builder --win nsis"
+    "dist:win": "npm run build && npm run desktop:build-server && electron-builder --win nsis",
+    "test:cashier:browser": "node scripts/test-cashier-browser.cjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -24,6 +25,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
+    "html2canvas": "^1.4.1",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "qrcode": "^1.5.4",

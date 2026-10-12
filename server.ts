@@ -196,13 +196,8 @@ app.post('/api/auth/recovery/rotate', checkRecoveryAdmin, (req: AuthRequest, res
 
 app.get('/api/auth/default-credentials', (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
-  const credentials = ['admin', 'kyawzin', 'demo_tech'].flatMap(username => {
-    const user = db.getUserByUsername(username);
-    const tech = user?.technician_id ? db.getTechnicianById(user.technician_id) : undefined;
-    if (!user || (user as any).password || tech?.password || (tech && tech.status !== 'active')) return [];
-    return [{ username: user.username, password: user.role === 'admin' ? 'admin123' : 'tech123' }];
-  });
-  res.json({ credentials });
+  // Kept as an empty compatibility endpoint; never publish login passwords.
+  res.json({ credentials: [] });
 });
 
 app.post('/api/auth/login', (req: AuthRequest, res: Response) => {
@@ -739,6 +734,9 @@ app.post('/api/jobs', (req: AuthRequest, res: Response) => {
       : 'unpaid';
 
   const newJob = db.createJob({
+    intake_received_by: req.user.full_name || req.user.username,
+    intake_username: req.user.username,
+    ...(req.user.role === 'cashier' ? { intake_cashier_id: req.user.id } : {}),
     customer_id,
     device_id,
     technician_id, // Linked using foreign key
@@ -1832,6 +1830,13 @@ app.put('/api/settings', (req: AuthRequest, res: Response) => {
   if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden: Only administrators can update system settings.' });
   }
+  for (const field of ['shopName','phone','email','address','taxId','receiptFooterNote'] as const) {
+    if (req.body[field] !== undefined && (typeof req.body[field] !== 'string' || req.body[field].length > (['address','receiptFooterNote'].includes(field) ? 2000 : 200) || (field === 'shopName' && !req.body[field].trim()))) return res.status(400).json({ error: 'Enter valid workshop contact details.' });
+  }
+  if (req.body.taxPercentage !== undefined && (typeof req.body.taxPercentage !== 'number' || !Number.isFinite(req.body.taxPercentage) || req.body.taxPercentage < 0 || req.body.taxPercentage > 100)) return res.status(400).json({ error: 'Tax percentage must be between 0 and 100.' });
+  if (req.body.taxEnabled !== undefined && typeof req.body.taxEnabled !== 'boolean') return res.status(400).json({ error: 'Invalid tax setting.' });
+  const invalidLogo = imageValidationError(req.body.shopLogo);
+  if (invalidLogo) return res.status(400).json({ error: invalidLogo });
   if (req.body.paymentSettings) {
     for (const profile of ['thailand','myanmar','china','global']) {
       const methods = req.body.paymentSettings[profile]?.methods;

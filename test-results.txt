@@ -8,14 +8,15 @@
 
 vite v8.3.4 building client environment for production...
 transforming...
-✓ 1741 modules transformed.
+✓ 1745 modules transformed.
 rendering chunks...
 computing gzip size...
-dist/index.html                   2.25 kB │ gzip:   0.94 kB
-dist/assets/index-CXoV0eqa.css   84.74 kB │ gzip:  13.15 kB
-dist/assets/index-B5K5NQHK.js   887.49 kB │ gzip: 200.28 kB
+dist/index.html                        2.25 kB │ gzip:   0.94 kB
+dist/assets/index-DT65xz44.css        84.19 kB │ gzip:  13.08 kB
+dist/assets/html2canvas-B8DdhEWb.js  199.45 kB │ gzip:  46.76 kB
+dist/assets/index-Bw-ig1fC.js        893.30 kB │ gzip: 204.36 kB
 
-✓ built in 312ms
+✓ built in 372ms
 [plugin builtin:vite-reporter] 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
@@ -272,13 +273,13 @@ PASS: Escape closes registration
 PASS: Quick register has Myanmar labels
 PASS: Technician never sees registration dialog
 REGISTER UI SUMMARY: 8 PASSED
-PASS: Default hints available before login
+PASS: Public API never exposes default passwords
 PASS: Unauthenticated demo creation blocked
 PASS: Technician demo creation blocked
 PASS: Technician demo deletion blocked
 PASS: Admin can add marked demo user
 PASS: Repeated add returns same demo account
-PASS: Demo user can sign in with displayed default
+PASS: Demo account authentication still works
 PASS: Demo deletion refuses assigned repair jobs
 PASS: Demo marker survives restart
 PASS: Demo deletion succeeds once jobs are reassigned
@@ -287,7 +288,7 @@ PASS: Regular accounts remain intact
 PASS: Deleted demo session cannot authenticate
 PASS: Changing admin password succeeds
 PASS: Admin hint disappears immediately
-PASS: Unchanged technician hint stays visible
+PASS: Unchanged accounts do not expose credential hints
 PASS: Admin password reset succeeds
 PASS: Technician hint disappears after reset
 PASS: Hidden hints persist across restart
@@ -342,6 +343,7 @@ PASS: Cashier creation requires authentication
 PASS: Technician cannot create cashier
 PASS: Short cashier password rejected
 PASS: Admin creates cashier with fixed role and no exposed password
+PASS: Cashier has short sequential staff code and stable internal ID
 PASS: Duplicate cashier username rejected
 PASS: Cashier login succeeds
 PASS: Cashier can read /api/jobs
@@ -352,6 +354,22 @@ PASS: Cashier can read /api/payments
 PASS: Cashier creates intake customer
 PASS: Cashier creates intake device
 PASS: Cashier creates an assigned CNY service job
+PASS: Cashier display codes are unique
+PASS: Intake cashier identity is server-derived
+PASS: Initial deposit records actual cashier and stable ID
+PASS: Cashier gets new-job and own deposit notifications
+PASS: Other active cashier gets intake but not another cashier payment notification
+PASS: Inactive cashier receives no new notifications
+PASS: Cashier gets repair-ready status notification
+PASS: Another cashier cannot mark another inbox event read
+PASS: Cashier can mark own notice read
+PASS: Shop updates preserve zero tax and blank tax ID
+PASS: Cashier reads latest workshop details
+PASS: Invalid workshop setting rejected
+PASS: Invalid workshop setting rejected
+PASS: Invalid workshop setting rejected
+PASS: Invalid workshop setting rejected
+PASS: Invalid workshop setting rejected
 PASS: Cashier payment stores actual cashier identity
 PASS: Cashier prints receipt audit
 PASS: Cashier cannot PUT /api/settings
@@ -360,7 +378,7 @@ PASS: Cashier cannot POST /api/backup
 PASS: Cashier cannot POST /api/finance/income
 PASS: Cashier cannot PUT /api/jobs/JOB-034
 PASS: Cashier cannot DELETE /api/jobs/JOB-034
-PASS: Cashier cannot DELETE /api/payments/PAY-202610-0033
+PASS: Cashier cannot DELETE /api/payments/PAY-202610-0034
 PASS: Cashier cannot GET /api/auth/recovery/status
 PASS: Cashier cannot POST /api/auth/recovery/backup
 PASS: Cashier may change own password
@@ -394,7 +412,7 @@ PASS: Failed recovery never rotates key
 PASS: Admin can delete cashier account
 PASS: Deleting cashier retains payment history
 PASS: Original source database remains unchanged
-CASHIER & RECOVERY HTTP SUMMARY: 62 PASSED
+CASHIER & RECOVERY HTTP SUMMARY: 79 PASSED
 PASS: Generated recovery key has 256-bit random format
 PASS: Generated key verifies
 PASS: Invalid types and lengths rejected
@@ -421,8 +439,10 @@ PASS: Invalid QR format rejected
 PASS: Invalid QR format rejected
 PASS: Invalid QR format rejected
 PASS: Oversized QR rejected
+PASS: Existing long cashier ID migrates to a short display code
 PASS: Admin can update cashier contact and photo
 PASS: Cashier profile cannot change role or identity
+PASS: Profile update cannot replace short staff code
 PASS: Profile update preserves cashier session
 PASS: Updated profile visible to cashier
 PASS: Non-image profile photo rejected
@@ -435,8 +455,10 @@ PASS: Payment stores stable trusted cashier identity
 PASS: Merchant QR persists across restart
 PASS: Profile photo persists across restart
 PASS: Stable cashier identity persists on payment
+PASS: Short staff code persists after restart
+PASS: Migrated legacy display code remains stable
 PASS: Original source database remains unchanged
-CHINA & CASHIER PROFILE HTTP SUMMARY: 26 PASSED
+CHINA & CASHIER PROFILE HTTP SUMMARY: 30 PASSED
 PASS: Valid PNG image accepted
 PASS: SVG, mismatched and oversized images rejected
 PASS: File upload produces portable image data
@@ -476,6 +498,12 @@ PASS: Customers second page numbering continues at 21
 PASS: Bulk selection selects 20 visible customers
 PASS: Workload report paginates and keeps header aligned
 PASS: Workload last page contains five technicians
+PASS: Cashier service list has paged rows and aligned columns
+PASS: Cashier service row numbers continue
+PASS: Cashier service search trims whitespace and resets page
+PASS: Receipt uses payment and intake names rather than current viewer
+PASS: Receipt offers JPEG save and accurate balance
+PASS: Deleted payments are excluded from receipt
 Pagination UI checks passed.
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.0
@@ -483,6 +511,23 @@ npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
 npm notice To update run: npm install -g npm@12.2.0
 npm notice
 
-Additional validation: npm run lint passed; npm run desktop:build-server passed.
-Pagination UI: 16 checks passed, including 20,000 records / 1,000 pages, clamping, filters, print and integration.
-Physical printer and Windows installer execution were not exercised in this Linux environment.
+PASS: Header search navigates and finds trimmed customer name
+PASS: Cashier Service Jobs render a page of 20
+PASS: Cashier second-page numbering continues at 21
+PASS: IMEI search resets pagination
+PASS: Receipt names actual receiving cashier, intake staff and technician
+PASS: Receipt download is a real JPEG with correct file name
+PASS: A4 receipt JPEG has readable complete dimensions
+PASS: 80mm JPEG uses thermal width and includes full receipt
+PASS: Shop loads real zero tax and blank tax ID
+PASS: LAN updates preserve unsaved shop edits
+PASS: Shop save failure remains visible and editable
+PASS: Shop save retry succeeds
+PASS: Profile displays short cashier code
+PASS: Cashier card contains short code and complete workshop contact fields
+PASS: Login omits default password information
+CASHIER BROWSER SUMMARY: 15 PASSED
+
+Additional validation: npm run lint and npm run desktop:build-server passed.
+JPEG downloads were decoded in real headless Chromium at A4 and 80mm widths.
+Physical printer and Windows installer execution were not exercised.

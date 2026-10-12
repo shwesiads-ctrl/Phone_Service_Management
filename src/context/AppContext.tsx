@@ -337,6 +337,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Global search
   const [searchQuery, setSearchQuery] = useState<string>('');
+  useEffect(() => { setSearchQuery(''); }, [currentUser?.id]);
 
   // Theme
   const [theme, setThemeState] = useState<Theme>(() => {
@@ -800,6 +801,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('Failed to load metadata', err);
     }
   }, [getAuthHeaders]);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    let active = true;
+    const refreshSettings = async () => {
+      if (document.visibilityState === 'hidden') return;
+      try {
+        const response = await fetch('/api/settings', { headers: getAuthHeaders() });
+        if (response.ok) { const value = await response.json(); if (active) setSettings(value); }
+      } catch { /* Existing settings remain usable while the LAN server is offline. */ }
+    };
+    const interval = window.setInterval(refreshSettings, 30000);
+    window.addEventListener('focus', refreshSettings);
+    return () => { active = false; window.clearInterval(interval); window.removeEventListener('focus', refreshSettings); };
+  }, [currentUser?.id, getAuthHeaders]);
 
   // Fetch Audit Trail
   const refreshAuditTrail = useCallback(async () => {
