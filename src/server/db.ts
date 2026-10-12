@@ -1,11 +1,12 @@
 import { defaultPaymentSettings, removeDemoPaymentDetails } from '../utils/paymentDefaults.ts';
 import fs from 'fs';
 import path from 'path';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import {
   AppNotification,
   NotificationType,
   Customer,
+  CustomerDeletionPreview,
   Device,
   IncomeRecord,
   ExpenseRecord,
@@ -1704,6 +1705,67 @@ class Database {
     this.data.customers[index] = { ...this.data.customers[index], ...updates, id, created_at: this.data.customers[index].created_at };
     this.saveDatabase();
     return this.data.customers[index];
+  }
+
+  private customerDeletionRecords(ids: string[]) {
+    const selected = new Set(ids);
+    const customers = this.data.customers.filter(c => selected.has(c.id));
+    const devices = this.data.devices.filter(d => selected.has(d.customer_id));
+    const deviceIds = new Set(devices.map(d => d.id));
+    if (this.data.service_jobs.some(j => deviceIds.has(j.device_id) && !selected.has(j.customer_id))) {
+      throw new Error('A selected device belongs to another customer’s repair job. Correct that relationship before deleting.');
+    }
+    const jobs = this.data.service_jobs.filter(j => selected.has(j.customer_id));
+    const jobIds = new Set(jobs.map(j => j.id));
+    const jobNumbers = new Set(jobs.map(j => j.service_number));
+    const payments = this.data.service_payments.filter(p => jobIds.has(p.service_job_id));
+    const paymentIds = new Set(payments.map(p => p.id));
+    return {
+      customers, devices, jobs,
+      parts: this.data.service_job_parts.filter(p => jobIds.has(p.service_job_id)),
+      payments,
+      income: (this.data.income_records || []).filter(i => (i.service_job_id && jobIds.has(i.service_job_id)) || (i.service_number && jobNumbers.has(i.service_number)) || paymentIds.has(i.reference)),
+      notifications: (this.data.notifications || []).filter(n => jobIds.has(n.service_job_id)),
+    };
+  }
+
+  public previewCustomerDeletion(ids: string[]): CustomerDeletionPreview {
+    const records = this.customerDeletionRecords(ids);
+    return {
+      names: records.customers.map(c => c.name),
+      customers: records.customers.length, devices: records.devices.length, jobs: records.jobs.length,
+      parts: records.parts.length, payments: records.payments.length, income: records.income.length,
+      notifications: records.notifications.length,
+      revision: createHash('sha256').update(JSON.stringify(records)).digest('hex'),
+    };
+  }
+
+  public deleteCustomersWithRecords(ids: string[], revision: string, actor: User, ip: string): { backup: string; deleted: CustomerDeletionPreview } {
+    const preview = this.previewCustomerDeletion(ids);
+    if (preview.revision !== revision) throw new Error('Records changed. Close this dialog and review the deletion again.');
+    const records = this.customerDeletionRecords(ids);
+    // Require a recoverable backup before any state is changed.
+    const backupDirectory = path.join(path.dirname(DB_PATH), 'backups');
+    fs.mkdirSync(backupDirectory, { recursive: true });
+    const backup = `before_customer_delete_${Date.now()}_${randomUUID()}.json`;
+    fs.writeFileSync(path.join(backupDirectory, backup), JSON.stringify(this.data, null, 2), { mode: 0o600 });
+    const previous = structuredClone(this.data);
+    const retain = <T extends { id: string }>(all: T[], removed: T[]): T[] => {
+      const removedIds = new Set(removed.map(row => row.id));
+      return all.filter(row => !removedIds.has(row.id));
+    };
+    try {
+      this.data.customers = retain(this.data.customers, records.customers);
+      this.data.devices = retain(this.data.devices, records.devices);
+      this.data.service_jobs = retain(this.data.service_jobs, records.jobs);
+      this.data.service_job_parts = retain(this.data.service_job_parts, records.parts);
+      this.data.service_payments = retain(this.data.service_payments, records.payments);
+      this.data.income_records = retain(this.data.income_records || [], records.income);
+      this.data.notifications = retain(this.data.notifications || [], records.notifications);
+      this.data.security_audit.unshift({ id: `AUD-${String(this.nextNumber('security_audit')).padStart(4, '0')}`, user_id: actor.id, username: actor.username, action: 'CUSTOMERS_AND_LINKED_RECORDS_DELETED', target_type: 'system', target_id: ids.join(','), details: `Deleted ${preview.customers} customers, ${preview.devices} devices, ${preview.jobs} jobs, ${preview.payments} payments and ${preview.income} income records. Safety backup: ${backup}`, ip_address: ip, created_at: new Date().toISOString() });
+      this.saveDatabase();
+      return { backup, deleted: preview };
+    } catch (error) { this.data = previous; throw error; }
   }
 
   public deleteCustomer(id: string): boolean {

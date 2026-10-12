@@ -1,6 +1,6 @@
 
 > react-example@1.0.0 test
-> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx
+> npm run build && node --import tsx scripts/test-regressions.ts && node scripts/run-notification-ui.cjs && node --import tsx scripts/test-telegram.ts && node scripts/run-notification-ui.cjs scripts/test-register-ui.tsx && node --import tsx scripts/test-requested-features.ts && node scripts/test-close-confirmation.cjs && node scripts/run-notification-ui.cjs scripts/test-feature-ui.tsx && node --import tsx scripts/test-customer-deletion.ts && node scripts/run-notification-ui.cjs scripts/test-customer-deletion-ui.tsx
 
 
 > react-example@1.0.0 build
@@ -13,9 +13,9 @@ rendering chunks...
 computing gzip size...
 dist/index.html                   2.25 kB │ gzip:   0.94 kB
 dist/assets/index-CW3iatc7.css   82.81 kB │ gzip:  13.00 kB
-dist/assets/index-CUax0gNA.js   972.22 kB │ gzip: 210.49 kB
+dist/assets/index-C9I93-3r.js   976.04 kB │ gzip: 211.67 kB
 
-✓ built in 294ms
+✓ built in 301ms
 [plugin builtin:vite-reporter] 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
@@ -297,8 +297,45 @@ PASS: Original uploaded database unchanged
 REQUESTED FEATURES HTTP SUMMARY: 22 PASSED
 PASS: Native close is blocked until confirmation, repeated clicks are coalesced, Cancel preserves window, Close exits without prompting again.
 PASS: Credential hints hide immediately, refresh from server, browser close confirmation activates and cleans up, sample payments disabled, custom accounts and QR preserved.
+PASS: Preview rejects unauthenticated clients
+PASS: Preview rejects technicians
+PASS: Confirmed deletion rejects technicians
+PASS: Empty selection rejected
+PASS: Duplicate selection rejected
+PASS: Unknown selection rejected
+PASS: Legacy delete still requires explicit linked-record confirmation
+PASS: Preview counts every linked record type
+PASS: Preview includes selected customer name
+PASS: Missing confirmation revision rejected
+PASS: Stale or fabricated revision rejected
+PASS: Related record updates succeed
+PASS: Related changes invalidate prior confirmation
+PASS: Backup failure blocks deletion
+PASS: Backup failure leaves database unchanged
+PASS: Database save failure reports failure
+PASS: Database save failure leaves file unchanged
+PASS: Database save failure restores in-memory records
+PASS: Confirmed linked deletion succeeds
+PASS: Only selected customers removed
+PASS: Only selected devices removed
+PASS: Only selected service_jobs removed
+PASS: Only selected service_job_parts removed
+PASS: Only selected service_payments removed
+PASS: Only selected income_records removed
+PASS: Only selected notifications removed
+PASS: Users, technicians, expenses and settlements unchanged
+PASS: Deletion audit recorded
+PASS: Safety backup retains the full deleted graph
+PASS: Deletion persists across restart
+PASS: Bulk preview counts both customers
+PASS: Bulk confirmed delete succeeds atomically
+PASS: Original source database unchanged
+CUSTOMER DELETION HTTP SUMMARY: 33 PASSED
+PASS: Customer deletion previews linked counts, requires acknowledgement, Cancel does not delete, confirmation sends selected IDs and revision, failed preview blocks deletion, Myanmar labels and bulk selection work.
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.0
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
 npm notice To update run: npm install -g npm@12.2.0
 npm notice
+
+Final visible delete button: TypeScript, UI interaction, production UI build and desktop server bundle passed.

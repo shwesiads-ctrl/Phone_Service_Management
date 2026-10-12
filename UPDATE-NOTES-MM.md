@@ -12,3 +12,9 @@
 စစ်ဆေးမှု: TypeScript PASS၊ existing tests 217 PASS၊ new HTTP tests 22 PASS၊ UI interaction နှင့် desktop confirmation tests PASS၊ desktop server bundle PASS။ Windows installer/GUI ကို တိုက်ရိုက်မစမ်းထားပါ။
 
 GitHub ထုတ်ဝေသည့် copy တွင် Telegram bot token များကို ဖယ်ပြီး connection ပိတ်ထားသည်။ Telegram Settings တွင် ကိုယ်ပိုင် token ကို ပြန်ထည့်ပါ။ မူရင်း local data copy ကို မပြောင်းထားပါ။
+
+## Customer ချိတ်ထားသော data ဖျက်ခြင်း
+
+Customers စာမျက်နှာတွင် ဖျက်ရန် button သို့မဟုတ် Delete Selected ကိုနှိပ်ပါ။ Device၊ repair job၊ parts၊ payment၊ linked income နှင့် notification အရေအတွက်များကို ပြမည်။ Checkbox ဖြင့် အတည်ပြုပြီး ချိတ်ထားသော Data အပါအဝင် ဖျက်မည် ကိုနှိပ်ပါ။ အရင် data/backups/ တွင် full safety backup သိမ်းသည်။ အခြား customer၊ user၊ expense၊ settlement history နှင့် audit logs ကို ထိန်းထားသည်။
+
+အရင် linked-customer error ကို ဒီ confirmation flow ဖြင့် ဖြေရှင်းထားသည်။ ကိုယ်တိုင် delete လုပ်မှသာ data ဖျက်သည်။ Update တင်ခြင်းက သင့်လက်ရှိ data ကို အလိုအလျောက် မဖျက်ပါ။

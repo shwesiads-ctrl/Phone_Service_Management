@@ -1626,6 +1626,29 @@ const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Admin access required.' });
   next();
 };
+const validateCustomerDeletion = (req: Request, res: Response, next: NextFunction) => {
+  const ids = req.body.customer_ids;
+  if (!Array.isArray(ids) || !ids.length || ids.length > 100 || ids.some(id => typeof id !== 'string' || !id) || new Set(ids).size !== ids.length) {
+    return res.status(400).json({ error: 'Select 1–100 distinct customers.' });
+  }
+  if (ids.some(id => !db.getCustomerById(id))) return res.status(404).json({ error: 'A selected customer no longer exists. Refresh the list.' });
+  next();
+};
+app.post('/api/customers/delete-preview', requireAdmin, validateCustomerDeletion, (req, res) => {
+  try { return res.json(db.previewCustomerDeletion(req.body.customer_ids)); }
+  catch (error: any) { return res.status(409).json({ error: error.message }); }
+});
+app.post('/api/customers/delete-confirmed', requireAdmin, validateCustomerDeletion, (req: AuthRequest, res) => {
+  if (typeof req.body.revision !== 'string' || !/^[a-f0-9]{64}$/.test(req.body.revision)) return res.status(400).json({ error: 'Review and confirm the deletion first.' });
+  try {
+    const result = db.deleteCustomersWithRecords(req.body.customer_ids, req.body.revision, req.user!, req.ip || '127.0.0.1');
+    return res.json({ success: true, ...result });
+  } catch (error: any) {
+    if (/Records changed|another customer/.test(error.message)) return res.status(409).json({ error: error.message });
+    return res.status(500).json({ error: 'Deletion could not be saved. No records were deleted; check database and backup directory access.' });
+  }
+});
+
 app.get('/api/customers', (_req, res) => res.json(db.getCustomers()));
 app.post('/api/customers', requireAdmin, (req, res) => {
   if (typeof req.body.name !== 'string' || !req.body.name.trim() || typeof req.body.phone !== 'string' || !req.body.phone.trim()) {

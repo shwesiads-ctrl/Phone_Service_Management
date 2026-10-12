@@ -2,6 +2,7 @@ import { defaultPaymentSettings } from '../utils/paymentDefaults';
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import {
   Customer,
+  CustomerDeletionPreview,
   Device,
   IncomeRecord,
   ExpenseRecord,
@@ -96,6 +97,8 @@ interface AppContextType {
   createCustomer: (cust: Omit<Customer, 'id' | 'created_at'>) => Promise<Customer>;
   updateCustomer: (id: string, updates: Partial<Customer>) => Promise<Customer>;
   deleteCustomer: (id: string) => Promise<void>;
+  previewCustomerDeletion: (ids: string[]) => Promise<CustomerDeletionPreview>;
+  deleteCustomersWithRecords: (ids: string[], revision: string) => Promise<void>;
   devices: Device[];
   createDevice: (dev: Omit<Device, 'id' | 'created_at'>) => Promise<Device>;
   updateDevice: (id: string, updates: Partial<Device>) => Promise<Device>;
@@ -1053,6 +1056,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updated;
   };
 
+  const previewCustomerDeletion = async (ids: string[]): Promise<CustomerDeletionPreview> => {
+    const response = await fetch('/api/customers/delete-preview', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ customer_ids: ids }) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not preview deletion');
+    return data;
+  };
+  const deleteCustomersWithRecords = async (ids: string[], revision: string): Promise<void> => {
+    const response = await fetch('/api/customers/delete-confirmed', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ customer_ids: ids, revision }) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not delete customer records');
+    await Promise.all([refreshMetadata(), refreshJobs(), refreshPayments(), refreshTechnicians(), refreshFinance(), refreshAuditTrail()]);
+  };
+
   const deleteCustomer = async (id: string): Promise<void> => {
     const res = await fetch(`/api/customers/${id}`, {
       method: 'DELETE',
@@ -1314,6 +1330,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         createCustomer,
         updateCustomer,
         deleteCustomer,
+        previewCustomerDeletion,
+        deleteCustomersWithRecords,
         devices,
         createDevice,
         updateDevice,

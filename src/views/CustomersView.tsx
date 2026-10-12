@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Customer, ServiceJob } from '../types';
+import { Customer, ServiceJob, CustomerDeletionPreview } from '../types';
 import {
   Search,
   Plus,
@@ -32,7 +32,9 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
     technicians,
     createCustomer,
     updateCustomer,
-    deleteCustomer,
+    previewCustomerDeletion,
+    deleteCustomersWithRecords,
+    language,
     formatCurrency,
     formatDate,
     t,
@@ -101,14 +103,27 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
     }
   };
 
-  const handleDelete = async (cust: Customer) => {
-    if (confirm(`Are you sure you want to delete customer "${cust.name}"?`)) {
-      try {
-        await deleteCustomer(cust.id);
-      } catch (err: any) {
-        alert(err.message || 'Failed to delete customer');
-      }
-    }
+  const [deleteIds, setDeleteIds] = useState<string[]>([]);
+  const [deletePreview, setDeletePreview] = useState<CustomerDeletionPreview | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteAcknowledged, setDeleteAcknowledged] = useState(false);
+  const openDeletion = async (ids: string[]) => {
+    setDeleteIds(ids); setDeletePreview(null); setDeleteError(''); setDeleteAcknowledged(false); setDeleteBusy(true);
+    try { setDeletePreview(await previewCustomerDeletion(ids)); }
+    catch (error: any) { setDeleteError(error.message || 'Could not preview deletion'); }
+    finally { setDeleteBusy(false); }
+  };
+  const handleDelete = (cust: Customer) => openDeletion([cust.id]);
+  const confirmDeletion = async () => {
+    if (!deletePreview || !deleteAcknowledged || deleteBusy) return;
+    setDeleteBusy(true); setDeleteError('');
+    try {
+      await deleteCustomersWithRecords(deleteIds, deletePreview.revision);
+      setSelectedCustomerIds(previous => previous.filter(id => !deleteIds.includes(id)));
+      setDeleteIds([]); setDeletePreview(null);
+    } catch (error: any) { setDeleteError(error.message || 'Could not delete customer records'); }
+    finally { setDeleteBusy(false); }
   };
 
   const filteredCustomers = customers.filter((cust) => {
@@ -136,16 +151,8 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
     );
   };
 
-  const confirmBulkDelete = async () => {
-    if (selectedCustomerIds.length === 0) return;
-    if (confirm(`Are you sure you want to delete ${selectedCustomerIds.length} selected customers?`)) {
-      try {
-        await Promise.all(selectedCustomerIds.map((id) => deleteCustomer(id)));
-        setSelectedCustomerIds([]);
-      } catch (err: any) {
-        alert(err.message || 'Failed to delete selected customers');
-      }
-    }
+  const confirmBulkDelete = () => {
+    if (selectedCustomerIds.length) void openDeletion(selectedCustomerIds);
   };
 
   const customerJobs = historyCustomer
@@ -294,7 +301,8 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
                           className="p-1.5 rounded hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
                           title="Delete Customer"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4 inline-block" />
+                          <span className="ml-1 text-xs font-semibold">{language === 'my' ? 'ဖျက်ရန်' : 'Delete'}</span>
                         </button>
                       </td>
                     </tr>
@@ -305,6 +313,29 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
           </div>
         )}
       </div>
+
+      {deleteIds.length > 0 && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div role="dialog" aria-modal="true" aria-labelledby="customer-delete-title" className="w-full max-w-lg p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] space-y-4">
+            <h2 id="customer-delete-title" className="text-lg font-bold">{language === 'my' ? 'Customer နှင့် ချိတ်ထားသော Data ဖျက်ရန်' : 'Delete Customers & Linked Records'}</h2>
+            {deleteBusy && !deletePreview && <p role="status">{language === 'my' ? 'ချိတ်ထားသော records များ စစ်နေသည်…' : 'Checking linked records…'}</p>}
+            {deletePreview && <>
+              <p className="text-sm break-words">{deletePreview.names.join(', ')}</p>
+              <dl className="grid grid-cols-2 gap-2 text-sm">
+                {([['Customers', deletePreview.customers], ['Devices', deletePreview.devices], ['Repair jobs', deletePreview.jobs], ['Parts', deletePreview.parts], ['Payments', deletePreview.payments], ['Income records', deletePreview.income], ['Notifications', deletePreview.notifications]] as const).map(([label, count]) => <React.Fragment key={label}><dt>{label}</dt><dd className="font-bold text-right">{count}</dd></React.Fragment>)}
+              </dl>
+              <p className="text-sm text-rose-500">{language === 'my' ? 'ဖော်ပြထားသော data အားလုံးကို ဖျက်မည်။ Payment နှင့် income totals များ ပြောင်းလဲမည်။ မဖျက်မီ safety backup အလိုအလျောက် သိမ်းမည်။' : 'All listed records will be deleted. Payment and income totals will change. A safety backup is saved before deletion.'}</p>
+              <p className="text-xs text-[var(--text-muted)]">{language === 'my' ? 'အခြား customer၊ user၊ expense၊ settlement history နှင့် audit မှတ်တမ်းများကို ထိန်းထားမည်။' : 'Other customers, users, expenses, settlement history and audit logs are retained.'}</p>
+              <label className="flex gap-2 text-sm"><input type="checkbox" checked={deleteAcknowledged} disabled={deleteBusy} onChange={e => setDeleteAcknowledged(e.target.checked)} />{language === 'my' ? 'Customer နှင့် ဖော်ပြထားသော records အားလုံး ဖျက်ရန် အတည်ပြုပါသည်။' : 'I confirm deletion of these customers and all listed records.'}</label>
+            </>}
+            {deleteError && <p role="alert" className="text-sm text-rose-500">{deleteError}</p>}
+            <div className="flex justify-end gap-3">
+              <button autoFocus disabled={deleteBusy} onClick={() => { setDeleteIds([]); setDeletePreview(null); }} className="px-4 py-2 rounded-lg border border-[var(--border)]">{language === 'my' ? 'မဖျက်ပါ' : 'Cancel'}</button>
+              <button disabled={!deletePreview || !deleteAcknowledged || deleteBusy} onClick={confirmDeletion} className="px-4 py-2 rounded-lg bg-rose-600 text-white disabled:opacity-50">{deleteBusy && deletePreview ? (language === 'my' ? 'ဖျက်နေသည်…' : 'Deleting…') : (language === 'my' ? 'ချိတ်ထားသော Data အပါအဝင် ဖျက်မည်' : 'Delete All Listed Records')}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ADD / EDIT CUSTOMER MODAL */}
       {modalOpen && (

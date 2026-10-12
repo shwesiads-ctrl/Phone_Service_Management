@@ -371,3 +371,15 @@ export interface AppNotification {
   read_at?: string;
   dismissed_at?: string;
 }
+
+export interface CustomerDeletionPreview {
+  names: string[];
+  customers: number;
+  devices: number;
+  jobs: number;
+  parts: number;
+  payments: number;
+  income: number;
+  notifications: number;
+  revision: string;
+}
