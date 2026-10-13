@@ -1,30 +1,22 @@
 {
-  "version": "2.8.8",
+  "version": "2.8.9",
   "date": "2026-10-13",
   "changes": {
     "my": [
-      "Node server port ကို server PC မှ On/Off လုပ်ပြီး တကယ် health check စစ်နိုင်သည်။ Local control page မှ Off ဖြစ်နေချိန်လည်း On ပြန်လုပ်နိုင်သည်။",
-      "စာမျက်နှာများကို လိုအပ်မှ load လုပ်ပြီး job data ရှာဖွေမှုနှင့် font loading ကို မြန်အောင် ပြင်ထားသည်။",
-      "Shop Settings တွင် ဒုတိယဖုန်း၊ website၊ ဆိုင်ဖွင့်ချိန်နှင့် receipt စာရွက်/အာမခံ/footer preview ထည့်ထားသည်။",
-      "Service job နှင့် receipt တွင် amount / percentage discount ထည့်နိုင်ပြီး Total နှင့် payment status ကို server မှ တကယ်နုတ်တွက်ပေးသည်။"
+      "Shop Settings တွင် Visit Card Maker ထည့်ထားသည်။ ဆိုင် logo၊ လိပ်စာ၊ ဖုန်း၊ email နှင့် Facebook၊ TikTok၊ Telegram စသော social account များကို card ပေါ်တွင် ပြနိုင်သည်။",
+      "Card design ၁၀ မျိုး၊ စိတ်ကြိုက်အရောင်နှင့် font ရွေးနိုင်ပြီး preview ကြည့်ကာ PNG ပုံအဖြစ် သိမ်းနိုင်သည်။"
     ],
     "en": [
-      "Node HTTP On/Off and real health testing are available on the server computer, with a separate local control page that remains usable while Off.",
-      "Pages load on demand; indexed job lookups and bundled fonts reduce startup work and external network delays.",
-      "Shop Settings adds secondary phone, website, business hours and receipt paper/warranty/footer previews.",
-      "Service jobs and receipts support amount or percentage discounts with validated server-calculated totals and payment status."
+      "Shop Settings now includes a visit card maker with the shop logo, address, phone, email and Facebook, TikTok, Telegram and other social accounts.",
+      "Choose from 10 card designs, customize color and font, preview the result and download a PNG image."
     ],
     "th": [
-      "เปิด/ปิดพอร์ต Node HTTP และทดสอบสถานะจริงบนเครื่องเซิร์ฟเวอร์ หน้าควบคุมในเครื่องยังเปิดได้เมื่อปิด Node",
-      "โหลดหน้าเมื่อจำเป็น เพิ่มดัชนีข้อมูลงานและฟอนต์ภายในแอปเพื่อลดเวลารอเครือข่าย",
-      "การตั้งค่าร้านเพิ่มเบอร์สำรอง เว็บไซต์ เวลาเปิด และตัวอย่างกระดาษ การรับประกัน และข้อความท้ายใบเสร็จ",
-      "งานบริการและใบเสร็จรองรับส่วนลดจำนวนเงินหรือเปอร์เซ็นต์ โดยเซิร์ฟเวอร์ตรวจสอบยอดรวมและสถานะชำระ"
+      "เพิ่มเครื่องมือทำนามบัตรในตั้งค่าร้าน พร้อมโลโก้ ที่อยู่ โทรศัพท์ อีเมล และบัญชี Facebook, TikTok, Telegram และอื่น ๆ",
+      "เลือกแบบนามบัตรได้ 10 แบบ เปลี่ยนสีและฟอนต์ ดูตัวอย่างและดาวน์โหลดไฟล์ PNG"
     ],
     "zh": [
-      "服务器电脑支持 Node HTTP 开关和真实健康检查，关闭时仍可通过本机控制页面重新开启。",
-      "页面按需加载，索引工作数据查询并内置字体，减少启动工作和外部网络等待。",
-      "店铺设置新增备用电话、网站、营业时间及收据纸张、保修和页脚预览。",
-      "服务工作与收据支持金额或百分比折扣，服务器验证并计算总额与付款状态。"
+      "店铺设置新增名片制作工具，可显示店铺标志、地址、电话、邮箱及 Facebook、TikTok、Telegram 等社交账号。",
+      "可选择 10 种名片设计、自定义颜色和字体、预览并下载 PNG 图片。"
     ]
   }
 }

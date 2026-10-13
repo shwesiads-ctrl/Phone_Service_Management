@@ -343,6 +343,12 @@ export interface SettingsState {
   secondaryPhone?: string;
   website?: string;
   businessHours?: string;
+  visitCard?: {
+    design: number;
+    color: string;
+    font: string;
+    social: { facebook?: string; tiktok?: string; telegram?: string; instagram?: string; whatsapp?: string; other?: string };
+  };
   receiptFooterNote: string;
   defaultWarrantyDays: number;
   currency: Currency;

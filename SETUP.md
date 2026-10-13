@@ -145,3 +145,9 @@ Telegram schedules start disabled. Configure/save the bot and recipient, enable 
 Build and start the updated backend with `npm run build` and `npm run start:production`. On the server PC, open FixFlow using `http://localhost:3000` (or your configured Node port), sign in as Admin, then Settings → Local Network → Node server. Open the local control page before switching Off. The main workshop HTTP port actually closes; the small localhost controller stays running so you can sign in and switch On again. The controller URL is printed in the server terminal and uses an available local port. It is unavailable from other LAN devices. Quit the terminal to stop the entire process. Switching Node Off also stops managed PHP; turn PHP On separately afterward if needed.
 
 Node ပိတ်/ဖွင့်ရန် server PC မှ localhost ဖြင့် Admin ဝင်ပါ။ Settings → Local Network မှ local control page ကို အရင်ဖွင့်ထားပြီး On/Off လုပ်ပါ။ Off တွင် Node HTTP port တကယ်ပိတ်ပြီး managed PHP ပါ ရပ်မည်။ ပြန်ဖွင့်ရန် control page မှ Admin အကောင့်ဖြင့် ဝင်ပြီး On လုပ်ပါ။ Terminal ပိတ်လျှင် controller ပါ ရပ်မည်။
+
+## Shop Visit Card / ဆိုင် Visit Card
+
+Open Settings → General → Shop Visit Card Maker. Enter the shop logo, name, address, phone and email above the maker; add Facebook, TikTok, Telegram, Instagram, WhatsApp or another social account below. Choose one of 10 designs, a color and a font. Select **Save Shop Settings** to keep the design across devices and server restarts, then select **Download PNG card** for a high-resolution image. The card uses a standard 85.6 × 54 mm aspect ratio. PNG export happens locally in the browser.
+
+Settings → General → Shop Visit Card Maker မှ ဆိုင် logo၊ လိပ်စာ၊ ဖုန်း၊ email နှင့် social account များ ဖြည့်ပါ။ ဒီဇိုင်း ၁၀ မျိုး၊ အရောင်နှင့် font ရွေးပြီး **Save Shop Settings** နှိပ်ပါ။ **Download PNG card** ဖြင့် ပုံသိမ်းနိုင်ပါသည်။

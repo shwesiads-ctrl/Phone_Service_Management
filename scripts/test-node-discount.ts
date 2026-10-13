@@ -44,6 +44,9 @@ try{
  check('Upgraded shop fields and receipt policy are saved',shop.status===200 && shop.data.secondaryPhone==='09912345' && shop.data.defaultWarrantyDays===120 && shop.data.paperSize==='80mm');
  check('Unsafe shop website is rejected',(await api('/api/settings','PUT',{website:'javascript:alert(1)'},admin)).status===400);
  check('Invalid paper size is rejected',(await api('/api/settings','PUT',{paperSize:'A3'},admin)).status===400);
+ const visitCard={design:10,color:'#a21caf',font:'Georgia',social:{facebook:'https://facebook.com/shop',telegram:'@shop'}};
+ check('Visit card design and social accounts persist',(await api('/api/settings','PUT',{visitCard},admin)).data.visitCard.social.telegram==='@shop' && (await api('/api/settings','GET',undefined,admin)).data.visitCard.design===10);
+ check('Invalid visit card is rejected',(await api('/api/settings','PUT',{visitCard:{...visitCard,design:11}},admin)).status===400 && (await api('/api/settings','PUT',{visitCard:{...visitCard,color:'red; background:url(bad)'}},admin)).status===400);
  const off=await api('/api/control/stop','POST',undefined,admin,control,base);check('Off confirms the main HTTP listener is closed',off.status===200 && off.data.is_running===false);
  await assert.rejects(fetch(base+'/api/health',{signal:AbortSignal.timeout(1000)}));check('Off makes the actual Node port unreachable',true);
  const stoppedTest=await api('/api/control/test','GET',undefined,admin,control);check('Test correctly reports Off without starting Node',stoppedTest.data.success===false && stoppedTest.data.is_running===false);

@@ -1,5 +1,5 @@
-FixFlow 2.8.8 validation — 2026-10-13
+FixFlow 2.8.9 validation — 2026-10-13
 
-TypeScript lint, npm test (including 29 Node/discount/shop HTTP cases), fresh frontend build and bundled server build passed. Chromium UI: 40 passed, including mobile Light/Dark, receipt JPEG saves and multi-page print reports. PHP CLI / LAN integration: 20 passed, including real HTTP forwarding, On/Off and Node shutdown stopping managed PHP. Source ZIP integrity and release version verified; bundled fonts and their OFL license files are included.
+TypeScript lint, full npm test and fresh frontend/server builds passed. Shop Visit Card Maker has ten selectable designs, customizable color/font, saved social accounts and a standard-ratio preview. Isolated HTTP tests verify card settings persist and invalid designs/colors are rejected. Chromium browser tests verify a real PNG image is generated alongside prior receipt/print checks.
 
-Node On/Off was exercised on an isolated local server; Off closed its HTTP port while the localhost control page stayed available, and On restored the same port and health endpoint. Test fixtures used a separate database. The original local database remains byte-for-byte unchanged. Physical printers and remote PCs were not exercised.
+The original local database remains byte-for-byte unchanged. Tests use isolated fixtures; physical printers and remote PCs were not exercised.

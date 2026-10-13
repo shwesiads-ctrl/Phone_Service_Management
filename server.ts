@@ -1945,6 +1945,11 @@ app.put('/api/settings', (req: AuthRequest, res: Response) => {
   if (req.body.taxPercentage !== undefined && (typeof req.body.taxPercentage !== 'number' || !Number.isFinite(req.body.taxPercentage) || req.body.taxPercentage < 0 || req.body.taxPercentage > 100)) return res.status(400).json({ error: 'Tax percentage must be between 0 and 100.' });
   if (req.body.taxEnabled !== undefined && typeof req.body.taxEnabled !== 'boolean') return res.status(400).json({ error: 'Invalid tax setting.' });
   if(req.body.defaultWarrantyDays!==undefined&&(!Number.isInteger(req.body.defaultWarrantyDays)||req.body.defaultWarrantyDays<0||req.body.defaultWarrantyDays>3650))return res.status(400).json({error:'Warranty days must be a whole number from 0 to 3650.'});
+  if(req.body.visitCard!==undefined){
+    const card=req.body.visitCard;
+    const fonts=['Plus Jakarta Sans','Noto Sans Myanmar','Noto Sans Thai','Arial','Georgia','JetBrains Mono'];
+    if(!card||typeof card!=='object'||Array.isArray(card)||!Number.isInteger(card.design)||card.design<1||card.design>10||typeof card.color!=='string'||!/^#[0-9a-fA-F]{6}$/.test(card.color)||!fonts.includes(card.font)||!card.social||typeof card.social!=='object'||Array.isArray(card.social)||Object.entries(card.social).some(([key,value])=>!['facebook','tiktok','telegram','instagram','whatsapp','other'].includes(key)||typeof value!=='string'||value.length>160))return res.status(400).json({error:'Invalid visit card design or social account.'});
+  }
   const invalidLogo = imageValidationError(req.body.shopLogo);
   if (invalidLogo) return res.status(400).json({ error: invalidLogo });
   if (req.body.paymentSettings) {
