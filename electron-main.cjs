@@ -3,6 +3,12 @@ const path = require('node:path');
 const fs = require('node:fs');
 const net = require('node:net');
 const http = require('node:http');
+const singleInstance = app.requestSingleInstanceLock();
+if (!singleInstance) app.quit();
+app.on('second-instance', () => {
+  const window = BrowserWindow.getAllWindows()[0];
+  if (window) { if (window.isMinimized()) window.restore(); window.focus(); }
+});
 
 function getAvailablePort() {
   return new Promise((resolve, reject) => {
@@ -108,7 +114,7 @@ async function startDesktopApp() {
   }
 }
 
-app.whenReady().then(startDesktopApp);
+if (singleInstance) app.whenReady().then(startDesktopApp);
 
 app.on('window-all-closed', () => {
   app.quit();

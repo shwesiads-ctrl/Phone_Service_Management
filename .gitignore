@@ -71,6 +71,10 @@ Testing/
 node_modules/
 build/
 dist/
+!build/
+build/*
+!build/icon.ico
+!build/icon.png
 coverage/
 .DS_Store
 *.log

@@ -8,7 +8,7 @@ The published package excludes saved Telegram credentials. Re-enter your bot tok
 
 Staff registration and Telegram Bot settings are available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
 
-## မြန်မာလမ်းညွှန် — Version 2.8.9
+## မြန်မာလမ်းညွှန် — Version 2.9.0
 
 Settings → Local Network တွင် server PC မှ Node server On/Off နှင့် Test လုပ်နိုင်သည်။ Off သည် အဓိက Node HTTP port နှင့် managed PHP ကို ပိတ်သည်။ ပြန်ဖွင့်ရန် local control page ကို ကြိုဖွင့်ထားပါ။ Controller သည် server PC localhost တွင်သာ အလုပ်လုပ်ပြီး Admin account လိုသည်။ စာမျက်နှာများကို လိုအပ်မှသာ load လုပ်ကာ fonts ကို app ထဲထည့်ထားသည်။ Shop Settings တွင် ဒုတိယဖုန်း၊ website၊ ဆိုင်ဖွင့်ချိန်နှင့် receipt policy preview ထည့်ထားသည်။ Job အသစ်/Job Detail မှ Discount ကို amount သို့မဟုတ် % ရွေးပြီး Save လုပ်ပါ။ Receipt တွင် discount နုတ်ပြီး Total ကို ပြမည်။
 
@@ -34,6 +34,12 @@ Technician စာရင်းကို compact table၊ search၊ status filter�
 **တပ်ဆင်ရန်:** Node.js 22.12 နှင့်အထက်ဖြင့် `npm ci` → `npm run build` → `npm run start:production` လုပ်ပါ။ Update မလုပ်မီ backup သိမ်းပြီး မူလ `data/` နှင့် ၎င်းအတွင်းရှိ `.security/` ကို ထိန်းထားပါ။ Recovery အောင်မြင်တိုင်း key အသစ်ပြောင်းသောကြောင့် key အသစ်ကို ထပ်သိမ်းရန်လိုသည်။
 
 Receipt နှင့် Job Detail တွင် job currency တစ်မျိုးတည်းဖြင့် တွက်ပြပြီး currency မတူသော payment အသစ်ကို လက်မခံပါ။ Receipt မှာ ဆိုင် logo နှင့် Staff signature ပါပြီး Customer signature ဖယ်ထားသည်။ Expense နှင့် Device Category ကို စိတ်ကြိုက်ရေးထည့်/ပြင်နိုင်သည်။ Finance တွင် Ledger currency ရွေးပြီး currency တူသော စာရင်းများကိုသာ ပေါင်းပြသည်။ System License plan/day badge ကို ဖယ်ထားသည်။
+
+## Version 2.9.0 — Two-sided visit cards and Windows installer
+
+Shop Settings မှ Visit Card Maker ကို စာမပြည့်ကျပ်အောင် ရှေ့/နောက် နှစ်ဖက်ပါ ဒီဇိုင်း ၁၀ မျိုးဖြင့် ပြန်ရေးထားသည်။ Front PNG နှင့် Back PNG ကို သီးခြား သိမ်းနိုင်သည်။ Dark mode currency dropdown နှင့် မြန်မာ sidebar စာများ ပြင်ထားသည်။ Windows installer သည် လက်ရှိ user data ကို AppData တွင် ထိန်းထားပြီး demo database၊ backup နှင့် recovery key များ မထည့်ထားပါ။ GitHub Actions မှ Windows installer ထုတ်ပြီး artifact အဖြစ် ရယူနိုင်သည်။
+
+The card maker now offers ten clean, two-sided layouts with separate front and back PNG downloads. Dark currency menus and compact Myanmar navigation are fixed. The Windows installer retains existing user data in AppData and ships without demo databases, backups or recovery keys. GitHub Actions builds the installer as a downloadable artifact.
 
 ## Version 2.8.9 — Shop Visit Card Maker
 

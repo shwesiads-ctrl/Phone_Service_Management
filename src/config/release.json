@@ -1,22 +1,26 @@
 {
-  "version": "2.8.9",
+  "version": "2.9.0",
   "date": "2026-10-13",
   "changes": {
     "my": [
-      "Shop Settings တွင် Visit Card Maker ထည့်ထားသည်။ ဆိုင် logo၊ လိပ်စာ၊ ဖုန်း၊ email နှင့် Facebook၊ TikTok၊ Telegram စသော social account များကို card ပေါ်တွင် ပြနိုင်သည်။",
-      "Card design ၁၀ မျိုး၊ စိတ်ကြိုက်အရောင်နှင့် font ရွေးနိုင်ပြီး preview ကြည့်ကာ PNG ပုံအဖြစ် သိမ်းနိုင်သည်။"
+      "Visit Card Maker ကို ရှေ့/နောက် နှစ်ဖက်ပါသော သန့်ရှင်းသည့် ဒီဇိုင်း ၁၀ မျိုးဖြင့် ပြန်ရေးထားပြီး PNG ကို တစ်ဖက်စီ သိမ်းနိုင်သည်။",
+      "Dark mode currency menu အရောင်နှင့် မြန်မာ sidebar စာလုံးတန်းများကို ပြင်ထားသည်။",
+      "Windows installer ကို အဆင်သင့်ထုတ်နိုင်ရန် app icon၊ သီးသန့် data သိမ်းဆည်းမှု၊ သန့်ရှင်းသော package နှင့် Windows build workflow ထည့်ထားသည်။"
     ],
     "en": [
-      "Shop Settings now includes a visit card maker with the shop logo, address, phone, email and Facebook, TikTok, Telegram and other social accounts.",
-      "Choose from 10 card designs, customize color and font, preview the result and download a PNG image."
+      "Visit Card Maker now has ten refined two-sided layouts, with separate front and back PNG downloads.",
+      "Currency menus have dark-mode contrast, and compact Myanmar sidebar labels fit without crowding.",
+      "Windows installer packaging now has a branded icon, private persistent data, a minimal payload and an automated Windows build workflow."
     ],
     "th": [
-      "เพิ่มเครื่องมือทำนามบัตรในตั้งค่าร้าน พร้อมโลโก้ ที่อยู่ โทรศัพท์ อีเมล และบัญชี Facebook, TikTok, Telegram และอื่น ๆ",
-      "เลือกแบบนามบัตรได้ 10 แบบ เปลี่ยนสีและฟอนต์ ดูตัวอย่างและดาวน์โหลดไฟล์ PNG"
+      "ตัวทำนามบัตรปรับใหม่เป็น 10 แบบสองด้าน ดาวน์โหลด PNG ด้านหน้าและด้านหลังแยกกันได้",
+      "แก้สีเมนูสกุลเงินในโหมดมืดและย่อป้ายเมนูภาษาพม่าให้อ่านง่าย",
+      "ปรับชุดติดตั้ง Windows ให้สะอาด มีไอคอน เก็บข้อมูลผู้ใช้แยก และมีขั้นตอนสร้างอัตโนมัติ"
     ],
     "zh": [
-      "店铺设置新增名片制作工具，可显示店铺标志、地址、电话、邮箱及 Facebook、TikTok、Telegram 等社交账号。",
-      "可选择 10 种名片设计、自定义颜色和字体、预览并下载 PNG 图片。"
+      "名片制作器改为十种精致双面设计，可分别下载正反面 PNG。",
+      "修复深色模式货币菜单对比度，并精简缅甸语侧边栏文字。",
+      "优化 Windows 安装包：品牌图标、独立保存用户数据、精简打包和自动构建流程。"
     ]
   }
 }

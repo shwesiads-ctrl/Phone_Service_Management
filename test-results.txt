@@ -1,5 +1,5 @@
-FixFlow 2.8.9 validation — 2026-10-13
+FixFlow 2.9.0 validation — 2026-10-13
 
-TypeScript lint, full npm test and fresh frontend/server builds passed. Shop Visit Card Maker has ten selectable designs, customizable color/font, saved social accounts and a standard-ratio preview. Isolated HTTP tests verify card settings persist and invalid designs/colors are rejected. Chromium browser tests verify a real PNG image is generated alongside prior receipt/print checks.
+TypeScript lint, full npm test, frontend/server builds, and 45 Chromium browser checks passed. Browser checks include both visit-card previews, generated PNG bytes, Myanmar sidebar labels, dark currency option colors, receipts and reports. The Windows app payload was built on Linux with electron-builder --win dir. Its ASAR contains only the built UI, bundled server, Electron entry files and production Express dependencies (3.2 MB), with no shop database, backup or recovery key. An extracted copy passed the health endpoint and served the UI using an isolated user-data directory.
 
-The original local database remains byte-for-byte unchanged. Tests use isolated fixtures; physical printers and remote PCs were not exercised.
+The final NSIS EXE requires Wine on Linux; this environment has no Wine. The included GitHub Actions workflow builds the installer on Windows. The original local database remains byte-for-byte unchanged. Physical Windows installation and printer checks remain for a Windows machine.

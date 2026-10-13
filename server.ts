@@ -9,7 +9,6 @@ import { RecoveryKeyStore } from './src/server/recovery.ts';
 import { hashPassword, verifyPassword } from './src/server/passwords.ts';
 import { telegramRequest, sendRawTelegramMessage, escapeTelegramHtml as tgHtml } from './src/server/telegram.ts';
 import express, { Request, Response, NextFunction } from 'express';
-import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -2503,6 +2502,7 @@ async function startServer() {
     app.use(express.static(dist));
     app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
   } else {
+    const {createServer: createViteServer} = await import('vite');
     const vite = await createViteServer({ server: { middlewareMode: true }, appType: 'spa' });
     app.use(vite.middlewares);
   }

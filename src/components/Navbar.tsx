@@ -331,7 +331,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         )}
 
         {role === 'admin' && <label className="flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-2 text-xs font-semibold" title="Accounting currency">
-          <select aria-label="Select currency" value={currency} onChange={e=>setCurrency(e.target.value as import('../types').Currency)} className="bg-transparent text-[var(--text)] outline-none cursor-pointer">
+          <select aria-label="Select currency" value={currency} onChange={e=>setCurrency(e.target.value as import('../types').Currency)} className="bg-[var(--surface)] text-[var(--text)] outline-none cursor-pointer" style={{colorScheme:theme==='dark'?'dark':theme==='light'?'light':undefined}}>
             <option value="MMK">Ks</option><option value="USD">US $</option><option value="THB">B ฿</option><option value="CNY">Y ¥</option>
           </select>
         </label>}

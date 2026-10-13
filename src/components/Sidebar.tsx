@@ -41,16 +41,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
 
   // Admin menu items
   const adminMenuItems = [
-    { id: 'dashboard', path: '/admin/dashboard', label: t('adminDashboard'), icon: LayoutDashboard },
-    { id: 'service', path: '/service', label: t('service'), icon: Wrench },
-    { id: 'records', path: '/records', label: t('repairRecords'), icon: FileText },
-    { id: 'finance', path: '/finance', label: t('finance'), icon: DollarSign },
+    { id: 'dashboard', path: '/admin/dashboard', label: language==='my'?'ပင်မစာမျက်နှာ':t('adminDashboard'), icon: LayoutDashboard },
+    { id: 'service', path: '/service', label: language==='my'?'ဝန်ဆောင်မှုများ':t('service'), icon: Wrench },
+    { id: 'records', path: '/records', label: language==='my'?'ပြုပြင်မှတ်တမ်း':t('repairRecords'), icon: FileText },
+    { id: 'finance', path: '/finance', label: language==='my'?'ဝင်ငွေ / အသုံးစရိတ်':t('finance'), icon: DollarSign },
     { id: 'customers', path: '/customers', label: t('customers'), icon: Users },
     { id: 'devices', path: '/devices', label: t('devices'), icon: Smartphone },
-    { id: 'users', path: '/users', label: language==='my'?'User လုပ်ပိုင်ခွင့်':'Account Management', icon: Users },
-    { id: 'cashiers', path: '/cashiers', label: accountLabels(language).cashier, icon: DollarSign },
-    { id: 'technicians', path: '/technicians', label: t('technicians'), icon: UserCog },
-    { id: 'reports', path: '/reports', label: t('reports'), icon: BarChart3 },
+    { id: 'users', path: '/users', label: language==='my'?'အကောင့်များ':'Account Management', icon: Users },
+    { id: 'cashiers', path: '/cashiers', label: language==='my'?'ငွေလက်ခံအကောင့်':accountLabels(language).cashier, icon: DollarSign },
+    { id: 'technicians', path: '/technicians', label: language==='my'?'ပညာရှင်များ':t('technicians'), icon: UserCog },
+    { id: 'reports', path: '/reports', label: language==='my'?'အစီရင်ခံစာ':t('reports'), icon: BarChart3 },
     { id: 'settings', path: '/settings', label: t('settings'), icon: Settings },
     { id: 'about', path: '/about', label: t('about'), icon: Info },
   ];
@@ -139,6 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
             <button
               key={item.id}
               onClick={() => handleNavClick(item)}
+              title={item.label}
               className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold rounded-lg transition-colors cursor-pointer text-left ${
                 isActive
                   ? 'bg-[var(--primary)] text-white shadow-xs'
@@ -150,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
                   isActive ? 'text-white' : 'text-[var(--text-muted)]'
                 }`}
               />
-              <span className="truncate">{item.label}</span>
+              <span className={`min-w-0 truncate ${language==='my'?'text-[13px] leading-6':''}`} style={language==='my'?{fontFamily:'Noto Sans Myanmar, sans-serif'}:undefined}>{item.label}</span>
             </button>
           );
         })}

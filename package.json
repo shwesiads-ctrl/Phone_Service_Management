@@ -1,7 +1,7 @@
 {
   "name": "react-example",
   "private": true,
-  "version": "2.8.9",
+  "version": "2.9.0",
   "type": "module",
   "scripts": {
     "dev": "node --import tsx server.ts",
@@ -21,34 +21,34 @@
     "test:telegram-schedule": "npm run build && node --import tsx scripts/test-telegram-schedule.ts"
   },
   "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/express": "^4.17.21",
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^22.14.0",
     "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
+    "autoprefixer": "^10.4.21",
     "dotenv": "^17.2.3",
-    "express": "^4.21.2",
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.2",
     "html2canvas": "^1.4.1",
+    "jsdom": "^26.1.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "qrcode": "^1.5.4",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
-    "vite": "^8.3.0"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/jsdom": "^30.0.0",
-    "@types/node": "^22.14.0",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "autoprefixer": "^10.4.21",
-    "electron": "^44.7.0",
-    "electron-builder": "^26.15.3",
-    "esbuild": "^0.28.2",
-    "jsdom": "^26.1.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
   },
   "engines": {
     "node": ">=22.12.0"
@@ -61,22 +61,34 @@
       "output": "release"
     },
     "files": [
-      "**/*",
-      "!data/backups/**",
-      "!*.bak",
-      "!release/**"
+      "dist/**/*",
+      "server.cjs",
+      "electron-main.cjs",
+      "desktop-close-confirmation.cjs",
+      "package.json",
+      "node_modules/**/*",
+      "!**/.security/**",
+      "!**/data/**",
+      "!**/*.bak",
+      "!**/*.log"
     ],
     "win": {
       "target": [
         "nsis"
-      ]
+      ],
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "asar": true,
+    "artifactName": "FixFlow-Setup-${version}.${ext}"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "description": "Local repair shop management for Windows and LAN",
+  "author": "shwetaythan@gmail.com"
 }

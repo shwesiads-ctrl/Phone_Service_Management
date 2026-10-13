@@ -148,6 +148,12 @@ Node ပိတ်/ဖွင့်ရန် server PC မှ localhost ဖြင�
 
 ## Shop Visit Card / ဆိုင် Visit Card
 
-Open Settings → General → Shop Visit Card Maker. Enter the shop logo, name, address, phone and email above the maker; add Facebook, TikTok, Telegram, Instagram, WhatsApp or another social account below. Choose one of 10 designs, a color and a font. Select **Save Shop Settings** to keep the design across devices and server restarts, then select **Download PNG card** for a high-resolution image. The card uses a standard 85.6 × 54 mm aspect ratio. PNG export happens locally in the browser.
+Open Settings → General → Shop Visit Card Maker. Enter the shop logo, name, address, phone and email above the maker; add Facebook, TikTok, Telegram, Instagram, WhatsApp or another social account below. Choose one of 10 designs, a color and a font. Select **Save Shop Settings** to keep the design across devices and server restarts, then download the front and back PNG files separately. Each side uses a standard 85.6 × 54 mm aspect ratio. PNG export happens locally in the browser.
 
-Settings → General → Shop Visit Card Maker မှ ဆိုင် logo၊ လိပ်စာ၊ ဖုန်း၊ email နှင့် social account များ ဖြည့်ပါ။ ဒီဇိုင်း ၁၀ မျိုး၊ အရောင်နှင့် font ရွေးပြီး **Save Shop Settings** နှိပ်ပါ။ **Download PNG card** ဖြင့် ပုံသိမ်းနိုင်ပါသည်။
+Settings → General → Shop Visit Card Maker မှ ဆိုင် logo၊ လိပ်စာ၊ ဖုန်း၊ email နှင့် social account များ ဖြည့်ပါ။ ဒီဇိုင်း ၁၀ မျိုး၊ အရောင်နှင့် font ရွေးပြီး **Save Shop Settings** နှိပ်ပါ။ Front PNG နှင့် Back PNG ကို သီးခြား သိမ်းနိုင်ပါသည်။
+
+## Windows installer (v2.9.0) / Windows တင်သွင်းမှု
+
+On Windows with Node.js 24, run `npm ci` and `npm run dist:win`. The installer is `release/FixFlow-Setup-2.9.0.exe`. GitHub Actions → **Windows installer** also builds the EXE on each release source push; download the workflow artifact. Run the installer, choose an install directory, and launch FixFlow from the Start menu or desktop shortcut. On first launch create the administrator account. Data is saved under the current Windows user's AppData (`FixFlow Repair Service Manager/data`), outside the installed application; upgrades and uninstall keep it. Back up that data directory before reinstalling Windows or moving to another PC. The installer omits saved databases, credentials, backups, recovery keys and source development files. It is unsigned; Windows SmartScreen may require the publisher to sign future distributions.
+
+Windows တွင် `npm ci` ပြီး `npm run dist:win` ဖြင့် installer ထုတ်နိုင်သည်။ GitHub Actions → **Windows installer** မှလည်း EXE artifact ကို download လုပ်နိုင်သည်။ ဆိုင် data ကို AppData ထဲ သီးသန့်သိမ်းပြီး upgrade/uninstall လုပ်လျှင် မဖျက်ပါ။ PC ပြောင်းမည်ဆိုလျှင် data folder ကို backup ယူပါ။
