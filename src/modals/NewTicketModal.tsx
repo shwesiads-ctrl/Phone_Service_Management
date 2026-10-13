@@ -1,3 +1,5 @@
+import {DiscountFields} from '../components/DiscountFields';
+import {calculateJobPricing,type DiscountType} from '../utils/jobPricing';
 import { usePaymentSelection } from '../hooks/usePaymentSelection';
 import { PaymentProfileSelector } from '../components/PaymentProfileSelector';
 import { paymentMethodLabel } from '../utils/paymentMethodLabel';
@@ -45,6 +47,8 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
   // MANDATORY: Admin must assign the job to a technician
   const [technicianId, setTechnicianId] = useState<string>(technicians[0]?.id || '');
   const [serviceCharge, setServiceCharge] = useState('');
+  const [discountType,setDiscountType]=useState<DiscountType>('amount');
+  const [discountValue,setDiscountValue]=useState('0');
   const [amountPaid, setAmountPaid] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<string>(() => {
     return availablePaymentMethods[0]?.id || 'cash';
@@ -65,6 +69,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
     setSubmitting(true);
 
     try {
+      calculateJobPricing(parseFloat(serviceCharge) || 0,0,discountType,Number(discountValue || 0),currency);
       let finalCustomerId = selectedCustomerId;
 
       // Create new customer if toggled
@@ -96,6 +101,8 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
         problem_description: problemDescription,
         priority,
         service_charge: parseFloat(serviceCharge) || 0,
+        discount_type:discountType,
+        discount_value:Number(discountValue || 0),
         amount_paid: parseFloat(amountPaid) || 0,
         currency_code: currency,
         payment_method: paymentMethod,
@@ -375,6 +382,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
                 </div>
               </div>
 
+              <DiscountFields type={discountType} value={discountValue} currency={currency} onChange={(type,value)=>{setDiscountType(type);setDiscountValue(value);}}/>
               <div>
                 <label className="block text-[11px] font-bold text-[var(--text)] mb-1">
                   Advance Deposit Paid

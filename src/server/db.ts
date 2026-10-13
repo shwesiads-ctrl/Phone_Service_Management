@@ -545,7 +545,18 @@ class Database {
 
   // --- Service Jobs ---
   public getJobs(): ServiceJob[] {
-    return this.data.service_jobs.map((j) => this.populateJob(j));
+    // Build relational indexes once, rather than scanning every table for each job.
+    const technicians=new Map(this.data.technicians.map(technician=>{const {profile_photo,...summary}=technician;return [technician.id,summary] as const;}));
+    const customers=new Map(this.data.customers.map(customer=>[customer.id,customer]));
+    const devices=new Map(this.data.devices.map(device=>[device.id,device]));
+    const parts=new Map<string,ServiceJobPart[]>();
+    for(const part of this.data.service_job_parts){const group=parts.get(part.service_job_id)||[];group.push(part);parts.set(part.service_job_id,group);}
+    const payments=new Map<string,ServicePayment[]>();
+    for(const payment of this.data.service_payments){if(payment.is_deleted)continue;const group=payments.get(payment.service_job_id)||[];group.push(payment);payments.set(payment.service_job_id,group);}
+    return this.data.service_jobs.map(job=>{
+      const technician=technicians.get(job.technician_id),customer=customers.get(job.customer_id);
+      return {...job,technician,customer,device:devices.get(job.device_id),parts_used:parts.get(job.id)||[],payments:(payments.get(job.id)||[]).map(payment=>({...payment,service_number:job.service_number,customer_name:customer?.name,technician_id:job.technician_id,technician_name:technician?.full_name}))};
+    });
   }
 
   public getJobById(id: string): ServiceJob | undefined {
@@ -676,13 +687,13 @@ class Database {
       (p) => p.service_job_id === job.id && !p.is_deleted && p.currency_code === (job.currency_code || 'MMK')
     );
     const totalPaid = activePayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-    const totalCost = job.total_cost || (job.service_charge + job.parts_cost);
+    const totalCost = job.total_cost ?? (job.service_charge + job.parts_cost - (job.discount_amount || 0));
 
     this.data.service_jobs[jobIndex] = {
       ...job,
       amount_paid: totalPaid,
       payment_status:
-        totalPaid >= totalCost && totalCost > 0
+        totalPaid >= totalCost && (totalCost > 0 || (job.discount_amount || 0) > 0)
           ? 'paid'
           : totalPaid > 0
           ? 'partial'

@@ -1,3 +1,5 @@
+import {DiscountFields} from '../components/DiscountFields';
+import {calculateJobPricing,type DiscountType} from '../utils/jobPricing';
 import { jobPaymentSummary } from '../utils/jobPayments';
 import { usePaymentSelection } from '../hooks/usePaymentSelection';
 import { PaymentProfileSelector } from '../components/PaymentProfileSelector';
@@ -61,6 +63,8 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
   const [repairNotes, setRepairNotes] = useState<string>(job.repair_notes || '');
   const [completionNotes, setCompletionNotes] = useState<string>(job.completion_notes || '');
   const [serviceCharge, setServiceCharge] = useState<number>(job.service_charge);
+  const [discountType,setDiscountType]=useState<DiscountType>(job.discount_type || 'amount');
+  const [discountValue,setDiscountValue]=useState(String(job.discount_value || 0));
   const [parts, setParts] = useState<ServiceJobPart[]>(job.parts_used || []);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -110,7 +114,9 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
 
   const { records: jobPayments, paid: totalPaid } = jobPaymentSummary(job, payments);
   const partsCost = parts.reduce((sum, p) => sum + (p.total_cost || 0), 0);
-  const totalCost = Number(serviceCharge || 0) + partsCost;
+  let pricing, pricingError='';
+  try{pricing=calculateJobPricing(Number(serviceCharge || 0),partsCost,discountType,Number(discountValue || 0),currency);}catch(error:any){pricingError=error.message;}
+  const totalCost = pricing?.total_cost ?? Number(serviceCharge || 0)+partsCost;
   const balanceDue = Math.max(0, totalCost - totalPaid);
 
   const selectedMethodConfig = availablePaymentMethods.find(
@@ -142,6 +148,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
 
   const handleSave = async () => {
     setErrorMsg(null);
+    if(pricingError){setErrorMsg(pricingError);return;}
     setSaving(true);
     try {
       const payload: Partial<ServiceJob> = {
@@ -155,6 +162,8 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
 
       // Financial control: Only Administrator can alter service charge or payment totals
       if (!isTechnician) {
+        payload.discount_type = discountType;
+        payload.discount_value = Number(discountValue || 0);
         payload.service_charge = Number(serviceCharge);
         payload.parts_cost = partsCost;
         payload.total_cost = totalCost;
@@ -772,6 +781,9 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, onClose, on
               </div>
             </div>
 
+            {!isTechnician && <DiscountFields type={discountType} value={discountValue} currency={currency} disabled={saving} onChange={(type,value)=>{setDiscountType(type);setDiscountValue(value);}}/>}
+            {pricingError && <p role="alert" className="text-xs text-rose-500">{pricingError}</p>}
+            {(pricing?.discount_amount || 0)>0 && <p className="text-xs">Discount: −{formatCurrency(pricing!.discount_amount)} {discountType==='percent'?`(${discountValue}%)`:''}</p>}
             {/* Totals & Balance Bar */}
             <div className="pt-3 border-t border-[var(--border)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
               <div className="space-y-0.5">

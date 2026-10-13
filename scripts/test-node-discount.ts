@@ -1,0 +1,60 @@
+import assert from 'node:assert/strict';
+import {mkdtempSync,readFileSync,writeFileSync,rmSync,existsSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {spawn} from 'node:child_process';
+import {createServer} from 'node:net';
+import {once} from 'node:events';
+const source=()=>existsSync('data/db.json')?readFileSync('data/db.json'):Buffer.from('');const original=source();
+const directory=mkdtempSync(join(tmpdir(),'fixflow-node-discount-'));
+const fixture=JSON.parse(readFileSync('scripts/fixtures/legacy-demo-db.json','utf8'));
+fixture.users.find((user:any)=>user.role==='admin').password='admin123';fixture.settings.telegramBot={...fixture.settings.telegramBot,enabled:false,bot_token:''};
+writeFileSync(join(directory,'db.json'),JSON.stringify(fixture));
+const probe=createServer();probe.listen(0,'127.0.0.1');await once(probe,'listening');const port=(probe.address() as any).port;await new Promise<void>(resolve=>probe.close(()=>resolve()));
+const base=`http://127.0.0.1:${port}`;const child=spawn(process.execPath,['--import','tsx','--import','./scripts/mock-telegram.ts','server.ts'],{env:{...process.env,NODE_ENV:'production',PORT:String(port),FIXFLOW_DATA_DIR:directory},stdio:['ignore','pipe','pipe']});let output='';child.stdout!.on('data',data=>output+=data);child.stderr!.on('data',data=>output+=data);
+let passed=0;function check(name:string,condition:any){assert.ok(condition,name);console.log('PASS: '+name);passed++;}
+async function api(path:string,method='GET',body?:any,token?:string,url=base,origin?:string){const response=await fetch(url+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`} : {}),...(origin?{Origin:origin}: {})},...(body===undefined?{}:{body:JSON.stringify(body)})});return {status:response.status,data:await response.json()};}
+try{
+ let ready=false;for(let i=0;i<120;i++){try{if((await api('/api/health')).status===200){ready=true;break;}}catch{}await new Promise(resolve=>setTimeout(resolve,100));}assert.ok(ready,output);
+ const admin=(await api('/api/auth/login','POST',{username:'admin',password:'admin123'})).data.token;
+ const info=(await api('/api/system/network-info')).data;const control=info.node_control.url;
+ check('Node exposes a separate local control endpoint',info.node_control.available && new URL(control).hostname==='127.0.0.1' && Number(new URL(control).port)!==port);
+ check('Unauthenticated server control is rejected',(await api('/api/control/status','GET',undefined,undefined,control)).status===401);
+ check('Untrusted browser origin is rejected',(await api('/api/control/stop','POST',undefined,admin,control,'https://attacker.example')).status===403);
+ const cashier=(await api('/api/cashiers','POST',{username:'node_cashier',full_name:'Test Counter',password:'Counter123'},admin)).data;
+ const cashToken=(await api('/api/auth/login','POST',{username:cashier.username,password:'Counter123'})).data.token;
+ check('Cashier cannot control Node',(await api('/api/control/stop','POST',undefined,cashToken,control)).status===403);
+ const health=await api('/api/control/test','GET',undefined,admin,control,base);check('Test button uses actual Node health',health.data.success && health.data.healthy && health.data.is_running);
+ check('Loopback browser gets explicit CORS permission',(await fetch(control+'/api/control/status',{headers:{Authorization:`Bearer ${admin}`,Origin:base}})).headers.get('access-control-allow-origin')===base);
+ const jobBody={customer_id:fixture.customers[0].id,device_id:fixture.devices.find((device:any)=>device.customer_id===fixture.customers[0].id).id,technician_id:fixture.technicians[0].id,service_charge:45000,currency_code:'MMK'};
+ const job=(await api('/api/jobs','POST',{...jobBody,discount_type:'percent',discount_value:10,amount_paid:30000},admin)).data;
+ check('Percent discount lowers persisted receipt total',job.discount_amount===4500 && job.total_cost===40500 && job.amount_paid===30000);
+ check('Discount percentage greater than 100 is rejected',(await api('/api/jobs','POST',{...jobBody,discount_type:'percent',discount_value:101},admin)).status===400);
+ check('Discount exceeding subtotal is rejected',(await api('/api/jobs','POST',{...jobBody,discount_type:'amount',discount_value:45001},admin)).status===400);
+ check('Negative discount is rejected',(await api('/api/jobs','POST',{...jobBody,discount_value:-1},admin)).status===400);
+ const tech=fixture.users.find((user:any)=>user.technician_id===jobBody.technician_id);const techToken=(await api('/api/auth/login','POST',{username:tech.username,password:'tech123'})).data.token;
+ check('Technician cannot alter discount',(await api(`/api/jobs/${job.id}`,'PUT',{discount_value:100},techToken)).status===403);
+ const edited=(await api(`/api/jobs/${job.id}`,'PUT',{discount_type:'amount',discount_value:1000,amount_paid:0},admin)).data;
+ check('Amount discount edit preserves authoritative payments',edited.total_cost===44000 && edited.discount_amount===1000 && edited.amount_paid===30000);
+ const free=(await api(`/api/jobs/${job.id}`,'PUT',{discount_type:'percent',discount_value:100},admin)).data;
+ check('Full discount stays zero after payment recalculation',free.total_cost===0 && free.discount_amount===45000 && free.payment_status==='paid');
+ const usd=(await api('/api/jobs','POST',{...jobBody,service_charge:19.99,currency_code:'USD',discount_type:'percent',discount_value:10},admin)).data;
+ check('Dollar discount rounds to cents',usd.discount_amount===2 && usd.total_cost===17.99);
+ const shop=await api('/api/settings','PUT',{secondaryPhone:'09912345',website:'https://shop.example',businessHours:'Mon–Sat 9:00–18:00',receiptFooterNote:'Thank you!',defaultWarrantyDays:120,paperSize:'80mm'},admin);
+ check('Upgraded shop fields and receipt policy are saved',shop.status===200 && shop.data.secondaryPhone==='09912345' && shop.data.defaultWarrantyDays===120 && shop.data.paperSize==='80mm');
+ check('Unsafe shop website is rejected',(await api('/api/settings','PUT',{website:'javascript:alert(1)'},admin)).status===400);
+ check('Invalid paper size is rejected',(await api('/api/settings','PUT',{paperSize:'A3'},admin)).status===400);
+ const off=await api('/api/control/stop','POST',undefined,admin,control,base);check('Off confirms the main HTTP listener is closed',off.status===200 && off.data.is_running===false);
+ await assert.rejects(fetch(base+'/api/health',{signal:AbortSignal.timeout(1000)}));check('Off makes the actual Node port unreachable',true);
+ const stoppedTest=await api('/api/control/test','GET',undefined,admin,control);check('Test correctly reports Off without starting Node',stoppedTest.data.success===false && stoppedTest.data.is_running===false);
+ check('Control page remains available while Node is Off',(await fetch(control)).status===200);
+ check('Wrong standalone control credentials are rejected',(await api('/api/control/login','POST',{username:'admin',password:'wrong'},undefined,control)).status===401);
+ const controlToken=(await api('/api/control/login','POST',{username:'admin',password:'admin123'},undefined,control)).data.token;check('Administrator can sign in to standalone control while Off',typeof controlToken==='string' && controlToken.length===64);
+ const occupied=createServer();occupied.listen(port,'127.0.0.1');await once(occupied,'listening');try{const result=await api('/api/control/start','POST',undefined,controlToken,control);check('Occupied Node port returns a failure without false On',result.status===500 && (await api('/api/control/status','GET',undefined,controlToken,control)).data.is_running===false);}finally{await new Promise<void>(resolve=>occupied.close(()=>resolve()));}
+ const on=await api('/api/control/start','POST',undefined,controlToken,control);check('On reopens the same Node port and passes health',on.status===200 && on.data.is_running && on.data.healthy && (await api('/api/health')).data.ok);
+ check('Repeated On is safe',(await api('/api/control/start','POST',undefined,controlToken,control)).data.healthy);
+ check('Existing session works again after On',(await api('/api/auth/me','GET',undefined,admin)).status===200);
+ check('Shop settings and discount survive Off/On',(await api('/api/settings','GET',undefined,admin)).data.businessHours==='Mon–Sat 9:00–18:00' && (await api(`/api/jobs/${usd.id}`,'GET',undefined,admin)).data.total_cost===17.99);
+ const entry=readFileSync('dist/index.html','utf8').match(/src="([^"]+\.js)"/)!;const cache=await fetch(base+entry[1]);check('Hashed assets have immutable cache headers',cache.headers.get('cache-control')?.includes('immutable'));
+}finally{if(child.exitCode===null){const done=once(child,'exit');child.kill();await done;}rmSync(directory,{recursive:true,force:true});assert.deepEqual(source(),original,'Original database unchanged');}
+console.log(`NODE CONTROL, DISCOUNT & SHOP HTTP SUMMARY: ${passed} PASSED`);

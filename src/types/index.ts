@@ -106,6 +106,9 @@ export interface ServiceJob {
   diagnosis?: string;
   repair_notes?: string;
   completion_notes?: string;
+  discount_type?: 'amount' | 'percent';
+  discount_value?: number;
+  discount_amount?: number;
   service_charge: number;
   parts_cost: number;
   total_cost: number;
@@ -337,6 +340,9 @@ export interface SettingsState {
   email: string;
   address: string;
   shopLogo?: string;
+  secondaryPhone?: string;
+  website?: string;
+  businessHours?: string;
   receiptFooterNote: string;
   defaultWarrantyDays: number;
   currency: Currency;

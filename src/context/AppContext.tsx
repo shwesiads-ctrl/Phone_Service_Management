@@ -401,7 +401,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const token = localStorage.getItem('fixflow_auth_token');
     if (token && currentUser?.id) headers.Authorization = `Bearer ${token}`;
     return headers;
-  }, [currentUser]);
+  }, [currentUser?.id]);
 
   // Settings update
   const updateSettings = async (newSettings: Partial<SettingsState>): Promise<void> => {
@@ -867,7 +867,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       fetchBackupMetadata();
       refreshTelegramBot();
     }
-  }, [currentUser, activeUser.role, refreshJobs, refreshPayments, refreshTechnicians, refreshMetadata, refreshAuditTrail, refreshFinance, fetchBackupMetadata, refreshLicense, refreshTelegramBot]);
+  }, [currentUser?.id, activeUser.role, refreshJobs, refreshPayments, refreshTechnicians, refreshMetadata, refreshAuditTrail, refreshFinance, fetchBackupMetadata, refreshLicense, refreshTelegramBot]);
 
   // Job operations with API
   const createJob = async (jobData: any): Promise<ServiceJob> => {

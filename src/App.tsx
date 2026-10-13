@@ -1,35 +1,35 @@
-import { UserAccessView } from './views/UserAccessView';
-import { CashierDashboardView } from './views/CashierDashboardView';
-import { CashierAccountsView } from './views/CashierAccountsView';
-import { CashierJobModal } from './modals/CashierJobModal';
+const UserAccessView = lazy(() => import('./views/UserAccessView').then(module => ({default:module.UserAccessView})));
+const CashierDashboardView = lazy(() => import('./views/CashierDashboardView').then(module => ({default:module.CashierDashboardView})));
+const CashierAccountsView = lazy(() => import('./views/CashierAccountsView').then(module => ({default:module.CashierAccountsView})));
+const CashierJobModal = lazy(() => import('./modals/CashierJobModal').then(module => ({default:module.CashierJobModal})));
 import { useCloseConfirmation } from './hooks/useCloseConfirmation';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
-import { AdminDashboardView } from './views/AdminDashboardView';
-import { TechnicianDashboardView } from './views/TechnicianDashboardView';
-import { Forbidden403View } from './views/Forbidden403View';
-import { ServiceView } from './views/ServiceView';
-import { TechnicianDeskView } from './views/TechnicianDeskView';
-import { CustomersView } from './views/CustomersView';
-import { DevicesView } from './views/DevicesView';
-import { TechniciansView } from './views/TechniciansView';
-import { RepairRecordsView } from './views/RepairRecordsView';
-import { FinanceView } from './views/FinanceView';
-import { ReportsView } from './views/ReportsView';
-import { SettingsView } from './views/SettingsView';
-import { AboutView } from './views/AboutView';
-import { UserGuideView } from './views/UserGuideView';
+const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then(module => ({default:module.AdminDashboardView})));
+const TechnicianDashboardView = lazy(() => import('./views/TechnicianDashboardView').then(module => ({default:module.TechnicianDashboardView})));
+const Forbidden403View = lazy(() => import('./views/Forbidden403View').then(module => ({default:module.Forbidden403View})));
+const ServiceView = lazy(() => import('./views/ServiceView').then(module => ({default:module.ServiceView})));
+const TechnicianDeskView = lazy(() => import('./views/TechnicianDeskView').then(module => ({default:module.TechnicianDeskView})));
+const CustomersView = lazy(() => import('./views/CustomersView').then(module => ({default:module.CustomersView})));
+const DevicesView = lazy(() => import('./views/DevicesView').then(module => ({default:module.DevicesView})));
+const TechniciansView = lazy(() => import('./views/TechniciansView').then(module => ({default:module.TechniciansView})));
+const RepairRecordsView = lazy(() => import('./views/RepairRecordsView').then(module => ({default:module.RepairRecordsView})));
+const FinanceView = lazy(() => import('./views/FinanceView').then(module => ({default:module.FinanceView})));
+const ReportsView = lazy(() => import('./views/ReportsView').then(module => ({default:module.ReportsView})));
+const SettingsView = lazy(() => import('./views/SettingsView').then(module => ({default:module.SettingsView})));
+const AboutView = lazy(() => import('./views/AboutView').then(module => ({default:module.AboutView})));
+const UserGuideView = lazy(() => import('./views/UserGuideView').then(module => ({default:module.UserGuideView})));
 import { LoginView } from './components/LoginView';
-import { JobDetailModal } from './modals/JobDetailModal';
-import { NewTicketModal } from './modals/NewTicketModal';
-import { PrintTicketModal } from './modals/PrintTicketModal';
+const JobDetailModal = lazy(() => import('./modals/JobDetailModal').then(module => ({default:module.JobDetailModal})));
+const NewTicketModal = lazy(() => import('./modals/NewTicketModal').then(module => ({default:module.NewTicketModal})));
+const PrintTicketModal = lazy(() => import('./modals/PrintTicketModal').then(module => ({default:module.PrintTicketModal})));
 import { ServiceJob } from './types';
 
 const AuthenticatedLayout: React.FC = () => {
@@ -185,11 +185,12 @@ const AuthenticatedLayout: React.FC = () => {
 
         {/* View Viewport */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          {renderActiveView()}
+          <Suspense fallback={<div role="status" className="p-8 text-sm text-[var(--text-muted)]">Loading page…</div>}>{renderActiveView()}</Suspense>
         </main>
       </div>
 
       {/* Modals */}
+      <Suspense fallback={<div role="status" className="fixed bottom-6 right-6 z-50 p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]">Loading…</div>}>
       {selectedJob && role === 'cashier' && <CashierJobModal job={jobs.find(j => j.id === selectedJob.id) || selectedJob} onClose={() => setSelectedJob(null)} onPrint={job => { setSelectedJob(null); handlePrintReceipt(job); }} />}
       {selectedJob && role !== 'cashier' && (
         <JobDetailModal
@@ -215,6 +216,7 @@ const AuthenticatedLayout: React.FC = () => {
           onClose={() => setPrintJob(null)}
         />
       )}
+      </Suspense>
     </div>
   );
 };

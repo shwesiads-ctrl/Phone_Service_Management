@@ -1,3 +1,6 @@
+import {calculateJobPricing} from './src/utils/jobPricing';
+import { NodeControl } from './src/server/nodeControl';
+import {createServer as createHttpServer} from 'node:http';
 import { buildTelegramSummary, localDay, summaryDue } from './src/server/telegramSummary';
 import { createServer as createPortProbe } from 'node:net';
 import { LoginLimiter } from './src/server/loginLimiter.ts';
@@ -11,7 +14,7 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import { randomBytes, createHash } from 'node:crypto';
-import { execSync, spawn, ChildProcess } from 'child_process';
+import { execFile, spawn, ChildProcess } from 'child_process';
 import { db } from './src/server/db.ts';
 import { User, ServiceStatus } from './src/types/index.ts';
 
@@ -22,6 +25,8 @@ interface AuthRequest extends Request {
 
 const recoveryKeys = new RecoveryKeyStore(path.resolve(process.env.FIXFLOW_DATA_DIR || 'data', '.security'));
 const app = express();
+const nodeHttpServer = createHttpServer(app);
+let nodeControl: NodeControl | undefined;
 const loginLimiter=new LoginLimiter();
 const port = Number(process.env.PORT || 3000);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT');
@@ -774,9 +779,11 @@ app.post('/api/jobs', (req: AuthRequest, res: Response) => {
   }
   if (warranty_days !== undefined && (!Number.isInteger(Number(warranty_days)) || Number(warranty_days) < 0)) return res.status(400).json({ error: 'Warranty days must be a non-negative integer.' });
   const chargeNum = Number(service_charge) || 0;
+  let pricing;
+  try{pricing=calculateJobPricing(chargeNum,0,req.body.discount_type || 'amount',Number(req.body.discount_value ?? 0),req.body.currency_code || db.getSettings().currency || 'MMK');}catch(error:any){return res.status(400).json({error:error.message});}
   const paidNum = Number(amount_paid) || 0;
   const payment_status =
-    paidNum >= chargeNum && chargeNum > 0
+    paidNum >= pricing.total_cost && (pricing.total_cost > 0 || pricing.discount_amount > 0)
       ? 'paid'
       : paidNum > 0
       ? 'partial'
@@ -794,7 +801,10 @@ app.post('/api/jobs', (req: AuthRequest, res: Response) => {
     problem_description: problem_description || 'Intake service request',
     service_charge: chargeNum,
     parts_cost: 0,
-    total_cost: chargeNum,
+    discount_type:pricing.discount_type,
+    discount_value:pricing.discount_value,
+    discount_amount:pricing.discount_amount,
+    total_cost:pricing.total_cost,
     amount_paid: paidNum,
     currency_code: req.body.currency_code || db.getSettings().currency || 'MMK',
     payment_status,
@@ -837,9 +847,10 @@ app.post('/api/jobs', (req: AuthRequest, res: Response) => {
 const validStatuses = new Set(['received', 'diagnosing', 'waiting_parts', 'repairing', 'ready', 'completed', 'delivered', 'cancelled']);
 const jobEditFields = new Set(['status_id', 'priority', 'diagnosis', 'repair_notes', 'completion_notes', 'warranty_days',
   'parts_used', 'service_charge', 'parts_cost', 'total_cost', 'amount_paid', 'technician_id', 'problem_description',
-  'passlock_pin', 'category_id', 'payment_method']);
+  'passlock_pin', 'category_id', 'payment_method', 'discount_type', 'discount_value']);
 app.use('/api/jobs', (req: AuthRequest, res, next) => {
   if (req.method === 'PUT') {
+    if (req.user?.role === 'technician' && (req.body.discount_type !== undefined || req.body.discount_value !== undefined)) return res.status(403).json({error:'Only administrators can edit job discounts.'});
     if (req.body.status_id !== undefined && !validStatuses.has(req.body.status_id)) {
       return res.status(400).json({ error: 'Invalid repair status.' });
     }
@@ -938,11 +949,13 @@ app.put('/api/jobs/:id', (req: AuthRequest, res: Response) => {
   const parts_used = req.body.parts_used || existingJob.parts_used || [];
   const parts_cost = parts_used.reduce((sum: number, p: any) => sum + (Number(p.total_cost) || 0), 0);
   const service_charge = req.body.service_charge !== undefined ? Number(req.body.service_charge) : existingJob.service_charge;
-  const total_cost = service_charge + parts_cost;
+  let pricing;
+  try{pricing=calculateJobPricing(service_charge,parts_cost,req.body.discount_type ?? existingJob.discount_type ?? 'amount',Number(req.body.discount_value ?? existingJob.discount_value ?? 0),existingJob.currency_code || 'MMK');}catch(error:any){return res.status(400).json({error:error.message});}
+  const total_cost = pricing.total_cost;
   // Payments are the source of truth; a stale modal must never overwrite a newer receipt.
   const amount_paid = existingJob.amount_paid;
   const payment_status =
-    amount_paid >= total_cost && total_cost > 0
+    amount_paid >= total_cost && (total_cost > 0 || pricing.discount_amount > 0)
       ? 'paid'
       : amount_paid > 0
       ? 'partial'
@@ -961,6 +974,9 @@ app.put('/api/jobs/:id', (req: AuthRequest, res: Response) => {
   // Safe updates payload
   const updates: any = {
     ...req.body,
+    discount_type: pricing.discount_type,
+    discount_value: pricing.discount_value,
+    discount_amount: pricing.discount_amount,
     parts_cost,
     service_charge,
     total_cost,
@@ -1921,9 +1937,11 @@ app.put('/api/settings', (req: AuthRequest, res: Response) => {
   if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden: Only administrators can update system settings.' });
   }
-  for (const field of ['shopName','phone','email','address','taxId','receiptFooterNote'] as const) {
+  for (const field of ['shopName','phone','email','address','taxId','receiptFooterNote','secondaryPhone','website','businessHours'] as const) {
     if (req.body[field] !== undefined && (typeof req.body[field] !== 'string' || req.body[field].length > (['address','receiptFooterNote'].includes(field) ? 2000 : 200) || (field === 'shopName' && !req.body[field].trim()))) return res.status(400).json({ error: 'Enter valid workshop contact details.' });
   }
+  if (req.body.website) {try{const url=new URL(req.body.website);if(!['http:','https:'].includes(url.protocol)||url.username||url.password)throw Error();}catch{return res.status(400).json({error:'Enter a valid HTTP/HTTPS shop website.'});}}
+  if (req.body.paperSize !== undefined && !['A4','80mm'].includes(req.body.paperSize)) return res.status(400).json({error:'Choose A4 or 80mm paper.'});
   if (req.body.taxPercentage !== undefined && (typeof req.body.taxPercentage !== 'number' || !Number.isFinite(req.body.taxPercentage) || req.body.taxPercentage < 0 || req.body.taxPercentage > 100)) return res.status(400).json({ error: 'Tax percentage must be between 0 and 100.' });
   if (req.body.taxEnabled !== undefined && typeof req.body.taxEnabled !== 'boolean') return res.status(400).json({ error: 'Invalid tax setting.' });
   if(req.body.defaultWarrantyDays!==undefined&&(!Number.isInteger(req.body.defaultWarrantyDays)||req.body.defaultWarrantyDays<0||req.body.defaultWarrantyDays>3650))return res.status(400).json({error:'Warranty days must be a whole number from 0 to 3650.'});
@@ -2260,7 +2278,7 @@ app.post('/api/telegram/daily-summary',requireAdmin,async(req,res)=>{
   catch(error:any){return res.status(summarySending?409:400).json({error:error.message});}
 });
 const summaryTimer=setInterval(async()=>{
-  try{const config=db.getTelegramBot();if(!summaryDue(config)||summarySending)return;const date=localDay(new Date(),config.summary_time_zone || 'Asia/Yangon');db.updateTelegramBot({last_daily_summary_attempt:date});await deliverDailySummary(date);}catch{console.warn('[Telegram Summary] Scheduled attempt failed; inspect delivery history and configuration.');}
+  try{if(!nodeHttpServer.listening)return;const config=db.getTelegramBot();if(!summaryDue(config)||summarySending)return;const date=localDay(new Date(),config.summary_time_zone || 'Asia/Yangon');db.updateTelegramBot({last_daily_summary_attempt:date});await deliverDailySummary(date);}catch{console.warn('[Telegram Summary] Scheduled attempt failed; inspect delivery history and configuration.');}
 },30000);summaryTimer.unref();
 
 // Chat ID Maker API: Fetch recent chats and updates from Telegram Bot
@@ -2363,22 +2381,19 @@ function getSystemNetworkInterfaces() {
   return { list, primaryIp };
 }
 
+let phpVersionCheck: Promise<{installed:boolean;version:string}> | undefined;
+let phpVersionCheckedAt = 0;
 function checkPhpCli() {
-  let installed = false;
-  let version = '';
-  try {
-    const raw = execSync('php -v', { encoding: 'utf-8', timeout: 3000 });
-    installed = true;
-    version = raw.split('\n')[0].trim();
-  } catch (e) {
-    installed = false;
+  if(!phpVersionCheck || Date.now()-phpVersionCheckedAt>60000){
+    phpVersionCheckedAt=Date.now();
+    phpVersionCheck=new Promise(resolve=>execFile('php',['-v'],{encoding:'utf8',timeout:3000},(error,output)=>resolve(error?{installed:false,version:''}:{installed:true,version:output.split('\n')[0].trim()})));
   }
-  return { installed, version };
+  return phpVersionCheck;
 }
 
 app.get('/api/system/network-info', async (_req: Request, res: Response) => {
   const { list, primaryIp } = getSystemNetworkInterfaces();
-  const php = checkPhpCli();
+  const php = await checkPhpCli();
 
   let isPhpRunning=false;
   if(phpCliProcess&&phpCliProcess.exitCode===null&&phpCliProcess.signalCode===null&&!phpCliStarting&&!phpCliStopping){try{const response=await fetch(`http://127.0.0.1:${phpCliActivePort}/api/health`,{signal:AbortSignal.timeout(1000)});isPhpRunning=response.ok&&(await response.json()).server==='FixFlow-Node';}catch{}}
@@ -2390,6 +2405,7 @@ app.get('/api/system/network-info', async (_req: Request, res: Response) => {
     interfaces: list,
     primary_ip: primaryIp,
     node_port: port,
+    node_control: nodeControl?.info || {available:false},
     node_lan_url: `http://${primaryIp}:${port}`,
     php_cli: {
       installed: php.installed,
@@ -2413,7 +2429,7 @@ app.post('/api/system/php-cli/start', async (req: AuthRequest, res: Response) =>
   if (!Number.isInteger(requestedPort) || requestedPort < 1 || requestedPort > 65535 || requestedPort === port) return res.status(400).json({ error: 'Choose a valid PHP port different from the Node server port.' });
   if (phpCliStarting || phpCliStopping) return res.status(409).json({success:false,error:'PHP startup is already in progress.'});
   if (!fs.existsSync(path.resolve(process.env.FIXFLOW_DIST_DIR || 'dist','index.html'))) return res.status(409).json({success:false,error:'Build the frontend with npm run build before starting PHP CLI.'});
-  const php = checkPhpCli();
+  const php = await checkPhpCli();
   if (!php.installed) return res.status(400).json({success:false,error:'PHP CLI is not installed or not in PATH. Install PHP CLI and restart FixFlow.'});
   const { primaryIp } = getSystemNetworkInterfaces();
   if (phpCliProcess && phpCliProcess.exitCode===null && phpCliProcess.signalCode===null) {
@@ -2478,6 +2494,7 @@ async function startServer() {
   if (process.env.NODE_ENV === 'production') {
     const dist = path.resolve(process.env.FIXFLOW_DIST_DIR || 'dist');
     if (!fs.existsSync(path.join(dist, 'index.html'))) throw new Error('Run npm run build before production start.');
+    app.use('/assets',express.static(path.join(dist,'assets'),{maxAge:'1y',immutable:true}));
     app.use(express.static(dist));
     app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
   } else {
@@ -2486,9 +2503,29 @@ async function startServer() {
   }
 
   const host = process.env.FIXFLOW_HOST || '0.0.0.0';
-  app.listen(port, host, () => {
-    console.log(`FixFlow Phone Service Management Server running at http://0.0.0.0:${port}`);
+  await new Promise<void>((resolve,reject)=>{nodeHttpServer.once('error',reject);nodeHttpServer.listen(port,host,()=>{nodeHttpServer.removeListener('error',reject);resolve();});});
+  console.log(`FixFlow Phone Service Management Server running at http://${host}:${port}`);
+  const authorizeControl = (token:string) => {
+    const session=sessions.get(token);if(!session || session.expiresAt<=Date.now())return;
+    const user=db.getUsers().find(user=>user.id===session.userId);
+    if(user?.active!==false && user && credentialFor(user)===session.credential)return user.role;
+  };
+  nodeControl = new NodeControl(nodeHttpServer,port,host,authorizeControl,(username,password)=>{
+    if(typeof username!=='string' || typeof password!=='string')return;
+    const identity='node-control:'+username.toLowerCase();
+    if(loginLimiter.retryAfter('127.0.0.1',identity)>0)return;
+    const user=db.getUserByUsername(username);
+    if(!user || user.role!=='admin' || user.active===false || !verifyPassword(password,String((user as any).password || ''))){loginLimiter.fail('127.0.0.1',identity);return;}
+    loginLimiter.success('127.0.0.1',identity);
+    const token=randomBytes(32).toString('hex');sessions.set(token,{userId:user.id,credential:credentialFor(user),expiresAt:Date.now()+8*60*60*1000});return token;
+  },async()=>{
+    if(phpCliStarting || phpCliStopping)throw new Error('Wait for the PHP server action to finish.');
+    const child=phpCliProcess;
+    if(child && child.exitCode===null && child.signalCode===null)await new Promise<void>((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('PHP server did not stop.')),3000);child.once('exit',()=>{clearTimeout(timer);resolve();});child.kill();});
+    phpCliProcess=null;
   });
+  try{await nodeControl.listen();console.log(`Local Node control: ${nodeControl.info.url}`);}catch{console.warn('Node control unavailable; use the server terminal.');}
+
 }
 
 startServer().catch(err => { console.error(err); process.exit(1); });

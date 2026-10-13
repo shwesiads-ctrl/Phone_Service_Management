@@ -1,0 +1,48 @@
+{
+  "plusjakartasans": {
+    "source": "https://github.com/google/fonts/tree/main/ofl/plusjakartasans",
+    "original_ttf_sha256": "89b3fb38aa0d275d7a731d0d817a4f1622b316b4d7fbdedcf02ee9099ff68bc8",
+    "woff2_sha256": "34e0ea355d14bde6fd0905a41e21bfda240313f9e9baa9d4fcba613c3afa42c4",
+    "bundled_axes": {
+      "wght": [
+        400,
+        800
+      ]
+    }
+  },
+  "notosansmyanmar": {
+    "source": "https://github.com/google/fonts/tree/main/ofl/notosansmyanmar",
+    "original_ttf_sha256": "7abbbfbe2514105d7ce94937aee3feb2ba89b73a256c8b77b5866bd9b83e32ec",
+    "woff2_sha256": "0daf2071cf8cb0c14384f3526a5561781c463db1f0b60c4e6284638d90f0588f",
+    "bundled_axes": {
+      "wght": [
+        400,
+        700
+      ],
+      "wdth": 100
+    }
+  },
+  "notosansthai": {
+    "source": "https://github.com/google/fonts/tree/main/ofl/notosansthai",
+    "original_ttf_sha256": "5a1c559bb539583c8a1fd99d1c5b9491e5e14478c9cd2bd0970d5c3096cc9ef8",
+    "woff2_sha256": "43dc7fb4b7fcc8e8f775d67c89b98051a65af4e698fb80208c608f7fffc87e00",
+    "bundled_axes": {
+      "wght": [
+        400,
+        700
+      ],
+      "wdth": 100
+    }
+  },
+  "jetbrainsmono": {
+    "source": "https://github.com/google/fonts/tree/main/ofl/jetbrainsmono",
+    "original_ttf_sha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda",
+    "woff2_sha256": "bfcce69622c63cab09019daf67a49dd79aae5b212b446ca876672a1e808b209d",
+    "bundled_axes": {
+      "wght": [
+        400,
+        800
+      ]
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import {NodeServerControl} from '../components/NodeServerControl';
 import { TelegramSummaryPanel } from '../components/TelegramSummaryPanel';
 import release from '../config/release.json';
 import { DeveloperInfo } from '../components/DeveloperInfo';
@@ -587,7 +588,7 @@ export const SettingsView: React.FC = () => {
                     <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-bold">Multi-Device POS</div>
                     <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 truncate">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>{selectedNetworkProtocol==='php'?(networkInfo?.php_cli?.is_running?'PHP access ON':'PHP access OFF'):'Node server online'}</span>
+                      <span>{selectedNetworkProtocol==='php'?(networkInfo?.php_cli?.is_running?'PHP access ON':'PHP access OFF'):(networkInfo?.node_control?.is_running===false?'Node server OFF':'Node server online')}</span>
                     </div>
                   </div>
                 </div>
@@ -599,7 +600,7 @@ export const SettingsView: React.FC = () => {
                   {/* Left: Dynamic QR Code */}
                   <div className="flex flex-col items-center text-center shrink-0">
                     <div className="p-3 rounded-2xl bg-white shadow-md border border-slate-200">
-                      {selectedNetworkProtocol==='php'&&!networkInfo?.php_cli?.is_running?<div className="w-44 h-44 flex items-center justify-center text-slate-500 text-sm p-4">PHP access is OFF. Turn it ON to show the connection QR.</div>:qrCodeDataUrl ? (
+                      {(selectedNetworkProtocol==='php'&&!networkInfo?.php_cli?.is_running)||(selectedNetworkProtocol==='node'&&networkInfo?.node_control?.is_running===false)?<div className="w-44 h-44 flex items-center justify-center text-slate-500 text-sm p-4">{selectedNetworkProtocol==='php'?'PHP access is OFF. Turn it ON to show the connection QR.':'Node server is OFF. Turn it ON to show the connection QR.'}</div>:qrCodeDataUrl ? (
                         <img
                           src={qrCodeDataUrl}
                           alt="Multi-Device Scan QR Code"
@@ -623,6 +624,7 @@ export const SettingsView: React.FC = () => {
                   {/* Right: URL & Protocol Switcher */}
                   <div className="flex-1 space-y-4 w-full">
                     <div>
+                      <NodeServerControl config={networkInfo?.node_control} onStatus={running=>setNetworkInfo((previous:any)=>previous?{...previous,node_control:{...previous.node_control,is_running:running},...(!running?{php_cli:{...previous.php_cli,is_running:false,process_alive:false}}:{})}:previous)}/>
                       <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-1">
                         Select Server Mode to Connect
                       </span>
@@ -639,7 +641,7 @@ export const SettingsView: React.FC = () => {
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-[var(--text)]">FixFlow Node Server</span>
                             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--primary)]/20 text-[var(--primary)] font-bold">
-                              :3000
+                              :{networkInfo?.node_port || 3000}
                             </span>
                           </div>
                           <p className="text-[11px] text-[var(--text-muted)] mt-1">
@@ -678,14 +680,14 @@ export const SettingsView: React.FC = () => {
                         <div className="flex-1 px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] font-mono text-xs text-[var(--text)] font-bold flex items-center justify-between overflow-x-auto">
                           <span className="select-all">
                             http://{networkInfo?.primary_ip || '127.0.0.1'}:
-                            {selectedNetworkProtocol === 'php' ? (customPhpPort || 8080) : 3000}
+                            {selectedNetworkProtocol === 'php' ? (customPhpPort || 8080) : (networkInfo?.node_port || 3000)}
                           </span>
                         </div>
                         <button
                           type="button"
                           onClick={() => {
                             const url = `http://${networkInfo?.primary_ip || '127.0.0.1'}:${
-                              selectedNetworkProtocol === 'php' ? (customPhpPort || 8080) : 3000
+                              selectedNetworkProtocol === 'php' ? (customPhpPort || 8080) : (networkInfo?.node_port || 3000)
                             }`;
                             navigator.clipboard.writeText(url);
                             setCopiedNetworkUrl(true);
@@ -699,7 +701,7 @@ export const SettingsView: React.FC = () => {
                         </button>
                         <a
                           href={`http://${networkInfo?.primary_ip || 'localhost'}:${
-                            selectedNetworkProtocol === 'php' ? (customPhpPort || 8080) : 3000
+                            selectedNetworkProtocol === 'php' ? (customPhpPort || 8080) : (networkInfo?.node_port || 3000)
                           }`}
                           target="_blank"
                           rel="noreferrer"

@@ -1,30 +1,30 @@
 {
-  "version": "2.8.7",
+  "version": "2.8.8",
   "date": "2026-10-13",
   "changes": {
     "my": [
-      "Job Detail နှင့် Receipt တွင် job currency အတိုင်း ငွေပမာဏကို တူညီစွာပြပြီး currency မတူသော payment အသစ်ကို လက်မခံပါ။ Finance တွင် currency အလိုက် သီးခြားစစ်ကြည့်နိုင်သည်။",
-      "Receipt မှာ ဆိုင် logo နှင့် Staff signature ထားပြီး Customer signature ကို ဖယ်ထားသည်။",
-      "Expense စာရင်းကို Edit လုပ်နိုင်ပြီး Expense နှင့် Device Category ကို စိတ်ကြိုက်ရေးထည့်နိုင်သည်။",
-      "System License plan/day badge ဖယ်ပြီး GitHub README တွင် developer email ပဲထားသည်။"
+      "Node server port ကို server PC မှ On/Off လုပ်ပြီး တကယ် health check စစ်နိုင်သည်။ Local control page မှ Off ဖြစ်နေချိန်လည်း On ပြန်လုပ်နိုင်သည်။",
+      "စာမျက်နှာများကို လိုအပ်မှ load လုပ်ပြီး job data ရှာဖွေမှုနှင့် font loading ကို မြန်အောင် ပြင်ထားသည်။",
+      "Shop Settings တွင် ဒုတိယဖုန်း၊ website၊ ဆိုင်ဖွင့်ချိန်နှင့် receipt စာရွက်/အာမခံ/footer preview ထည့်ထားသည်။",
+      "Service job နှင့် receipt တွင် amount / percentage discount ထည့်နိုင်ပြီး Total နှင့် payment status ကို server မှ တကယ်နုတ်တွက်ပေးသည်။"
     ],
     "en": [
-      "Job details and receipts use the saved job currency; new payments must match it, without automatic conversion. Finance totals are filtered by ledger currency.",
-      "Receipts retain the shop logo and staff signature; the customer signature is removed.",
-      "Expense records can be edited, and expense/device categories accept custom names.",
-      "The system license plan/day badge is removed; GitHub README contact information uses email only."
+      "Node HTTP On/Off and real health testing are available on the server computer, with a separate local control page that remains usable while Off.",
+      "Pages load on demand; indexed job lookups and bundled fonts reduce startup work and external network delays.",
+      "Shop Settings adds secondary phone, website, business hours and receipt paper/warranty/footer previews.",
+      "Service jobs and receipts support amount or percentage discounts with validated server-calculated totals and payment status."
     ],
     "th": [
-      "รายละเอียดงานและใบเสร็จใช้สกุลเงินของงาน การชำระใหม่ต้องใช้สกุลเดียวกันโดยไม่แปลงอัตโนมัติ รายงานการเงินกรองตามสกุลเงิน",
-      "ใบเสร็จคงโลโก้ร้านและลายเซ็นพนักงาน ลบลายเซ็นลูกค้า",
-      "แก้ไขค่าใช้จ่ายและกำหนดหมวดหมู่ค่าใช้จ่ายหรืออุปกรณ์เองได้",
-      "ลบป้ายแผนและวันใบอนุญาต ข้อมูลติดต่อใน README ใช้อีเมลเท่านั้น"
+      "เปิด/ปิดพอร์ต Node HTTP และทดสอบสถานะจริงบนเครื่องเซิร์ฟเวอร์ หน้าควบคุมในเครื่องยังเปิดได้เมื่อปิด Node",
+      "โหลดหน้าเมื่อจำเป็น เพิ่มดัชนีข้อมูลงานและฟอนต์ภายในแอปเพื่อลดเวลารอเครือข่าย",
+      "การตั้งค่าร้านเพิ่มเบอร์สำรอง เว็บไซต์ เวลาเปิด และตัวอย่างกระดาษ การรับประกัน และข้อความท้ายใบเสร็จ",
+      "งานบริการและใบเสร็จรองรับส่วนลดจำนวนเงินหรือเปอร์เซ็นต์ โดยเซิร์ฟเวอร์ตรวจสอบยอดรวมและสถานะชำระ"
     ],
     "zh": [
-      "工作详情和收据使用已保存的工作币种，新付款必须使用相同币种，不自动转换。 财务汇总按币种筛选。",
-      "收据保留店铺标志和员工签名，移除客户签名。",
-      "支持编辑费用记录，自定义费用和设备类别。",
-      "移除许可证计划天数标记，GitHub README 联系方式仅保留邮箱。"
+      "服务器电脑支持 Node HTTP 开关和真实健康检查，关闭时仍可通过本机控制页面重新开启。",
+      "页面按需加载，索引工作数据查询并内置字体，减少启动工作和外部网络等待。",
+      "店铺设置新增备用电话、网站、营业时间及收据纸张、保修和页脚预览。",
+      "服务工作与收据支持金额或百分比折扣，服务器验证并计算总额与付款状态。"
     ]
   }
 }

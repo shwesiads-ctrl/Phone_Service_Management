@@ -139,3 +139,9 @@ Settings → Local Network offers a PHP CLI On/Off switch. PHP must be installed
 Print buttons for repair, technician, financial and analytics reports open only the report document on A4 paper, including all filtered records. Wide service-history and analytics tables use landscape; financial and individual repair reports use portrait. Service warranty displayed in repair records and printed receipts follows Settings → Service Policy & Workflow; part-specific warranty records remain separate.
 
 Telegram schedules start disabled. Configure/save the bot and recipient, enable automatic alerts, then set the daily schedule, time zone and language in the summary panel. The server must remain running. Preview never sends; Delivery History stores the latest 50 recipient results. One scheduled attempt per local day is persisted across restarts. Review failed deliveries and retry manually if appropriate.
+
+## Node server On/Off
+
+Build and start the updated backend with `npm run build` and `npm run start:production`. On the server PC, open FixFlow using `http://localhost:3000` (or your configured Node port), sign in as Admin, then Settings → Local Network → Node server. Open the local control page before switching Off. The main workshop HTTP port actually closes; the small localhost controller stays running so you can sign in and switch On again. The controller URL is printed in the server terminal and uses an available local port. It is unavailable from other LAN devices. Quit the terminal to stop the entire process. Switching Node Off also stops managed PHP; turn PHP On separately afterward if needed.
+
+Node ပိတ်/ဖွင့်ရန် server PC မှ localhost ဖြင့် Admin ဝင်ပါ။ Settings → Local Network မှ local control page ကို အရင်ဖွင့်ထားပြီး On/Off လုပ်ပါ။ Off တွင် Node HTTP port တကယ်ပိတ်ပြီး managed PHP ပါ ရပ်မည်။ ပြန်ဖွင့်ရန် control page မှ Admin အကောင့်ဖြင့် ဝင်ပြီး On လုပ်ပါ။ Terminal ပိတ်လျှင် controller ပါ ရပ်မည်။

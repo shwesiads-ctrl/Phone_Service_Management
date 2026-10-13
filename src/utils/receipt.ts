@@ -1,7 +1,8 @@
+import {receiptFontFaces} from './fontStyles';
 /** Standalone receipts carry their own styles and contain only the rendered receipt body. */
-export const receiptStyles = `
-*{box-sizing:border-box}body{margin:0;background:#eef2f7;color:#182439;font-family:Arial,sans-serif;font-size:13px;line-height:1.5}
-.receipt{color:#182439;font-family:Arial,sans-serif;font-size:13px;line-height:1.5;margin:20px auto;padding:28px;background:white;max-width:740px;border-radius:12px}
+export const receiptStyles = `${receiptFontFaces}
+*{box-sizing:border-box}body{margin:0;background:#eef2f7;color:#182439;font-family:Arial,'Noto Sans Myanmar','Noto Sans Thai',sans-serif;font-size:13px;line-height:1.5}
+.receipt{color:#182439;font-family:Arial,'Noto Sans Myanmar','Noto Sans Thai',sans-serif;font-size:13px;line-height:1.5;margin:20px auto;padding:28px;background:white;max-width:740px;border-radius:12px}
 .receipt-header{text-align:center;border-bottom:2px solid #182439;padding-bottom:16px;margin-bottom:16px}.receipt-header img{display:block;margin:0 auto;width:64px;height:64px;object-fit:contain}.receipt-header h1{font-weight:700;font-size:22px;margin:4px 0}.receipt-header p{margin:3px 0;font-size:12px;overflow-wrap:anywhere}
 .receipt-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:16px 0}.receipt-title h2{font-weight:700;font-size:18px;margin:0}.receipt-title strong{font-family:monospace;color:#235ac3}
 .receipt-details{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.receipt-details div{overflow-wrap:anywhere}.receipt-label{font-size:10px;text-transform:uppercase;color:#64748b;display:block;font-weight:bold}.receipt-note{padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin:12px 0;white-space:pre-wrap;overflow-wrap:anywhere}

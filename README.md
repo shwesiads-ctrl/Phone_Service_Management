@@ -8,7 +8,9 @@ The published package excludes saved Telegram credentials. Re-enter your bot tok
 
 Staff registration and Telegram Bot settings are available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
 
-## မြန်မာလမ်းညွှန် — Version 2.8.7
+## မြန်မာလမ်းညွှန် — Version 2.8.8
+
+Settings → Local Network တွင် server PC မှ Node server On/Off နှင့် Test လုပ်နိုင်သည်။ Off သည် အဓိက Node HTTP port နှင့် managed PHP ကို ပိတ်သည်။ ပြန်ဖွင့်ရန် local control page ကို ကြိုဖွင့်ထားပါ။ Controller သည် server PC localhost တွင်သာ အလုပ်လုပ်ပြီး Admin account လိုသည်။ စာမျက်နှာများကို လိုအပ်မှသာ load လုပ်ကာ fonts ကို app ထဲထည့်ထားသည်။ Shop Settings တွင် ဒုတိယဖုန်း၊ website၊ ဆိုင်ဖွင့်ချိန်နှင့် receipt policy preview ထည့်ထားသည်။ Job အသစ်/Job Detail မှ Discount ကို amount သို့မဟုတ် % ရွေးပြီး Save လုပ်ပါ။ Receipt တွင် discount နုတ်ပြီး Total ကို ပြမည်။
 
 Settings → Local Network မှ PHP CLI On/Off ရွေးနိုင်ပြီး တကယ်အလုပ်လုပ်ကြောင်း စစ်ပြီးမှ On ပြသည်။ Print report ကို app menu မပါဘဲ A4 သီးခြားစာရွက်ဖြင့် ထုတ်သည်။ Technician report တွင် ပထမ ၁၀ ခုသာမက record အားလုံး ထုတ်သည်။ Repair Records service warranty ကို Shop Settings အတိုင်း ပြသည်။ Telegram Summary Preview၊ Delivery History နှင့် daily schedule အသစ် ထည့်ထားသည်။
 
@@ -33,9 +35,11 @@ Technician စာရင်းကို compact table၊ search၊ status filter�
 
 Receipt နှင့် Job Detail တွင် job currency တစ်မျိုးတည်းဖြင့် တွက်ပြပြီး currency မတူသော payment အသစ်ကို လက်မခံပါ။ Receipt မှာ ဆိုင် logo နှင့် Staff signature ပါပြီး Customer signature ဖယ်ထားသည်။ Expense နှင့် Device Category ကို စိတ်ကြိုက်ရေးထည့်/ပြင်နိုင်သည်။ Finance တွင် Ledger currency ရွေးပြီး currency တူသော စာရင်းများကိုသာ ပေါင်းပြသည်။ System License plan/day badge ကို ဖယ်ထားသည်။
 
-## Version 2.8.7 — Payment consistency, custom categories and receipt updates
+## Version 2.8.8 — Node controls, faster loading, shop settings and discounts
 
-Version 2.8.7 fixes job/payment currency consistency without converting historical amounts. Receipts retain shop logos and staff signatures, with customer signatures removed. Expense records can be edited, and expense/device categories accept custom names. The system license plan/day badge is removed.
+Settings → Local Network offers Node HTTP On/Off and a real connection test on the server computer. Open the local control page before Off; it can authenticate an administrator and reopen the Node port while the workshop API is stopped. Off also stops managed PHP. The control listener stays on localhost; quitting the server terminal stops everything. LAN clients cannot control it. Pages load on demand, relational job lookups are indexed and fonts are bundled locally. Shop Settings adds contact fields and receipt policy previews. New jobs and Job Detail support fixed or percentage discounts; the backend calculates the net total and settlement status, and receipts show the deduction.
+
+Version 2.8.7 fixed job/payment currency consistency without converting historical amounts. Receipts retain shop logos and staff signatures, with customer signatures removed. Expense records can be edited, and expense/device categories accept custom names. The system license plan/day badge is removed.
 
 The PHP CLI switch verifies actual backend health and waits for the process to exit before showing Off. Reports print in an isolated A4 document (landscape for wide service and analytics tables) without clipped modal containers or app navigation, including all filtered records. Repair Records service warranty follows shop policy. Telegram summaries support previews, four languages, time zones, delivery history and opt-in schedules.
 
@@ -184,3 +188,5 @@ The PHP switch controls the managed PHP endpoint; the Node backend remains requi
 
 
 Finance uses a selectable ledger currency so totals never add different currencies together. The currency selector also sets the currency of newly recorded income and expenses; editing an existing expense preserves its original currency.
+
+Fonts are bundled locally under `public/fonts/` and their SIL Open Font License notices are included. They are separate from the application MIT license.

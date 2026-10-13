@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { useApp } from '../context/AppContext';
 import { Language, Theme } from '../types';
-import { ProfileModal } from '../modals/ProfileModal';
-import { NewUserRegisterModal } from '../modals/NewUserRegisterModal';
+const ProfileModal=lazy(()=>import('../modals/ProfileModal').then(module=>({default:module.ProfileModal})));
+const NewUserRegisterModal=lazy(()=>import('../modals/NewUserRegisterModal').then(module=>({default:module.NewUserRegisterModal})));
 import { NotificationCenter } from './NotificationCenter';
 import type { ServiceJob } from '../types';
-import { ChangePasswordModal } from '../modals/ChangePasswordModal';
+const ChangePasswordModal=lazy(()=>import('../modals/ChangePasswordModal').then(module=>({default:module.ChangePasswordModal})));
 import {
   Sun,
   Moon,
@@ -493,6 +493,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
+      <Suspense fallback={<div role="status" className="fixed bottom-5 right-5 z-50 p-3 bg-[var(--surface)] border border-[var(--border)] rounded-lg">Loading…</div>}>
       {registerModalOpen && role === 'admin' && <NewUserRegisterModal onClose={() => setRegisterModalOpen(false)} />}
       {profileModalOpen && (
         <ProfileModal
@@ -506,6 +507,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClose={() => setChangePasswordModalOpen(false)}
         />
       )}
+      </Suspense>
     </header>
   );
 };
