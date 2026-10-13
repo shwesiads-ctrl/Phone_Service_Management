@@ -27,16 +27,21 @@ import {generateCashierCard} from '../src/utils/cashierCard';
  await click(button('Delete Selected (45)'));assert.equal(selected.length,45);assert.ok((button('Delete All Listed Records') as HTMLButtonElement).disabled);assert.ok(document.querySelector('[role=dialog]')!.textContent!.includes('3 repair jobs'));
  await click(document.querySelector('[aria-label="Acknowledge device deletion"]'));await click(button('Delete All Listed Records'));assert.equal(deleted.length,0);assert.ok(document.querySelector('[role=dialog]')!.textContent!.includes('Save failed'));
  failed=false;await click(button('Delete All Listed Records'));assert.equal(deleted.length,45);assert.ok(!document.querySelector('[role=dialog]'));
- const job:any={id:'job',service_number:'SRV-1',customer:{name:'Customer'},device:{brand:'Phone',model:'One'},technician_id:'none',warranty_days:60,total_cost:100,amount_paid:0,service_charge:100,parts_used:[],status_id:'repairing',priority:'normal',currency_code:'MMK'};
- for(const element of [<CashierJobModal job={job} onClose={()=>{}} onPrint={()=>{}}/>,<JobDetailModal job={job} onClose={()=>{}} onPrint={()=>{}}/>,<NewTicketModal onClose={()=>{}} onCreated={()=>{}}/>]){
-  await render(element);
-  if(!document.querySelector('[aria-label="Payment profile"]'))await click(Array.from(document.querySelectorAll('button')).find(button=>button.textContent?.toLowerCase().replace(/\s/g,'').includes('recordpayment'))!);
-  const warranty=document.querySelector('[aria-label="Service warranty policy"]') as HTMLInputElement|null;if(warranty){assert.equal(warranty.value,'90');assert.ok(warranty.readOnly);}
-  const profile=document.querySelector('[aria-label="Payment profile"]') as HTMLSelectElement;assert.ok(profile);
-  assert.ok(Array.from(document.querySelectorAll('option')).some(option=>option.textContent==='Cash'));
-  assert.ok(!Array.from(document.querySelectorAll('option')).some(option=>option.textContent?.includes('เงินสด')));
-  await change(profile,'myanmar');assert.ok(Array.from(document.querySelectorAll('option')).some(option=>option.textContent==='KBZ Pay'));assert.equal(app.activePaymentProfile,'thailand');
- }
+ const job:any={id:'job',service_number:'SRV-1',customer:{name:'Customer'},device:{id:'device-1',brand:'Phone',model:'One',category:'smartphone'},technician_id:'none',warranty_days:60,total_cost:100,amount_paid:0,service_charge:100,parts_cost:0,parts_used:[],status_id:'repairing',priority:'normal',currency_code:'MMK'};
+ app.role='cashier';app.activePaymentProfile='thailand';
+ await render(<CashierJobModal job={job} onClose={()=>{}} onPrint={()=>{}}/>);
+ await click(button('recordPayment'));
+ assert.ok(!document.querySelector('[aria-label="Payment profile"]'));
+ assert.ok(document.body.textContent?.includes('administrator'));
+ assert.ok(document.body.textContent?.includes('THAILAND'));assert.ok(!Array.from(document.querySelectorAll('option')).some(option=>option.textContent==='KBZ Pay'));
+ app.role='admin';await render(<JobDetailModal job={job} onClose={()=>{}} onPrint={()=>{}}/>);
+ await click(button('recordPayment'));
+ const profile=document.querySelector('[aria-label="Payment profile"]') as HTMLSelectElement;assert.ok(profile);
+ await change(profile,'myanmar');assert.ok(Array.from(document.querySelectorAll('option')).some(option=>option.textContent==='KBZ Pay'));
+ await render(<NewTicketModal onClose={()=>{}} onCreated={()=>{}}/>);
+ assert.ok(document.querySelector('[aria-label="Device category"]'));
+ assert.ok(Array.from(document.querySelectorAll('option')).some(option=>option.textContent==='Cash'));
+ assert.ok(!Array.from(document.querySelectorAll('option')).some(option=>option.textContent==='KBZ Pay'));
  const svg=await generateCashierCard({id:'counter',staff_code:'CASH-0001',role:'cashier',username:'counter',full_name:'Counter',created_at:''},app.settings);
  const xml=new dom.window.DOMParser().parseFromString(svg,'image/svg+xml');
  for(const contact of ['Shop','Road','099']){const text=Array.from(xml.querySelectorAll('text')).find(text=>text.textContent===contact)!;assert.ok(text);assert.ok(Number(text.getAttribute('y'))<146);}

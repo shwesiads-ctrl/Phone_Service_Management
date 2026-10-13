@@ -11,8 +11,9 @@ export const QuickDeviceModal: React.FC<QuickDeviceModalProps> = ({
   onClose,
   onCreated,
 }) => {
-  const { createDevice, customers, t } = useApp();
+  const { createDevice, customers, devices, t } = useApp();
   const [brand, setBrand] = useState('Apple');
+  const [category, setCategory] = useState('smartphone');
   const [model, setModel] = useState('');
   const [imei, setImei] = useState('');
   const [color, setColor] = useState('');
@@ -22,7 +23,7 @@ export const QuickDeviceModal: React.FC<QuickDeviceModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!model.trim()) {
+    if (!model.trim() || !category.trim()) {
       setError('Model name is required.');
       return;
     }
@@ -32,7 +33,7 @@ export const QuickDeviceModal: React.FC<QuickDeviceModalProps> = ({
       const created = await createDevice({
         brand: brand.trim(),
         model: model.trim(),
-        category: 'smartphone',
+        category: category.trim(),
         serial_or_imei: imei.trim() || 'N/A',
         customer_id: customerId || customers[0]?.id || 'CUST-001',
         condition_notes: color.trim() ? `Color: ${color.trim()}` : 'Good condition',
@@ -73,6 +74,11 @@ export const QuickDeviceModal: React.FC<QuickDeviceModalProps> = ({
               {error}
             </div>
           )}
+
+          <label className="block text-xs font-semibold text-[var(--text)]">Device Category *
+            <input required maxLength={80} aria-label="Quick device category" list="quick-device-categories" value={category} onChange={event=>setCategory(event.target.value)} className="block w-full mt-1 px-3 py-2 text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)]" />
+            <datalist id="quick-device-categories">{[...new Set(['smartphone','laptop','tablet','desktop','audio','other',...devices.map(device=>device.category)])].map(value=><option key={value} value={value}/>)}</datalist>
+          </label>
 
           <div className="grid grid-cols-2 gap-3">
             <div>

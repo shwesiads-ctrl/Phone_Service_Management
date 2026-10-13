@@ -75,9 +75,12 @@
   background: var(--text-muted);
 }
 
+/* Chrome only suppresses its date/title/URL/page decorations when the printed
+   document has no page margin. Keep this at the top level for Ctrl+P too. */
+@page { margin: 0; }
+
 /* Print styling for service tickets and receipts */
 @media print {
-  @page { margin: 0; }
   body {
     background: #FFFFFF !important;
     color: #000000 !important;

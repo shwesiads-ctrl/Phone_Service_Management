@@ -99,6 +99,7 @@ interface AppContextType {
   devices: Device[];
   createDevice: (dev: Omit<Device, 'id' | 'created_at'>) => Promise<Device>;
   updateDevice: (id: string, updates: Partial<Device>) => Promise<Device>;
+  updateDeviceCategory: (id: string, category: string) => Promise<Device>;
   deleteDevice: (id: string) => Promise<void>;
   previewDeviceDeletion: (ids:string[])=>Promise<CustomerDeletionPreview>;
   deleteDevicesWithRecords: (ids:string[],revision:string)=>Promise<void>;
@@ -1091,6 +1092,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updated;
   };
 
+  const updateDeviceCategory = async (id: string, category: string): Promise<Device> => {
+    const response = await fetch(`/api/devices/${encodeURIComponent(id)}/category`, {method:'PUT',headers:getAuthHeaders(),body:JSON.stringify({category})});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to update category');
+    await Promise.all([refreshMetadata(), refreshJobs()]);
+    return result;
+  };
+
   const previewDeviceDeletion=async(ids:string[]):Promise<CustomerDeletionPreview>=>{
     const response=await fetch('/api/devices/delete-preview',{method:'POST',headers:getAuthHeaders(),body:JSON.stringify({device_ids:ids})});const value=await response.json();if(!response.ok)throw new Error(value.error);return value;
   };
@@ -1325,6 +1334,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         devices,
         createDevice,
         updateDevice,
+        updateDeviceCategory,
         deleteDevice,
         previewDeviceDeletion,
         deleteDevicesWithRecords,

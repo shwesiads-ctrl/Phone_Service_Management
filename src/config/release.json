@@ -1,26 +1,26 @@
 {
-  "version": "2.9.1",
+  "version": "2.9.2",
   "date": "2026-10-13",
   "changes": {
     "my": [
-      "Cashier Dashboard တွင် မိမိလက်ခံခဲ့သည့် Repair Records နှင့် Customers ကို ဖွင့်ကြည့်နိုင်သည်။ Technician menu မှ Repair Records နှင့် Customers ကို ဖယ်ထားသည်။",
-      "Service Receipt ငွေစာရင်းကို ပစ္စည်းဖိုး၊ လက်ခ၊ လျှော့ငွေ၊ စရံ/လက်ခံပြီးငွေ၊ ကျန်ငွေ သို့မဟုတ် ပြန်အမ်းငွေ အလိုက် ရှင်းလင်းစွာ ပြထားသည်။",
-      "Receipt စာများကို မြန်မာ၊ English၊ Thai၊ Chinese အလိုက် ပြောင်းပြီး Login စာမျက်နှာတွင် ဘာသာစကားရွေးနိုင်သည်။ Print ရှိ browser header/footer စာများကို ဖျောက်ရန် page margin ပြင်ထားသည်။"
+      "Repair Records print မှ browser date/title/URL/page စာများကို ဖျောက်ထားပြီး print layout ကို ပြန်စစ်ထားသည်။",
+      "Cashier View Details ကို Admin ပုံစံအတိုင်း ပြပြီး repair field များကို read-only ထားကာ ငွေလက်ခံမှုကို Admin ရွေးထားသော payment profile အတိုင်း သုံးသည်။",
+      "Admin နှင့် Cashier နှစ်ဖက်စလုံးမှ device category အသစ်ရေးထည့်၊ existing category ပြင်နိုင်သည်။"
     ],
     "en": [
-      "Cashiers can open their own repair records and customers; technician navigation hides those sections.",
-      "Receipts clearly separate parts, labor, discount, deposits/payments, and remaining amount or change to return.",
-      "Receipts follow Myanmar, English, Thai or Chinese; Login offers a language selector and print layouts suppress browser headers and footers."
+      "Repair Records print suppresses browser date, title, URL and page decorations.",
+      "Cashier View Details uses the admin layout with repair fields read-only and payment methods from the administrator’s active profile.",
+      "Administrators and cashiers can enter custom device categories and edit existing categories."
     ],
     "th": [
-      "แคชเชียร์เปิดประวัติงานซ่อมของตนและรายชื่อลูกค้าได้ ส่วนเมนูช่างซ่อนสองหน้านี้",
-      "ใบเสร็จแยกค่าอะไหล่ ค่าแรง ส่วนลด มัดจำ/เงินที่รับ และยอดคงเหลือหรือเงินทอนอย่างชัดเจน",
-      "ใบเสร็จรองรับ 4 ภาษา หน้าเข้าสู่ระบบเลือกภาษาได้ และปรับหน้าพิมพ์เพื่อลบหัวกระดาษ/ท้ายกระดาษของเบราว์เซอร์"
+      "งานพิมพ์ประวัติการซ่อมซ่อนวันที่ ชื่อหน้า URL และเลขหน้าของเบราว์เซอร์",
+      "หน้ารายละเอียดงานของแคชเชียร์ใช้รูปแบบเดียวกับผู้ดูแลระบบ โดยช่องซ่อมอ่านอย่างเดียวและช่องทางชำระเงินตามโปรไฟล์ที่ผู้ดูแลเลือก",
+      "ผู้ดูแลระบบและแคชเชียร์เพิ่มหรือแก้ไขหมวดหมู่อุปกรณ์ได้"
     ],
     "zh": [
-      "收银员可查看自己的维修记录和客户；技师菜单隐藏这两个页面。",
-      "收据清晰区分配件费、人工费、优惠、定金/已付款以及待付金额或找零。",
-      "收据支持缅甸语、英语、泰语和中文；登录页可选语言，并调整打印页以去除浏览器页眉页脚。"
+      "维修记录打印时隐藏浏览器日期、标题、网址和页码。",
+      "收银员的工作详情采用管理员布局，维修字段只读，付款方式遵循管理员选定的配置。",
+      "管理员和收银员都可以新增或修改设备类别。"
     ]
   }
 }

@@ -37,6 +37,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
 
   // Device fields
   const [brand, setBrand] = useState('Apple');
+  const [deviceCategory, setDeviceCategory] = useState('smartphone');
   const [model, setModel] = useState('');
   const [serialOrImei, setSerialOrImei] = useState('');
   const [passlockPin, setPasslockPin] = useState('');
@@ -58,7 +59,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!problemDescription.trim() || !model.trim()) return;
+    if (!problemDescription.trim() || !model.trim() || !deviceCategory.trim()) return;
 
     if (!technicianId) {
       setErrorMsg('A technician must be assigned to this service job.');
@@ -87,7 +88,7 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
       const createdDev = await createDevice({
         brand,
         model,
-        category: 'smartphone',
+        category: deviceCategory.trim(),
         serial_or_imei: serialOrImei,
         customer_id: finalCustomerId,
         condition_notes: `Intake: ${problemDescription.slice(0, 50)}`,
@@ -241,6 +242,12 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({ onClose, onCreat
                     )
                   )}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[var(--text)] mb-1">Device Category *</label>
+                <input required maxLength={80} aria-label="Device category" list="intake-device-categories" value={deviceCategory} onChange={event=>setDeviceCategory(event.target.value)} className="w-full px-3 py-1.5 text-xs sm:text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)]" />
+                <datalist id="intake-device-categories">{[...new Set(['smartphone','laptop','tablet','desktop','audio','other',...devices.map(device=>device.category)])].map(value=><option key={value} value={value}/>)}</datalist>
               </div>
 
               <div>

@@ -69,6 +69,16 @@ try {
  const account=await api('/api/users/register','POST',{full_name:'Access Test',username:'access_test',password:'AccessPassword123!',role:'cashier',email:'access@example.test'},admin);
  const id=account.data.user.id;
  const initial=(await api('/api/auth/login','POST',{username:'access_test',password:'AccessPassword123!'})).data.token;
+ const intakeDevice=(await api('/api/devices','POST',{brand:'Test',model:'Category Device',category:'Console',serial_or_imei:'CAT-001',customer_id:fixture.customers[0].id,condition_notes:''},initial));
+ check('Cashier can create a custom device category',intakeDevice.status===201&&intakeDevice.data.category==='Console');
+ const ownJob=await api('/api/jobs','POST',{customer_id:fixture.customers[0].id,device_id:intakeDevice.data.id,technician_id:fixture.technicians[0].id,problem_description:'Category test',service_charge:0},initial);
+ check('Cashier can create an intake job for category edits',ownJob.status===201);
+ check('Cashier can edit category on own intake device',(await api(`/api/devices/${intakeDevice.data.id}/category`,'PUT',{category:'Game Console'},initial)).data.category==='Game Console');
+ check('Cashier can edit an existing device category',(await api(`/api/devices/${fixture.devices[0].id}/category`,'PUT',{category:'Other'},initial)).data.category==='Other');
+ check('Cashier category edit rejects unrelated fields',(await api(`/api/devices/${intakeDevice.data.id}/category`,'PUT',{category:'Tablet',brand:'Changed'},initial)).status===400);
+ check('Cashier cannot use unrestricted device edit',(await api(`/api/devices/${intakeDevice.data.id}`,'PUT',{category:'Tablet'},initial)).status===403);
+ check('Admin can edit device category',(await api(`/api/devices/${fixture.devices[0].id}/category`,'PUT',{category:'Tablet'},admin)).data.category==='Tablet');
+ check('Technician cannot edit device category',(await api(`/api/devices/${fixture.devices[0].id}/category`,'PUT',{category:'Laptop'},tech)).status===403);
  check('Technician cannot grant admin role',(await api(`/api/users/${id}/access`,'PUT',{role:'admin',active:true},tech)).status===403);
  check('Admin can change account role',(await api(`/api/users/${id}/access`,'PUT',{role:'admin',active:true},admin)).status===200);
  check('Role change revokes old session',(await api('/api/auth/me','GET',undefined,initial)).status===401);

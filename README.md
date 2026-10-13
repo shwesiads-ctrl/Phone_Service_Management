@@ -8,13 +8,13 @@ The published package excludes saved Telegram credentials. Re-enter your bot tok
 
 Staff registration and Telegram Bot settings are available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
 
-## မြန်မာလမ်းညွှန် — Version 2.9.1
+## မြန်မာလမ်းညွှန် — Version 2.9.2
 
 Settings → Local Network တွင် server PC မှ Node server On/Off နှင့် Test လုပ်နိုင်သည်။ Off သည် အဓိက Node HTTP port နှင့် managed PHP ကို ပိတ်သည်။ ပြန်ဖွင့်ရန် local control page ကို ကြိုဖွင့်ထားပါ။ Controller သည် server PC localhost တွင်သာ အလုပ်လုပ်ပြီး Admin account လိုသည်။ စာမျက်နှာများကို လိုအပ်မှသာ load လုပ်ကာ fonts ကို app ထဲထည့်ထားသည်။ Shop Settings တွင် ဒုတိယဖုန်း၊ website၊ ဆိုင်ဖွင့်ချိန်နှင့် receipt policy preview ထည့်ထားသည်။ Job အသစ်/Job Detail မှ Discount ကို amount သို့မဟုတ် % ရွေးပြီး Save လုပ်ပါ။ Receipt တွင် discount နုတ်ပြီး Total ကို ပြမည်။
 
 Settings → Local Network မှ PHP CLI On/Off ရွေးနိုင်ပြီး တကယ်အလုပ်လုပ်ကြောင်း စစ်ပြီးမှ On ပြသည်။ Print report ကို app menu မပါဘဲ A4 သီးခြားစာရွက်ဖြင့် ထုတ်သည်။ Technician report တွင် ပထမ ၁၀ ခုသာမက record အားလုံး ထုတ်သည်။ Repair Records service warranty ကို Shop Settings အတိုင်း ပြသည်။ Telegram Summary Preview၊ Delivery History နှင့် daily schedule အသစ် ထည့်ထားသည်။
 
-Fresh install မှာ demo data မပါပါ။ Payment form မှ profile ရွေးပြီး နာမည်များကို လက်ရှိဘာသာစကားအတိုင်း ပြသည်။ Non-cash channel သုံးရန် Settings → Payments မှ မိမိဆိုင်၏အကောင့်/QR ထည့်ပြီး Enable လုပ်ပါ။ Devices တွင် Select All နှင့် ဆက်စပ် record အရေအတွက် ပြပြီး backup သိမ်းကာ bulk delete လုပ်နိုင်သည်။ Customer account မဖျက်ပါ။ Cashier ID အပေါ်မှာ ဆိုင်နာမည်၊ လိပ်စာ၊ ဖုန်း ပါလာပြီး Receipt မှ Balance due ကို ဖယ်ထားသည်။ Receipt warranty ကို Shop Settings အတိုင်း ပြသည်။
+Fresh install မှာ demo data မပါပါ။ Admin က Settings → Payments မှ active profile ရွေးပြီး Cashier payment form သည် ထို profile ၏ method များကို သုံးသည်။ Non-cash channel သုံးရန် Settings → Payments မှ မိမိဆိုင်၏အကောင့်/QR ထည့်ပြီး Enable လုပ်ပါ။ Devices တွင် Select All နှင့် ဆက်စပ် record အရေအတွက် ပြပြီး backup သိမ်းကာ bulk delete လုပ်နိုင်သည်။ Customer account မဖျက်ပါ။ Cashier ID အပေါ်မှာ ဆိုင်နာမည်၊ လိပ်စာ၊ ဖုန်း ပါလာပြီး Receipt မှ Balance due ကို ဖယ်ထားသည်။ Receipt warranty ကို Shop Settings အတိုင်း ပြသည်။
 
 Payment Profile ကို Settings → Payments မှ စိတ်ကြိုက်ရွေးပါ။ ဘာသာစကားပြောင်းလျှင် profile မပြောင်းပါ။ Admin သည် အပေါ်ဘားမှ currency ရွေးနိုင်သည်။ Account Management ကို card ပုံစံပြောင်းပြီး Cashier List တွင် search/status/pagination ပါဝင်သည်။ Settings မှ Technician Configuration နှင့် Demo User ခလုတ်များ ဖယ်ထားသည်။ About ကို မြန်မာ၊ English၊ Thai၊ Chinese အတိုင်း ပြထားသည်။
 
@@ -34,6 +34,12 @@ Technician စာရင်းကို compact table၊ search၊ status filter�
 **တပ်ဆင်ရန်:** Node.js 22.12 နှင့်အထက်ဖြင့် `npm ci` → `npm run build` → `npm run start:production` လုပ်ပါ။ Update မလုပ်မီ backup သိမ်းပြီး မူလ `data/` နှင့် ၎င်းအတွင်းရှိ `.security/` ကို ထိန်းထားပါ။ Recovery အောင်မြင်တိုင်း key အသစ်ပြောင်းသောကြောင့် key အသစ်ကို ထပ်သိမ်းရန်လိုသည်။
 
 Receipt နှင့် Job Detail တွင် job currency တစ်မျိုးတည်းဖြင့် တွက်ပြပြီး currency မတူသော payment အသစ်ကို လက်မခံပါ။ Receipt မှာ ဆိုင် logo နှင့် Staff signature ပါပြီး Customer signature ဖယ်ထားသည်။ Expense နှင့် Device Category ကို စိတ်ကြိုက်ရေးထည့်/ပြင်နိုင်သည်။ Finance တွင် Ledger currency ရွေးပြီး currency တူသော စာရင်းများကိုသာ ပေါင်းပြသည်။ System License plan/day badge ကို ဖယ်ထားသည်။
+
+## Version 2.9.2 — Print, cashier details and custom categories
+
+Repair-record print documents suppress browser date/title/URL/page decorations, including direct Ctrl+P output in Chromium. The cashier job-details panel now uses the administrator layout with repair fields locked and payment methods from the administrator’s selected profile. Admin and cashier can type a new device category during intake and edit an existing category from job details. Category edits are limited to the category field and audited.
+
+မြန်မာ: Repair Record print ရှိ browser date/title/URL/page စာများကို ဖျောက်ထားသည်။ Cashier View Details ကို Admin ပုံစံအတိုင်း ပြပြီး ပြုပြင်ရေး field များကို ဖတ်ရန်သာထားသည်။ Payment method သည် Admin ရွေးထားသော profile အတိုင်း ဖြစ်သည်။ Admin နှင့် Cashier တို့က device category အသစ်ထည့်ခြင်း၊ အဟောင်းပြင်ခြင်း ပြုလုပ်နိုင်သည်။
 
 ## Version 2.9.1 — Clear multilingual receipts and cashier navigation
 
@@ -61,7 +67,7 @@ Version 2.8.7 fixed job/payment currency consistency without converting historic
 
 The PHP CLI switch verifies actual backend health and waits for the process to exit before showing Off. Reports print in an isolated A4 document (landscape for wide service and analytics tables) without clipped modal containers or app navigation, including all filtered records. Repair Records service warranty follows shop policy. Telegram summaries support previews, four languages, time zones, delivery history and opt-in schedules.
 
-Payment forms offer a region selector and localized method labels. Enable your configured non-cash channels in Settings → Payments. Devices can select all search matches across pages and delete confirmed linked records after a backup, keeping customer accounts. Cashier cards show workshop contacts in the header. Receipts omit Balance due and use the current shop warranty; new jobs inherit that default, including zero-day warranties. Existing saved job/part warranty records remain unchanged.
+Administrators select the active payment profile in Settings → Payments; cashier payment forms use its configured methods and localized labels. Enable your configured non-cash channels in Settings → Payments. Devices can select all search matches across pages and delete confirmed linked records after a backup, keeping customer accounts. Cashier cards show workshop contacts in the header. Receipts omit Balance due and use the current shop warranty; new jobs inherit that default, including zero-day warranties. Existing saved job/part warranty records remain unchanged.
 
 Select the active payment profile in Settings → Payments; language changes never switch it. Administrators can choose currency in the top bar. Account Management uses role-filtered cards; cashier accounts use a searchable, status-filtered paginated table. Duplicate technician settings and demo-user controls have been removed. About follows Myanmar, English, Thai and Chinese. PHP startup reports success only after a health check, and the router forwards the configured Node port.
 

@@ -106,6 +106,7 @@ app.use((req: AuthRequest, res: Response, next: NextFunction) => {
       const readPaths = ['/api/auth/me', '/api/jobs', '/api/technicians', '/api/customers', '/api/devices', '/api/payments', '/api/settings', '/api/notifications'];
       const readAllowed = req.method === 'GET' && (readPaths.includes(req.path) || /^\/api\/jobs\/[^/]+$/.test(req.path));
       const writeAllowed = (req.method === 'POST' && ['/api/jobs', '/api/payments', '/api/customers', '/api/devices', '/api/auth/logout', '/api/auth/change-password'].includes(req.path)) ||
+        (req.method === 'PUT' && /^\/api\/devices\/[^/]+\/category$/.test(req.path)) ||
         (req.method === 'PUT' && req.path === '/api/auth/profile') ||
         (['PUT','DELETE'].includes(req.method) && /^\/api\/notifications(?:\/.*)?$/.test(req.path)) ||
         (req.method === 'POST' && /^\/api\/payments\/[^/]+\/receipt-printed$/.test(req.path));
@@ -1900,6 +1901,14 @@ const validateDevice = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 app.post('/api/devices', requireIntakeUser, validateDevice, (req, res) => res.status(201).json(db.createDevice(req.body)));
+app.put('/api/devices/:id/category', requireIntakeUser, (req: AuthRequest, res: Response) => {
+  const category = req.body?.category;
+  if (typeof category !== 'string' || !category.trim() || category.trim().length > 80 || Object.keys(req.body).some(key => key !== 'category')) return res.status(400).json({error:'Category must contain 1–80 characters.'});
+  const updated = db.updateDevice(req.params.id, {category:category.trim()});
+  if (!updated) return res.status(404).json({error:'Device not found.'});
+  db.recordAudit({user_id:req.user!.id,username:req.user!.username,action:'DEVICE_CATEGORY_UPDATED',target_type:'system',target_id:req.params.id,details:`Device category changed to ${category.trim()}.`,ip_address:req.ip || '127.0.0.1'});
+  return res.json(updated);
+});
 app.put('/api/devices/:id', requireAdmin, validateDevice, (req, res) => {
   const updated = db.updateDevice(req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: 'Device not found.' });
