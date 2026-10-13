@@ -46,6 +46,7 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
   } = useApp();
 
   const isTechnician = role === 'technician';
+  const isCashier = role === 'cashier';
   const myTechnicianId = currentUser.technician_id;
 
   // Filter states
@@ -65,8 +66,9 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
     if (isTechnician) {
       return jobs.filter((j) => j.technician_id === myTechnicianId);
     }
+    if (isCashier) return jobs.filter(j=>j.intake_cashier_id===currentUser.id || (!j.intake_cashier_id && j.intake_received_by===currentUser.full_name));
     return jobs;
-  }, [jobs, isTechnician, myTechnicianId]);
+  }, [jobs, isTechnician, isCashier, myTechnicianId, currentUser.id, currentUser.full_name]);
 
   // Date preset helper
   const handlePresetChange = (preset: 'all' | 'today' | 'week' | 'month' | 'custom') => {
@@ -183,14 +185,14 @@ export const RepairRecordsView: React.FC<RepairRecordsViewProps> = ({ onOpenJob 
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-bold text-[var(--text)] tracking-tight">
-              {isTechnician ? t('myRepairRecords') : t('repairRecords')}
+              {isCashier ? 'My Repair Records' : isTechnician ? t('myRepairRecords') : t('repairRecords')}
             </h1>
             <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20">
               {totalRepairCount} Records
             </span>
           </div>
           <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-0.5">
-            {isTechnician
+            {isCashier ? 'Repair history for service jobs received at your counter' : isTechnician
               ? 'Complete repair workmanship history and hardware notes for your assigned jobs'
               : 'Complete workshop repair archive with hardware diagnostics, parts, technicians, and charges'}
           </p>

@@ -29,6 +29,7 @@ interface CustomersViewProps {
 
 export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
   const {
+    role,
     customers,
     jobs,
     technicians,
@@ -176,7 +177,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          {selectedCustomerIds.length > 0 && (
+          {role==='admin' && selectedCustomerIds.length > 0 && (
             <button
               onClick={confirmBulkDelete}
               className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm transition-colors cursor-pointer"
@@ -207,7 +208,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
             className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-[var(--bg)] border border-[var(--border)] rounded-lg text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
           />
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        {role==='admin' && <div className="flex items-center gap-2 shrink-0">
           <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[var(--text)] px-3 py-2 bg-[var(--surface-2)] rounded-lg border border-[var(--border)]">
             <input
               type="checkbox"
@@ -217,7 +218,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
             />
             <span>Select All ({filteredCustomers.length})</span>
           </label>
-        </div>
+        </div>}
       </div>
 
       {/* Customers Table */}
@@ -232,14 +233,14 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
             <table className="w-full text-left text-sm">
               <thead className="bg-[var(--surface-2)] text-[var(--text-muted)] text-xs border-b border-[var(--border)]">
                 <tr><th className="px-4 py-3">#</th>
-                  <th className="w-10 px-4 py-3">
+                  {role==='admin' && <th className="w-10 px-4 py-3">
                     <input
                       type="checkbox"
                       aria-label="Select current page" checked={page.items.length > 0 && page.items.every(c => selectedCustomerIds.includes(c.id))}
                       onChange={toggleSelectAll}
                       className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
                     />
-                  </th>
+                  </th>}
                   <th className="px-4 py-3 font-semibold">{t('customer')}</th>
                   <th className="px-4 py-3 font-semibold">{t('phone')}</th>
                   <th className="px-4 py-3 font-semibold">{t('address')}</th>
@@ -254,14 +255,14 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
                   const isSelected = selectedCustomerIds.includes(cust.id);
                   return (
                     <tr key={cust.id} className={`hover:bg-[var(--surface-2)]/40 transition-colors ${isSelected ? 'bg-[var(--primary)]/5' : ''}`}><td className="px-4 py-3 font-mono text-[var(--text-muted)]">{page.offset + rowIndex + 1}</td>
-                      <td className="w-10 px-4 py-3">
+                      {role==='admin' && <td className="w-10 px-4 py-3">
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleSelectCustomer(cust.id)}
                           className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--primary)] cursor-pointer"
                         />
-                      </td>
+                      </td>}
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="font-bold text-xs sm:text-sm">{cust.name}</div>
                         {cust.email && (
@@ -292,7 +293,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
                         >
                           <History className="w-4 h-4" />
                         </button>
-                        <button
+                        {role==='admin' && <><button
                           onClick={() => openEditModal(cust)}
                           className="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
                           title={t('edit')}
@@ -306,7 +307,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onOpenJob }) => {
                         >
                           <Trash2 className="w-4 h-4 inline-block" />
                           <span className="ml-1 text-xs font-semibold">{language === 'my' ? 'ဖျက်ရန်' : 'Delete'}</span>
-                        </button>
+                        </button></>}
                       </td>
                     </tr>
                   );

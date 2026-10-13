@@ -59,13 +59,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
   const techMenuItems = [
     { id: 'dashboard', path: '/technician/dashboard', label: t('technicianDashboard'), icon: LayoutDashboard },
     { id: 'service', path: '/service', label: t('myServices'), icon: Wrench },
-    { id: 'records', path: '/records', label: t('myRepairRecords'), icon: FileText },
-    { id: 'customers', path: '/customers', label: t('customers'), icon: Users },
     { id: 'devices', path: '/devices', label: t('devices'), icon: Smartphone },
     { id: 'about', path: '/about', label: t('about'), icon: Info },
   ];
 
-  const cashierMenuItems = [{ id: 'dashboard', path: '/cashier/dashboard', label: 'Cashier Dashboard', icon: DollarSign }, { id: 'service', path: '/service', label: t('service'), icon: Wrench }, { id: 'about', path: '/about', label: t('about'), icon: Info }];
+  const cashierMenuItems = [{ id: 'dashboard', path: '/cashier/dashboard', label: 'Cashier Dashboard', icon: DollarSign }, { id: 'service', path: '/service', label: t('service'), icon: Wrench }, { id: 'records', path: '/records', label: language==='my'?'ကျွန်ုပ်၏ပြုပြင်မှတ်တမ်း':'My Repair Records', icon: FileText }, { id: 'customers', path: '/customers', label: t('customers'), icon: Users }, { id: 'about', path: '/about', label: t('about'), icon: Info }];
   const menuItems = role === 'admin' ? adminMenuItems : role === 'cashier' ? cashierMenuItems : techMenuItems;
 
   const handleNavClick = (item: (typeof menuItems)[0]) => {

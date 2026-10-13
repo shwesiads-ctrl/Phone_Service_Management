@@ -4,13 +4,15 @@ export function printReport(element:HTMLElement,title='FixFlow Report',orientati
   const doc=frame.contentDocument,win=frame.contentWindow;
   if(!doc||!win){frame.remove();throw new Error('Printing is unavailable in this browser.');}
   const clone=element.cloneNode(true) as HTMLElement;
+  clone.setAttribute('aria-label',title);
   clone.classList.remove('hidden');clone.style.cssText='display:block;position:static;height:auto;max-height:none;overflow:visible;padding:0;margin:0;width:100%;max-width:none';
   clone.querySelectorAll('button,input,select,[aria-label="Pagination"],.no-print').forEach(node=>node.remove());
-  doc.documentElement.setAttribute('data-theme','light');doc.title=title;
+  doc.documentElement.setAttribute('data-theme','light');doc.title='';
   for(const sheet of Array.from(document.querySelectorAll<HTMLLinkElement|HTMLStyleElement>('link[rel=stylesheet],style'))){const copy=sheet.cloneNode(true) as HTMLLinkElement|HTMLStyleElement;if(copy.tagName==='LINK')(copy as HTMLLinkElement).href=(sheet as HTMLLinkElement).href;doc.head.appendChild(copy);}
   const style=doc.createElement('style');style.textContent=`
-    @page{size:A4 ${orientation};margin:12mm}
+    @page{size:A4 ${orientation};margin:0}
     html,body{background:white!important;color:#111827!important;margin:0;padding:0;font-family:Arial,'Noto Sans Myanmar','Noto Sans Thai',sans-serif;font-size:10pt;color-scheme:light}
+    body{padding:12mm!important}
     *{box-shadow:none!important;text-shadow:none!important;max-height:none!important;overflow:visible!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     table{width:100%;border-collapse:collapse;font-size:9pt;table-layout:auto}
     th,td{padding:5px 6px!important;border-bottom:1px solid #e2e8f0;font-size:inherit;white-space:normal!important;text-overflow:clip!important;overflow-wrap:break-word;word-break:normal!important;vertical-align:top}

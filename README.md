@@ -8,7 +8,7 @@ The published package excludes saved Telegram credentials. Re-enter your bot tok
 
 Staff registration and Telegram Bot settings are available; see REGISTER-TELEGRAM.md. Reviewed and corrected on 2026-10-10; an in-app notification system has now been added. See NOTIFICATIONS.md for the new bell, recipient rules and inbox controls. See BUGFIX_REPORT.md for changes, validation and limits, and QUICKSTART-MM.md for Burmese instructions.
 
-## မြန်မာလမ်းညွှန် — Version 2.9.0
+## မြန်မာလမ်းညွှန် — Version 2.9.1
 
 Settings → Local Network တွင် server PC မှ Node server On/Off နှင့် Test လုပ်နိုင်သည်။ Off သည် အဓိက Node HTTP port နှင့် managed PHP ကို ပိတ်သည်။ ပြန်ဖွင့်ရန် local control page ကို ကြိုဖွင့်ထားပါ။ Controller သည် server PC localhost တွင်သာ အလုပ်လုပ်ပြီး Admin account လိုသည်။ စာမျက်နှာများကို လိုအပ်မှသာ load လုပ်ကာ fonts ကို app ထဲထည့်ထားသည်။ Shop Settings တွင် ဒုတိယဖုန်း၊ website၊ ဆိုင်ဖွင့်ချိန်နှင့် receipt policy preview ထည့်ထားသည်။ Job အသစ်/Job Detail မှ Discount ကို amount သို့မဟုတ် % ရွေးပြီး Save လုပ်ပါ။ Receipt တွင် discount နုတ်ပြီး Total ကို ပြမည်။
 
@@ -34,6 +34,12 @@ Technician စာရင်းကို compact table၊ search၊ status filter�
 **တပ်ဆင်ရန်:** Node.js 22.12 နှင့်အထက်ဖြင့် `npm ci` → `npm run build` → `npm run start:production` လုပ်ပါ။ Update မလုပ်မီ backup သိမ်းပြီး မူလ `data/` နှင့် ၎င်းအတွင်းရှိ `.security/` ကို ထိန်းထားပါ။ Recovery အောင်မြင်တိုင်း key အသစ်ပြောင်းသောကြောင့် key အသစ်ကို ထပ်သိမ်းရန်လိုသည်။
 
 Receipt နှင့် Job Detail တွင် job currency တစ်မျိုးတည်းဖြင့် တွက်ပြပြီး currency မတူသော payment အသစ်ကို လက်မခံပါ။ Receipt မှာ ဆိုင် logo နှင့် Staff signature ပါပြီး Customer signature ဖယ်ထားသည်။ Expense နှင့် Device Category ကို စိတ်ကြိုက်ရေးထည့်/ပြင်နိုင်သည်။ Finance တွင် Ledger currency ရွေးပြီး currency တူသော စာရင်းများကိုသာ ပေါင်းပြသည်။ System License plan/day badge ကို ဖယ်ထားသည်။
+
+## Version 2.9.1 — Clear multilingual receipts and cashier navigation
+
+Cashier Dashboard တွင် မိမိလက်ခံခဲ့သော My Repair Records နှင့် Customers ကို ဖွင့်နိုင်ပြီး Technician menu မှ အဆိုပါ နှစ်ခုကို ဖယ်ထားသည်။ Receipt တွင် ပစ္စည်းဖိုး၊ လက်ခ၊ လျှော့ငွေ၊ စရံ/လက်ခံပြီးငွေနှင့် ကျန်ငွေ သို့မဟုတ် ပြန်အမ်းငွေကို သီးခြားပြထားသည်။ Receipt စာသားများသည် မြန်မာ၊ English၊ Thai၊ Chinese ဘာသာစကားအတိုင်း ပြောင်းပြီး Login စာမျက်နှာတွင် ဘာသာရွေးနိုင်သည်။ Print page margin ကို ပြင်ကာ browser header/footer ကို ဖျောက်ထားသည်။
+
+Cashiers can open their own repair records and customer list; technicians no longer see those navigation entries. Receipts separate parts, labor, discounts, deposits/payments and any remaining amount or change to return. Receipt labels follow all four supported languages, Login offers a language selector, and print pages use zero margins to suppress browser-generated headers and footers.
 
 ## Version 2.9.0 — Two-sided visit cards and Windows installer
 

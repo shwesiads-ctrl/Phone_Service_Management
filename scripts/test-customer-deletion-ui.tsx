@@ -8,7 +8,7 @@ import { CustomersView } from '../src/views/CustomersView';
   const { createRoot } = require('react-dom/client');
   const root = createRoot(document.getElementById('root')!);
   let deleted: any[] = [], fail = false, previewed: any[] = [];
-  const app: any = { customers: [{ id: 'CUST-TEST', name: 'Functional Test Customer', phone: '09', created_at: '' }], jobs: [], technicians: [], language: 'en', t: (key: string) => key, formatDate: () => '', formatCurrency: () => '',
+  const app: any = { role: 'admin', customers: [{ id: 'CUST-TEST', name: 'Functional Test Customer', phone: '09', created_at: '' }], jobs: [], technicians: [], language: 'en', t: (key: string) => key, formatDate: () => '', formatCurrency: () => '',
     previewCustomerDeletion: async (ids: string[]) => { previewed.push(ids); if (fail) throw new Error('Preview failed'); return { names: ['Functional Test Customer'], customers: 1, devices: 1, jobs: 20, parts: 20, payments: 0, income: 0, notifications: 0, revision: 'preview-token' }; },
     deleteCustomersWithRecords: async (ids: string[], revision: string) => { deleted.push({ ids, revision }); }
   };

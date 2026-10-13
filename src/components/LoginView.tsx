@@ -1,4 +1,5 @@
-import type { Theme } from '../types';
+import type { Theme,Language } from '../types';
+import {loginLabels} from '../i18n/loginLabels';
 import { RegisterAdminForm } from './RegisterAdminForm';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 import { accountLabels } from '../i18n/accountLabels';
@@ -7,7 +8,8 @@ import { useApp } from '../context/AppContext';
 import { Shield, Wrench, Lock, User as UserIcon, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const LoginView: React.FC = () => {
-  const { login, t, language, theme='system', setTheme } = useApp();
+  const { login, language, setLanguage, theme='system', setTheme } = useApp();
+  const l=loginLabels(language);
   const setupRequestVersion=useRef(0);
   const [registrationAvailable,setRegistrationAvailable]=useState(false);
   useEffect(()=>{let active=true;const refresh=async()=>{const version=++setupRequestVersion.current;try{const response=await fetch('/api/auth/setup-status',{cache:'no-store'});if(response.ok){const value=await response.json();if(active&&version===setupRequestVersion.current){setRegistrationAvailable(value.registration_open===true);if(!value.registration_open)setRegisterOpen(false);}}}catch{}};void refresh();window.addEventListener('focus',refresh);const timer=window.setInterval(refresh,15000);return()=>{active=false;clearInterval(timer);window.removeEventListener('focus',refresh);};},[]);
@@ -22,7 +24,7 @@ export const LoginView: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password) {
-      setError('Please enter both username and password.');
+      setError(l.required);
       return;
     }
 
@@ -31,10 +33,10 @@ export const LoginView: React.FC = () => {
     try {
       const success = await login(username.trim(), password);
       if (!success) {
-        setError('Invalid username or password. Please check your credentials.');
+        setError(l.invalid);
       }
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please verify server connection.');
+      setError(err.message || l.failure);
     } finally {
       setLoading(false);
     }
@@ -54,11 +56,11 @@ export const LoginView: React.FC = () => {
             FixFlow Service Lab
           </h2>
           <p className="text-xs text-[var(--text-muted)] font-medium">
-            Professional Phone Service & Repair Management System
+            {l.subtitle}
           </p>
         </div>
 
-        <label className="flex items-center justify-end gap-2 text-xs text-[var(--text-muted)]">Theme<select aria-label="Login theme" value={theme} onChange={e=>setTheme(e.target.value as Theme)} className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface-2)]"><option value="light">Light</option><option value="dark">Dark</option><option value="system">System</option></select></label>
+        <div className="flex flex-wrap items-center justify-end gap-3 text-xs text-[var(--text-muted)]"><label className="flex items-center gap-2">{l.language}<select aria-label="Login language" value={language} onChange={e=>setLanguage(e.target.value as Language)} className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface-2)]"><option value="my">မြန်မာ</option><option value="en">English</option><option value="th">ไทย</option><option value="zh">中文</option></select></label><label className="flex items-center gap-2">{l.theme}<select aria-label="Login theme" value={theme} onChange={e=>setTheme(e.target.value as Theme)} className="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface-2)]"><option value="light">{l.light}</option><option value="dark">{l.dark}</option><option value="system">{l.system}</option></select></label></div>
         {registerOpen ? <RegisterAdminForm language={language} onClose={()=>setRegisterOpen(false)} onCreated={name=>{setupRequestVersion.current++;setRegistrationAvailable(false);setRegisterOpen(false);setRegistered(name);setUsername(name);setPassword('');}}/> : forgotOpen ? <ForgotPasswordForm language={language} onClose={() => setForgotOpen(false)} /> : <>
         {registered && <p role="status" className="text-sm text-emerald-500">{language==='my'?'Admin အကောင့်ဖွင့်ပြီးပါပြီ။ Login ဝင်နိုင်ပါပြီ။':'Admin account created. Sign in with your new password.'} ({registered})</p>}
         {error && (
@@ -71,7 +73,7 @@ export const LoginView: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-[var(--text)] uppercase tracking-wider">
-              Username or Email
+              {l.username}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
@@ -82,7 +84,7 @@ export const LoginView: React.FC = () => {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
+                placeholder={l.usernamePlaceholder}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all font-medium"
               />
             </div>
@@ -90,7 +92,7 @@ export const LoginView: React.FC = () => {
 
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-[var(--text)] uppercase tracking-wider">
-              Password
+              {l.password}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
@@ -101,7 +103,7 @@ export const LoginView: React.FC = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter account password"
+                placeholder={l.passwordPlaceholder}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-[var(--text)] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all font-medium"
               />
             </div>
@@ -116,7 +118,7 @@ export const LoginView: React.FC = () => {
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <span>Sign In to System</span>
+                <span>{l.signIn}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

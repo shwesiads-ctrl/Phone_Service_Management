@@ -1,26 +1,26 @@
 {
-  "version": "2.9.0",
+  "version": "2.9.1",
   "date": "2026-10-13",
   "changes": {
     "my": [
-      "Visit Card Maker ကို ရှေ့/နောက် နှစ်ဖက်ပါသော သန့်ရှင်းသည့် ဒီဇိုင်း ၁၀ မျိုးဖြင့် ပြန်ရေးထားပြီး PNG ကို တစ်ဖက်စီ သိမ်းနိုင်သည်။",
-      "Dark mode currency menu အရောင်နှင့် မြန်မာ sidebar စာလုံးတန်းများကို ပြင်ထားသည်။",
-      "Windows installer ကို အဆင်သင့်ထုတ်နိုင်ရန် app icon၊ သီးသန့် data သိမ်းဆည်းမှု၊ သန့်ရှင်းသော package နှင့် Windows build workflow ထည့်ထားသည်။"
+      "Cashier Dashboard တွင် မိမိလက်ခံခဲ့သည့် Repair Records နှင့် Customers ကို ဖွင့်ကြည့်နိုင်သည်။ Technician menu မှ Repair Records နှင့် Customers ကို ဖယ်ထားသည်။",
+      "Service Receipt ငွေစာရင်းကို ပစ္စည်းဖိုး၊ လက်ခ၊ လျှော့ငွေ၊ စရံ/လက်ခံပြီးငွေ၊ ကျန်ငွေ သို့မဟုတ် ပြန်အမ်းငွေ အလိုက် ရှင်းလင်းစွာ ပြထားသည်။",
+      "Receipt စာများကို မြန်မာ၊ English၊ Thai၊ Chinese အလိုက် ပြောင်းပြီး Login စာမျက်နှာတွင် ဘာသာစကားရွေးနိုင်သည်။ Print ရှိ browser header/footer စာများကို ဖျောက်ရန် page margin ပြင်ထားသည်။"
     ],
     "en": [
-      "Visit Card Maker now has ten refined two-sided layouts, with separate front and back PNG downloads.",
-      "Currency menus have dark-mode contrast, and compact Myanmar sidebar labels fit without crowding.",
-      "Windows installer packaging now has a branded icon, private persistent data, a minimal payload and an automated Windows build workflow."
+      "Cashiers can open their own repair records and customers; technician navigation hides those sections.",
+      "Receipts clearly separate parts, labor, discount, deposits/payments, and remaining amount or change to return.",
+      "Receipts follow Myanmar, English, Thai or Chinese; Login offers a language selector and print layouts suppress browser headers and footers."
     ],
     "th": [
-      "ตัวทำนามบัตรปรับใหม่เป็น 10 แบบสองด้าน ดาวน์โหลด PNG ด้านหน้าและด้านหลังแยกกันได้",
-      "แก้สีเมนูสกุลเงินในโหมดมืดและย่อป้ายเมนูภาษาพม่าให้อ่านง่าย",
-      "ปรับชุดติดตั้ง Windows ให้สะอาด มีไอคอน เก็บข้อมูลผู้ใช้แยก และมีขั้นตอนสร้างอัตโนมัติ"
+      "แคชเชียร์เปิดประวัติงานซ่อมของตนและรายชื่อลูกค้าได้ ส่วนเมนูช่างซ่อนสองหน้านี้",
+      "ใบเสร็จแยกค่าอะไหล่ ค่าแรง ส่วนลด มัดจำ/เงินที่รับ และยอดคงเหลือหรือเงินทอนอย่างชัดเจน",
+      "ใบเสร็จรองรับ 4 ภาษา หน้าเข้าสู่ระบบเลือกภาษาได้ และปรับหน้าพิมพ์เพื่อลบหัวกระดาษ/ท้ายกระดาษของเบราว์เซอร์"
     ],
     "zh": [
-      "名片制作器改为十种精致双面设计，可分别下载正反面 PNG。",
-      "修复深色模式货币菜单对比度，并精简缅甸语侧边栏文字。",
-      "优化 Windows 安装包：品牌图标、独立保存用户数据、精简打包和自动构建流程。"
+      "收银员可查看自己的维修记录和客户；技师菜单隐藏这两个页面。",
+      "收据清晰区分配件费、人工费、优惠、定金/已付款以及待付金额或找零。",
+      "收据支持缅甸语、英语、泰语和中文；登录页可选语言，并调整打印页以去除浏览器页眉页脚。"
     ]
   }
 }

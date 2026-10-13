@@ -10,7 +10,7 @@ import { CustomersView } from '../src/views/CustomersView';
 (async () => {
  const dom = new JSDOM('<div id="root"></div>', {url:'http://localhost'});
  Object.assign(globalThis,{window:dom.window,document:dom.window.document,HTMLElement:dom.window.HTMLElement,IS_REACT_ACT_ENVIRONMENT:true});
- (globalThis as any).__testApp={language:'en',t:(k:string)=>k,customers:[],jobs:[],technicians:[],formatDate:(v:string)=>v};
+ (globalThis as any).__testApp={role:'admin',language:'en',t:(k:string)=>k,customers:[],jobs:[],technicians:[],formatDate:(v:string)=>v};
  const {createRoot}=require('react-dom/client'); const root=createRoot(document.getElementById('root')!);
  let rows=Array.from({length:20000},(_,i)=>i+1),key='';let current:any;
  function Harness(){current=usePagination(rows,key);return <><output>{current.items.join(',')}</output><Pagination {...current}/></>;}

@@ -1,0 +1,8 @@
+import type {Language} from '../types';
+const labels={
+ en:{subtitle:'Professional Phone Service & Repair Management System',theme:'Theme',language:'Language',username:'Username or Email',usernamePlaceholder:'Enter your username',password:'Password',passwordPlaceholder:'Enter account password',signIn:'Sign In to System',required:'Enter both username and password.',invalid:'Invalid username or password. Check your credentials.',failure:'Login failed. Check the server connection.',light:'Light',dark:'Dark',system:'System'},
+ my:{subtitle:'ဖုန်းနှင့် စက်ပစ္စည်းပြုပြင်ရေးဆိုင် စီမံခန့်ခွဲမှု',theme:'အရောင်ပုံစံ',language:'ဘာသာစကား',username:'အသုံးပြုသူအမည် သို့မဟုတ် အီးမေးလ်',usernamePlaceholder:'အသုံးပြုသူအမည် ထည့်ပါ',password:'စကားဝှက်',passwordPlaceholder:'အကောင့်စကားဝှက် ထည့်ပါ',signIn:'စနစ်ထဲ ဝင်ရန်',required:'အသုံးပြုသူအမည်နှင့် စကားဝှက် ဖြည့်ပါ။',invalid:'အသုံးပြုသူအမည် သို့မဟုတ် စကားဝှက် မှားနေပါသည်။',failure:'ဝင်မရပါ။ ဆာဗာချိတ်ဆက်မှု စစ်ပါ။',light:'အလင်း',dark:'အမှောင်',system:'စနစ်အတိုင်း'},
+ th:{subtitle:'ระบบจัดการร้านซ่อมโทรศัพท์และอุปกรณ์',theme:'ธีม',language:'ภาษา',username:'ชื่อผู้ใช้หรืออีเมล',usernamePlaceholder:'กรอกชื่อผู้ใช้',password:'รหัสผ่าน',passwordPlaceholder:'กรอกรหัสผ่าน',signIn:'เข้าสู่ระบบ',required:'กรอกชื่อผู้ใช้และรหัสผ่าน',invalid:'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',failure:'เข้าสู่ระบบไม่ได้ ตรวจสอบการเชื่อมต่อเซิร์ฟเวอร์',light:'สว่าง',dark:'มืด',system:'ตามระบบ'},
+ zh:{subtitle:'手机与设备维修门店管理系统',theme:'主题',language:'语言',username:'用户名或邮箱',usernamePlaceholder:'请输入用户名',password:'密码',passwordPlaceholder:'请输入密码',signIn:'登录系统',required:'请输入用户名和密码。',invalid:'用户名或密码错误。',failure:'登录失败，请检查服务器连接。',light:'浅色',dark:'深色',system:'跟随系统'}
+} as const;
+export const loginLabels=(language:Language)=>labels[language]||labels.en;

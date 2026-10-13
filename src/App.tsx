@@ -60,9 +60,12 @@ const AuthenticatedLayout: React.FC = () => {
   const renderActiveView = () => {
     if (role === 'cashier') {
       if (activeTab === 'about') return <AboutView />;
-      if (!['dashboard','service'].includes(activeTab)) return <div className="p-6">Cashier access: intake, payments and receipts.</div>;
+      if (activeTab === 'records') return <RepairRecordsView onOpenJob={handleOpenJob} />;
+      if (activeTab === 'customers') return <CustomersView onOpenJob={handleOpenJob} />;
+      if (!['dashboard','service'].includes(activeTab)) return <div className="p-6">Cashier access: intake, payments, repair records and customers.</div>;
       return activeTab === 'dashboard' ? <CashierDashboardView onNewJob={() => setNewJobModalOpen(true)} onOpenJob={handleOpenJob} onPrintReceipt={handlePrintReceipt} /> : <ServiceView onOpenJob={handleOpenJob} onNewJob={() => setNewJobModalOpen(true)} onPrintReceipt={handlePrintReceipt} />;
     }
+    if (role === 'technician' && ['records','customers'].includes(activeTab)) return <TechnicianDeskView onOpenJob={handleOpenJob} />;
     // 1. Explicit Route Checks
     if (currentPath === '/admin/dashboard') {
       if (role !== 'admin') {
